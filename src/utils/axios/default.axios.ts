@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-export const userAxios = axios.create({
+export const defaultAxios = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-userAxios.interceptors.response.use(
+defaultAxios.interceptors.response.use(
   (response) => {
     if (response.data?.status === 1) return response.data;
     return Promise.reject(response.data);

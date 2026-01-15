@@ -114,67 +114,6 @@ export const DEMO_ROUTES = [
   ...Object.values(ROUTES.DEMO.UI_ELEMENTS),
 ] as const;
 
-// =============================================================================
-// API ROUTES
-// =============================================================================
-
-export const API_ROUTES = {
-  // Auth
-  AUTH: {
-    LOGIN: "/api/auth/login",
-    REGISTER: "/api/auth/register",
-    LOGOUT: "/api/auth/logout",
-    REFRESH: "/api/auth/refresh",
-    FORGOT_PASSWORD: "/api/auth/forgot-password",
-    RESET_PASSWORD: "/api/auth/reset-password",
-  },
-
-  // Categories
-  CATEGORIES: {
-    LIST: "/api/categories",
-    CREATE: "/api/categories",
-    GET: (id: string | number) => `/api/categories/${id}`,
-    UPDATE: (id: string | number) => `/api/categories/${id}`,
-    DELETE: (id: string | number) => `/api/categories/${id}`,
-  },
-
-  // Products
-  PRODUCTS: {
-    LIST: "/api/products",
-    CREATE: "/api/products",
-    GET: (id: string | number) => `/api/products/${id}`,
-    UPDATE: (id: string | number) => `/api/products/${id}`,
-    DELETE: (id: string | number) => `/api/products/${id}`,
-  },
-
-  // Orders
-  ORDERS: {
-    LIST: "/api/orders",
-    CREATE: "/api/orders",
-    GET: (id: string | number) => `/api/orders/${id}`,
-    UPDATE: (id: string | number) => `/api/orders/${id}`,
-    DELETE: (id: string | number) => `/api/orders/${id}`,
-  },
-
-  // Users
-  USERS: {
-    LIST: "/api/users",
-    GET: (id: string | number) => `/api/users/${id}`,
-    UPDATE: (id: string | number) => `/api/users/${id}`,
-    PROFILE: "/api/users/profile",
-  },
-
-  // Dashboard
-  DASHBOARD: {
-    STATS: "/api/dashboard/stats",
-    RECENT_ORDERS: "/api/dashboard/recent-orders",
-    SALES_CHART: "/api/dashboard/sales-chart",
-  },
-} as const;
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 /**
  * Check if a route requires authentication

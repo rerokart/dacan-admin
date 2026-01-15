@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  ROUTES,
   isPublicRoute,
   getLoginRedirect,
   getPostLoginRedirect,
@@ -14,8 +13,8 @@ export function middleware(request: NextRequest) {
 
   // Authenticated user
   if (accessToken) {
-    // Redirect from auth pages to dashboard if already logged in
-    if (isPublicRoute(pathname) || pathname === ROUTES.HOME) {
+    // Redirect from auth pages (signin, signup, etc.) to dashboard
+    if (isPublicRoute(pathname)) {
       return NextResponse.redirect(new URL(getPostLoginRedirect(), request.url));
     }
     return NextResponse.next();
