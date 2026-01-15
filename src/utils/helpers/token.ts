@@ -1,6 +1,15 @@
 import Cookies from "js-cookie";
 import { ACCESS_TOKEN_NAME } from "../constants/enums";
 
+const USER_DATA_KEY = "admin_user";
+
+export interface StoredUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+}
+
 export const setTokens = ({ accessToken, expiresAt = 144 }: { accessToken: string; expiresAt?: number }) => {
   if (typeof window === "undefined") return;
   const expiresInDays = Number(expiresAt) / 24;
@@ -11,6 +20,22 @@ export const setTokens = ({ accessToken, expiresAt = 144 }: { accessToken: strin
     sameSite: "Strict",
     secure: process.env.NODE_ENV === "production",
   });
+};
+
+export const setUserData = (user: StoredUser) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+};
+
+export const getUserData = (): StoredUser | null => {
+  if (typeof window === "undefined") return null;
+  const data = localStorage.getItem(USER_DATA_KEY);
+  if (!data) return null;
+  try {
+    return JSON.parse(data) as StoredUser;
+  } catch {
+    return null;
+  }
 };
 
 export const getToken = () => {

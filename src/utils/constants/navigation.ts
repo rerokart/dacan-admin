@@ -49,6 +49,55 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
       { name: "All Products", path: ROUTES.PRODUCTS },
     ],
   },
+  {
+    icon: "TaskIcon",
+    name: "Orders",
+    path: ROUTES.ORDERS,
+  },
+  {
+    icon: "GroupIcon",
+    name: "Users",
+    path: ROUTES.USERS,
+  },
+  {
+    icon: "ChatIcon",
+    name: "Reviews",
+    path: ROUTES.REVIEWS,
+  },
+  {
+    icon: "DollarLineIcon",
+    name: "Coupons",
+    subItems: [
+      { name: "Add Coupon", path: ROUTES.COUPONS_ADD },
+      { name: "All Coupons", path: ROUTES.COUPONS },
+    ],
+  },
+  {
+    icon: "BoxIconLine",
+    name: "Inventory",
+    subItems: [
+      { name: "Overview", path: ROUTES.INVENTORY },
+      { name: "Stock Management", path: ROUTES.INVENTORY_STOCK },
+    ],
+  },
+  {
+    icon: "PieChartIcon",
+    name: "Reports",
+    path: ROUTES.REPORTS,
+  },
+  {
+    icon: "TableIcon",
+    name: "POS",
+    path: ROUTES.POS,
+  },
+  {
+    icon: "PageIcon",
+    name: "Banners",
+    subItems: [
+      { name: "Add Banner", path: ROUTES.BANNERS_ADD },
+      { name: "All Banners", path: ROUTES.BANNERS },
+    ],
+  },
 ];
 
 // =============================================================================
@@ -120,6 +169,53 @@ export const BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
     { label: "Products", path: ROUTES.PRODUCTS },
     { label: "Add Product" },
   ],
+  [ROUTES.ORDERS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Orders" },
+  ],
+  [ROUTES.USERS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Users" },
+  ],
+  [ROUTES.REVIEWS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Reviews" },
+  ],
+  [ROUTES.COUPONS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "All Coupons" },
+  ],
+  [ROUTES.COUPONS_ADD]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Coupons", path: ROUTES.COUPONS },
+    { label: "Add Coupon" },
+  ],
+  [ROUTES.INVENTORY]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Inventory Overview" },
+  ],
+  [ROUTES.INVENTORY_STOCK]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Inventory", path: ROUTES.INVENTORY },
+    { label: "Stock Management" },
+  ],
+  [ROUTES.REPORTS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Reports" },
+  ],
+  [ROUTES.POS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Point of Sale" },
+  ],
+  [ROUTES.BANNERS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "All Banners" },
+  ],
+  [ROUTES.BANNERS_ADD]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Banners", path: ROUTES.BANNERS },
+    { label: "Add Banner" },
+  ],
   [ROUTES.PROFILE]: [
     { label: "Dashboard", path: ROUTES.DASHBOARD },
     { label: "Profile" },
@@ -136,6 +232,17 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.CATEGORIES_ADD]: "Add Category",
   [ROUTES.PRODUCTS]: "All Products",
   [ROUTES.PRODUCTS_ADD]: "Add Product",
+  [ROUTES.ORDERS]: "Orders",
+  [ROUTES.USERS]: "Users",
+  [ROUTES.REVIEWS]: "Reviews",
+  [ROUTES.COUPONS]: "All Coupons",
+  [ROUTES.COUPONS_ADD]: "Add Coupon",
+  [ROUTES.INVENTORY]: "Inventory Overview",
+  [ROUTES.INVENTORY_STOCK]: "Stock Management",
+  [ROUTES.REPORTS]: "Reports",
+  [ROUTES.POS]: "Point of Sale",
+  [ROUTES.BANNERS]: "All Banners",
+  [ROUTES.BANNERS_ADD]: "Add Banner",
   [ROUTES.PROFILE]: "Profile",
   [ROUTES.SIGN_IN]: "Sign In",
   [ROUTES.SIGN_UP]: "Sign Up",

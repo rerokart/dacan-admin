@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authService, LoginRequest, RegisterRequest, ForgotPasswordRequest } from "@/services/auth.service";
-import { setTokens, handleLogout } from "@/utils/helpers/token";
+import { setTokens, setUserData, handleLogout } from "@/utils/helpers/token";
 import { ROUTES } from "@/utils/constants/NavigationRoutes";
 import { useToast } from "@/components/ui/toast";
 
@@ -18,8 +18,16 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginRequest) => authService.login(data),
     onSuccess: (response) => {
-      debugger;
       setTokens({ accessToken: response.access_token });
+      // Store user data for display in header
+      if (response.admin) {
+        setUserData({
+          id: response.admin.id,
+          email: response.admin.email,
+          full_name: response.admin.full_name,
+          role: response.admin.role,
+        });
+      }
       toast.success(response.message || "Login successful!");
       router.push(ROUTES.DASHBOARD);
     },

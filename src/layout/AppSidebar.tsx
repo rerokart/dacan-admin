@@ -6,12 +6,19 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
+  BoxIconLine,
+  ChatIcon,
   ChevronDownIcon,
+  DollarLineIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   ListIcon,
+  PageIcon,
   PieChartIcon,
   PlugInIcon,
+  TableIcon,
+  TaskIcon,
   UserCircleIcon,
 } from "../icons/index";
 import {
@@ -30,6 +37,13 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   UserCircleIcon: <UserCircleIcon />,
   PieChartIcon: <PieChartIcon />,
   PlugInIcon: <PlugInIcon />,
+  TaskIcon: <TaskIcon />,
+  GroupIcon: <GroupIcon />,
+  ChatIcon: <ChatIcon />,
+  DollarLineIcon: <DollarLineIcon />,
+  BoxIconLine: <BoxIconLine />,
+  TableIcon: <TableIcon />,
+  PageIcon: <PageIcon />,
 };
 
 type NavItem = {

@@ -22,6 +22,37 @@ export const ROUTES = {
   PRODUCTS_ADD: "/products/add",
   PRODUCTS_EDIT: (id: string | number) => `/products/${id}/edit`,
 
+  // Orders
+  ORDERS: "/orders",
+  ORDERS_DETAIL: (id: string | number) => `/orders/${id}`,
+
+  // Users
+  USERS: "/users",
+  USERS_DETAIL: (id: string | number) => `/users/${id}`,
+
+  // Reviews
+  REVIEWS: "/reviews",
+
+  // Coupons
+  COUPONS: "/coupons",
+  COUPONS_ADD: "/coupons/add",
+  COUPONS_EDIT: (id: string | number) => `/coupons/${id}/edit`,
+
+  // Inventory
+  INVENTORY: "/inventory",
+  INVENTORY_STOCK: "/inventory/stock",
+
+  // Reports
+  REPORTS: "/reports",
+
+  // POS
+  POS: "/pos",
+
+  // Banners
+  BANNERS: "/banners",
+  BANNERS_ADD: "/banners/add",
+  BANNERS_EDIT: (id: string | number) => `/banners/${id}/edit`,
+
   // User
   PROFILE: "/profile",
 
@@ -67,6 +98,17 @@ export const AUTHENTICATED_ROUTES: string[] = [
   ROUTES.CATEGORIES_ADD,
   ROUTES.PRODUCTS,
   ROUTES.PRODUCTS_ADD,
+  ROUTES.ORDERS,
+  ROUTES.USERS,
+  ROUTES.REVIEWS,
+  ROUTES.COUPONS,
+  ROUTES.COUPONS_ADD,
+  ROUTES.INVENTORY,
+  ROUTES.INVENTORY_STOCK,
+  ROUTES.REPORTS,
+  ROUTES.POS,
+  ROUTES.BANNERS,
+  ROUTES.BANNERS_ADD,
   ROUTES.PROFILE,
   ROUTES.DEMO.CHARTS.BAR,
   ROUTES.DEMO.CHARTS.LINE,

@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { getToken, handleLogout } from '@/utils/helpers/token';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const defaultAxios = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -8,6 +10,21 @@ export const defaultAxios = axios.create({
   },
 });
 
+// Request interceptor - attach token to all requests
+defaultAxios.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - handle success and errors
 defaultAxios.interceptors.response.use(
   (response) => {
     if (response.data?.status === 1) return response.data;
@@ -16,7 +33,13 @@ defaultAxios.interceptors.response.use(
   (error) => {
     const { response } = error;
 
-    const message = response?.data || 'Something Went Wrong';
-    return Promise.reject(message);
+    // Handle 401 Unauthorized - token expired or invalid
+    if (response?.status === 401) {
+      handleLogout();
+      return Promise.reject(new Error('Session expired. Please login again.'));
+    }
+
+    const message = response?.data?.message || response?.data || 'Something went wrong';
+    return Promise.reject(new Error(typeof message === 'string' ? message : 'Something went wrong'));
   }
 );

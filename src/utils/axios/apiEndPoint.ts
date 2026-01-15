@@ -49,5 +49,7 @@ export const API_ROUTES = {
     STATS: "dashboard/stats",
     RECENT_ORDERS: "dashboard/recent-orders",
     SALES_CHART: "dashboard/sales-chart",
+    ORDERS_BY_STATUS: "dashboard/orders-by-status",
+    LOW_STOCK: "dashboard/low-stock",
   },
 } as const;

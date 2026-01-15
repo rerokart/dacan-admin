@@ -1,41 +1,35 @@
 import type { Metadata } from "next";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
-import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
+import LowStockAlerts from "@/components/ecommerce/LowStockAlerts";
 
 export const metadata: Metadata = {
-  title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Home for TailAdmin Dashboard Template",
+  title: "Dashboard | Decan India Admin",
+  description: "E-commerce Admin Dashboard for Decan India",
 };
 
-export default function Ecommerce() {
+export default function Dashboard() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
-      <div className="col-span-12 space-y-6 xl:col-span-7">
+      {/* Stats Cards - Full Width */}
+      <div className="col-span-12">
         <EcommerceMetrics />
+      </div>
 
+      {/* Sales Chart */}
+      <div className="col-span-12 xl:col-span-12">
         <MonthlySalesChart />
       </div>
 
-      <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
-      </div>
-
-      <div className="col-span-12">
-        <StatisticsChart />
-      </div>
-
-      <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
-      </div>
-
-      <div className="col-span-12 xl:col-span-7">
+      {/* Recent Orders */}
+      <div className="col-span-12 xl:col-span-12">
         <RecentOrders />
+      </div>
+
+      {/* Low Stock Alerts - Full Width */}
+      <div className="col-span-12">
+        <LowStockAlerts />
       </div>
     </div>
   );
