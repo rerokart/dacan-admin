@@ -254,8 +254,8 @@ export const PAGE_TITLES: Record<string, string> = {
 // =============================================================================
 
 export const SIDEBAR_CONFIG = {
-  EXPANDED_WIDTH: 290,
-  COLLAPSED_WIDTH: 90,
+  EXPANDED_WIDTH: 260,
+  COLLAPSED_WIDTH: 80,
   MOBILE_BREAKPOINT: 768,
   TRANSITION_DURATION: 300,
 } as const;
