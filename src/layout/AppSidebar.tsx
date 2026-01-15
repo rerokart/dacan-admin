@@ -1,23 +1,36 @@
 "use client";
-import React, { useEffect, useRef, useState,useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  PageIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons/index";
-// import SidebarWidget from "./SidebarWidget";
+import {
+  MAIN_NAV_ITEMS,
+  OTHER_NAV_ITEMS,
+  MENU_LABELS,
+  SIDEBAR_CONFIG,
+  type NavItem as NavItemConfig,
+} from "../utils/constants/navigation";
+
+// Icon mapping from string names to components
+const ICON_MAP: Record<string, React.ReactNode> = {
+  GridIcon: <GridIcon />,
+  ListIcon: <ListIcon />,
+  BoxCubeIcon: <BoxCubeIcon />,
+  UserCircleIcon: <UserCircleIcon />,
+  PieChartIcon: <PieChartIcon />,
+  PlugInIcon: <PlugInIcon />,
+};
 
 type NavItem = {
   name: string;
@@ -26,56 +39,15 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Categories",
-    subItems: [
-      { name: "Add Category", path: "/categories/add", pro: false },
-      { name: "All Categories", path: "/categories", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Products",
-    subItems: [
-      { name: "Add Product", path: "/products/add", pro: false },
-      { name: "All Products", path: "/products", pro: false },
-    ],
-  },
-];
+// Transform config nav items to include React icon components
+const transformNavItems = (items: NavItemConfig[]): NavItem[] =>
+  items.map((item) => ({
+    ...item,
+    icon: ICON_MAP[item.icon] || <GridIcon />,
+  }));
 
-const othersItems: NavItem[] = [
-  {
-    icon: <UserCircleIcon />,
-    name: "Profile",
-    path: "/profile",
-  },
-  {
-    icon: <PieChartIcon />,
-    name: "Demo Pages",
-    subItems: [
-      { name: "Charts", path: "/charts/bar-chart", pro: false },
-      { name: "Forms", path: "/forms/form-elements", pro: false },
-      { name: "Tables", path: "/tables/basic-tables", pro: false },
-      { name: "Calendar", path: "/calendar", pro: false },
-      { name: "UI Elements", path: "/ui-elements/buttons", pro: false },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
-  },
-];
+const navItems: NavItem[] = transformNavItems(MAIN_NAV_ITEMS);
+const othersItems: NavItem[] = transformNavItems(OTHER_NAV_ITEMS);
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -216,34 +188,34 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => path === pathname;
-   const isActive = useCallback((path: string) => path === pathname, [pathname]);
+  const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
+  // Sync openSubmenu with pathname changes
   useEffect(() => {
-    // Check if the current path matches any submenu item
-    let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
+    // Find which submenu should be open based on current pathname
+    let matchedSubmenu: { type: "main" | "others"; index: number } | null = null;
 
-    // If no submenu item matches, close the open submenu
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
+    const menuTypes: Array<"main" | "others"> = ["main", "others"];
+    for (const menuType of menuTypes) {
+      const items = menuType === "main" ? navItems : othersItems;
+      for (let index = 0; index < items.length; index++) {
+        const nav = items[index];
+        if (nav.subItems) {
+          for (const subItem of nav.subItems) {
+            if (subItem.path === pathname) {
+              matchedSubmenu = { type: menuType, index };
+              break;
+            }
+          }
+        }
+        if (matchedSubmenu) break;
+      }
+      if (matchedSubmenu) break;
     }
-  }, [pathname, isActive]);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenSubmenu(matchedSubmenu);
+  }, [pathname]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -271,15 +243,18 @@ const AppSidebar: React.FC = () => {
     });
   };
 
+  const expandedWidth = `w-[${SIDEBAR_CONFIG.EXPANDED_WIDTH}px]`;
+  const collapsedWidth = `w-[${SIDEBAR_CONFIG.COLLAPSED_WIDTH}px]`;
+
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
         ${
           isExpanded || isMobileOpen
-            ? "w-[290px]"
+            ? expandedWidth
             : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
+            ? expandedWidth
+            : collapsedWidth
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
@@ -331,7 +306,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
+                  MENU_LABELS.MAIN
                 ) : (
                   <HorizontaLDots />
                 )}
@@ -348,7 +323,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  MENU_LABELS.OTHERS
                 ) : (
                   <HorizontaLDots />
                 )}

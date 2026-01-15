@@ -1,11 +1,4 @@
-/**
- * Application Enums
- * Centralized enum definitions for the e-commerce admin dashboard
- */
-
-// =============================================================================
-// PRODUCT ENUMS
-// =============================================================================
+export const ACCESS_TOKEN_NAME = "dacan_admin_access_token";
 
 export enum ProductStatus {
   IN_STOCK = "in_stock",
@@ -19,10 +12,6 @@ export const ProductStatusLabels: Record<ProductStatus, string> = {
   [ProductStatus.OUT_OF_STOCK]: "Out of Stock",
 };
 
-// =============================================================================
-// CATEGORY ENUMS
-// =============================================================================
-
 export enum CategoryStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -33,9 +22,6 @@ export const CategoryStatusLabels: Record<CategoryStatus, string> = {
   [CategoryStatus.INACTIVE]: "Inactive",
 };
 
-// =============================================================================
-// ORDER ENUMS
-// =============================================================================
 
 export enum OrderStatus {
   PENDING = "pending",
@@ -55,9 +41,6 @@ export const OrderStatusLabels: Record<OrderStatus, string> = {
   [OrderStatus.REFUNDED]: "Refunded",
 };
 
-// =============================================================================
-// PAYMENT ENUMS
-// =============================================================================
 
 export enum PaymentStatus {
   PENDING = "pending",
@@ -89,10 +72,6 @@ export const PaymentMethodLabels: Record<PaymentMethod, string> = {
   [PaymentMethod.CASH_ON_DELIVERY]: "Cash on Delivery",
 };
 
-// =============================================================================
-// USER ENUMS
-// =============================================================================
-
 export enum UserRole {
   ADMIN = "admin",
   MANAGER = "manager",
@@ -121,9 +100,6 @@ export const UserStatusLabels: Record<UserStatus, string> = {
   [UserStatus.PENDING]: "Pending Verification",
 };
 
-// =============================================================================
-// UI ENUMS
-// =============================================================================
 
 export enum BadgeVariant {
   LIGHT = "light",
@@ -166,9 +142,6 @@ export enum AlertVariant {
   INFO = "info",
 }
 
-// =============================================================================
-// TABLE ENUMS
-// =============================================================================
 
 export enum SortDirection {
   ASC = "asc",
@@ -182,9 +155,6 @@ export enum TablePageSize {
   HUNDRED = 100,
 }
 
-// =============================================================================
-// DATE/TIME ENUMS
-// =============================================================================
 
 export enum DateFormat {
   SHORT = "MM/DD/YYYY",
@@ -216,10 +186,6 @@ export const TimeRangeLabels: Record<TimeRange, string> = {
   [TimeRange.CUSTOM]: "Custom Range",
 };
 
-// =============================================================================
-// SHIPPING ENUMS
-// =============================================================================
-
 export enum ShippingMethod {
   STANDARD = "standard",
   EXPRESS = "express",
@@ -234,9 +200,6 @@ export const ShippingMethodLabels: Record<ShippingMethod, string> = {
   [ShippingMethod.PICKUP]: "Store Pickup",
 };
 
-// =============================================================================
-// DISCOUNT ENUMS
-// =============================================================================
 
 export enum DiscountType {
   PERCENTAGE = "percentage",
@@ -252,9 +215,6 @@ export const DiscountTypeLabels: Record<DiscountType, string> = {
   [DiscountType.BUY_X_GET_Y]: "Buy X Get Y",
 };
 
-// =============================================================================
-// FILE/MEDIA ENUMS
-// =============================================================================
 
 export enum FileType {
   IMAGE = "image",
@@ -272,9 +232,6 @@ export enum ImageFormat {
   SVG = "svg",
 }
 
-// =============================================================================
-// NOTIFICATION ENUMS
-// =============================================================================
 
 export enum NotificationType {
   ORDER = "order",
