@@ -44,6 +44,12 @@ export interface PaginatedResponse<T> {
   total_pages: number;
 }
 
+// API Response type
+interface CategoriesResponse {
+  categories: Category[];
+  status: number;
+}
+
 // Service
 export const categoryService = {
   getCategories: async (filters?: CategoryFilters): Promise<Category[]> => {
@@ -59,7 +65,8 @@ export const categoryService = {
     const url = queryString
       ? `${API_ROUTES.CATEGORIES.LIST}?${queryString}`
       : API_ROUTES.CATEGORIES.LIST;
-    return defaultAxios.get(url);
+    const response: CategoriesResponse = await defaultAxios.get(url);
+    return response.categories || [];
   },
 
   getCategoryById: async (id: string | number): Promise<Category> => {

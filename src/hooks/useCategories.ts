@@ -102,12 +102,12 @@ export const buildCategoryTree = (categories: Category[]): Category[] => {
   const roots: Category[] = [];
 
   // First pass: create a map of all categories
-  categories.forEach((cat) => {
+  categories.length > 0 && categories.forEach((cat) => {
     categoryMap.set(cat.id, { ...cat, children: [] });
   });
 
   // Second pass: build the tree
-  categories.forEach((cat) => {
+    categories.length > 0 && categories.forEach((cat) => {
     const category = categoryMap.get(cat.id)!;
     if (cat.parent_id && categoryMap.has(cat.parent_id)) {
       const parent = categoryMap.get(cat.parent_id)!;

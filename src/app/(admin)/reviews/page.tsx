@@ -71,7 +71,7 @@ export default function ReviewsPage() {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
   };
 
-  const handleFilterChange = (key: keyof ReviewFilters, value: string) => {
+  const handleFilterChange = (key: keyof ReviewFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,

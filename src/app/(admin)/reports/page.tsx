@@ -207,7 +207,7 @@ export default function ReportsPage() {
                           borderRadius: "8px",
                           color: "#fff",
                         }}
-                        formatter={(value: number) => [formatCurrency(value), "Revenue"]}
+                        formatter={(value) => [formatCurrency(Number(value) || 0), "Revenue"]}
                       />
                       <Line
                         type="monotone"
@@ -247,7 +247,7 @@ export default function ReportsPage() {
                           borderRadius: "8px",
                           color: "#fff",
                         }}
-                        formatter={(value: number) => [formatNumber(value), "Orders"]}
+                        formatter={(value) => [formatNumber(Number(value) || 0), "Orders"]}
                       />
                       <Bar
                         dataKey="orders"
@@ -271,7 +271,7 @@ export default function ReportsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={analytics.sales_by_category}
+                        data={analytics.sales_by_category as unknown as Record<string, unknown>[]}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -291,7 +291,7 @@ export default function ReportsPage() {
                           borderRadius: "8px",
                           color: "#fff",
                         }}
-                        formatter={(value: number) => formatCurrency(value)}
+                        formatter={(value) => formatCurrency(Number(value) || 0)}
                       />
                     </PieChart>
                   </ResponsiveContainer>

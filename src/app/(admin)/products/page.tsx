@@ -58,7 +58,7 @@ export default function AllProducts() {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
   };
 
-  const handleFilterChange = (key: keyof ProductFilters, value: string) => {
+  const handleFilterChange = (key: keyof ProductFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,
@@ -141,7 +141,7 @@ export default function AllProducts() {
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option value="">All Categories</option>
-                {categories?.map((cat) => (
+                {categories && categories?.length > 0 && categories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>

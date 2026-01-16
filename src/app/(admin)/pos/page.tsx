@@ -8,7 +8,7 @@ import {
   useCreatePOSCustomer,
   useCreatePOSOrder,
 } from "@/hooks/usePOS";
-import type { POSProduct, POSCartItem, OfflineOrderResponse } from "@/services/pos.service";
+import type { POSProduct, POSCartItem, OfflineOrderResponse, POSCustomer } from "@/services/pos.service";
 import { formatReceiptDate } from "@/services/pos.service";
 
 const formatCurrency = (amount: number): string => {
@@ -76,7 +76,7 @@ export default function POSPage() {
     }
   }, [variantProduct, selectedVariant, addToCart]);
 
-  const handleSelectCustomer = useCallback((customer: typeof customers extends (infer T)[] ? T : never) => {
+  const handleSelectCustomer = useCallback((customer: POSCustomer) => {
     setSelectedCustomer(customer);
     setCustomerSearch("");
   }, [setSelectedCustomer]);

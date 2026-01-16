@@ -53,7 +53,7 @@ export default function OrdersPage() {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
   };
 
-  const handleFilterChange = (key: keyof OrderFilters, value: string) => {
+  const handleFilterChange = (key: keyof OrderFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,

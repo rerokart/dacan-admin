@@ -58,7 +58,7 @@ export default function CouponsPage() {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
   };
 
-  const handleFilterChange = (key: keyof CouponFilters, value: string) => {
+  const handleFilterChange = (key: keyof CouponFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,
@@ -136,7 +136,7 @@ export default function CouponsPage() {
               <select
                 value={filters.status || ""}
                 onChange={(e) =>
-                  handleFilterChange("status", e.target.value as CouponFilters["status"])
+                  handleFilterChange("status", e.target.value || "")
                 }
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >

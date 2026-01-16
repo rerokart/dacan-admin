@@ -69,7 +69,7 @@ export default function InventoryPage() {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
   };
 
-  const handleFilterChange = (key: keyof StockFilters, value: string) => {
+  const handleFilterChange = (key: keyof StockFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,

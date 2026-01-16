@@ -54,6 +54,18 @@ export interface PaginatedResponse<T> {
   total_pages: number;
 }
 
+// API Response type
+interface UsersApiResponse {
+  users: User[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+  };
+  status: number;
+}
+
 // Service
 export const userService = {
   getUsers: async (filters?: UserFilters): Promise<PaginatedResponse<User>> => {
@@ -69,7 +81,14 @@ export const userService = {
     const url = queryString
       ? `${API_ROUTES.USERS.LIST}?${queryString}`
       : API_ROUTES.USERS.LIST;
-    return defaultAxios.get(url);
+    const response: UsersApiResponse = await defaultAxios.get(url);
+    return {
+      data: response.users || [],
+      total: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 10,
+      total_pages: response.pagination?.total_pages || 1,
+    };
   },
 
   getUserById: async (id: string | number): Promise<UserDetails> => {

@@ -54,7 +54,7 @@ export default function BannersPage() {
   const banners = bannersData?.data || [];
   const totalPages = bannersData?.total_pages || 1;
 
-  const handleFilterChange = (key: keyof BannerFilters, value: string) => {
+  const handleFilterChange = (key: keyof BannerFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value === "" ? undefined : value === "true",
