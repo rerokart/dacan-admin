@@ -1,0 +1,127 @@
+import { defaultAxios } from "@/utils/axios/default.axios";
+import { API_ROUTES } from "@/utils/axios/apiEndPoint";
+
+// Types
+export interface POSProduct {
+  id: string;
+  name: string;
+  sku: string;
+  price: number;
+  original_price?: number;
+  stock_quantity: number;
+  image_url?: string;
+  has_variants: boolean;
+  variants?: {
+    id: string;
+    variant_name: string;
+    variant_type: string;
+    sku: string;
+    price: number;
+    stock_quantity: number;
+  }[];
+}
+
+export interface POSCustomer {
+  id: string;
+  full_name: string;
+  mobile: string;
+  email?: string;
+  total_orders?: number;
+}
+
+export interface POSCartItem {
+  product_id: string;
+  variant_id?: string;
+  name: string;
+  variant_name?: string;
+  sku: string;
+  price: number;
+  quantity: number;
+  stock_quantity: number;
+  image_url?: string;
+}
+
+export interface CreateOfflineOrderRequest {
+  items: {
+    product_id: string;
+    variant_id?: string;
+    quantity: number;
+  }[];
+  customer_id?: string;
+  payment_method: "cash" | "card" | "upi";
+  amount_paid?: number;
+  notes?: string;
+}
+
+export interface OfflineOrderResponse {
+  id: string;
+  order_number: string;
+  items: {
+    name: string;
+    variant_name?: string;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+  }[];
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  payment_method: string;
+  amount_paid: number;
+  change_amount: number;
+  created_at: string;
+}
+
+// Service
+export const posService = {
+  searchProducts: async (query: string, limit?: number): Promise<POSProduct[]> => {
+    const params = new URLSearchParams();
+    params.append("q", query);
+    if (limit) params.append("limit", String(limit));
+    return defaultAxios.get(`${API_ROUTES.POS.PRODUCTS}?${params.toString()}`);
+  },
+
+  searchCustomers: async (phone: string): Promise<POSCustomer[]> => {
+    return defaultAxios.get(
+      `${API_ROUTES.POS.CUSTOMERS}?phone=${encodeURIComponent(phone)}`
+    );
+  },
+
+  createCustomer: async (data: {
+    full_name: string;
+    mobile: string;
+    email?: string;
+  }): Promise<POSCustomer> => {
+    return defaultAxios.post(API_ROUTES.POS.CREATE_CUSTOMER, data);
+  },
+
+  createOfflineOrder: async (
+    data: CreateOfflineOrderRequest
+  ): Promise<OfflineOrderResponse> => {
+    return defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
+  },
+};
+
+// Cart utilities
+export const calculateCartTotals = (items: POSCartItem[]) => {
+  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const taxRate = 0.18; // 18% GST
+  const tax = subtotal * taxRate;
+  const total = subtotal + tax;
+
+  return {
+    subtotal,
+    tax,
+    total,
+    itemCount: items.reduce((acc, item) => acc + item.quantity, 0),
+  };
+};
+
+export const formatReceiptDate = (date: Date = new Date()): string => {
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
+export default posService;

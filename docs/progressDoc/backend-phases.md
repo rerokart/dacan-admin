@@ -10,16 +10,16 @@
 ### Part A: Project Setup
 
 #### Flask Project Structure
-- [ ] Create Flask project
-- [ ] Setup virtual environment
-- [ ] Install dependencies:
-  - [ ] Flask
-  - [ ] Flask-CORS
-  - [ ] Flask-JWT-Extended
-  - [ ] Supabase Python client
-  - [ ] python-dotenv
-  - [ ] Werkzeug (password hashing)
-- [ ] Create folder structure:
+- [x] Create Flask project
+- [x] Setup virtual environment
+- [x] Install dependencies:
+  - [x] Flask
+  - [x] Flask-CORS
+  - [x] Flask-JWT-Extended
+  - [x] Supabase Python client
+  - [x] python-dotenv
+  - [x] Werkzeug (password hashing)
+- [x] Create folder structure:
   ```
   backend/
   ├── app/
@@ -36,13 +36,13 @@
   ```
 
 #### Supabase Setup
-- [ ] Create Supabase project
-- [ ] Configure connection in .env
-- [ ] Create Supabase client wrapper
-- [ ] Test database connection
+- [x] Create Supabase project
+- [x] Configure connection in .env
+- [x] Create Supabase client wrapper
+- [x] Test database connection
 
 #### Database Models - Users
-- [ ] Users table:
+- [x] Users table:
   ```sql
   - id (UUID, PK)
   - full_name (VARCHAR)
@@ -56,7 +56,7 @@
   ```
 
 #### Database Models - Admins
-- [ ] Admins table:
+- [x] Admins table:
   ```sql
   - id (UUID, PK)
   - full_name (VARCHAR)
@@ -68,61 +68,55 @@
   ```
 
 #### JWT Auth Setup
-- [ ] Configure JWT secret key
-- [ ] Setup access token (15 min expiry)
-- [ ] Setup refresh token (7 days expiry)
-- [ ] Create auth decorators:
-  - [ ] @jwt_required
-  - [ ] @admin_required
+- [x] Configure JWT secret key
+- [x] Setup access token (1 year expiry - no refresh needed)
+- [x] Create auth decorators:
+  - [x] @jwt_required
+  - [x] @admin_required
 
 ### Part B: Auth APIs
 
 #### User Auth Endpoints
-- [ ] POST /api/auth/register
-  - [ ] Validate input (email, mobile, password)
-  - [ ] Check email/mobile uniqueness
-  - [ ] Hash password
-  - [ ] Create user
-  - [ ] Return user data + tokens
+- [x] POST /api/auth/register
+  - [x] Validate input (email, mobile, password)
+  - [x] Check email/mobile uniqueness
+  - [x] Hash password
+  - [x] Create user
+  - [x] Return user data + tokens
 
-- [ ] POST /api/auth/login
-  - [ ] Validate credentials
-  - [ ] Check user is active
-  - [ ] Generate tokens
-  - [ ] Return user data + tokens
+- [x] POST /api/auth/login
+  - [x] Validate credentials
+  - [x] Check user is active
+  - [x] Generate tokens
+  - [x] Return user data + tokens
 
-- [ ] POST /api/auth/logout
-  - [ ] Invalidate token (optional: blacklist)
-  - [ ] Return success
+- [x] POST /api/auth/logout
+  - [x] Invalidate token (optional: blacklist)
+  - [x] Return success
 
-- [ ] POST /api/auth/forgot-password
-  - [ ] Validate email exists
-  - [ ] Generate reset token (6 digit OTP or link)
-  - [ ] Store reset token with expiry
-  - [ ] Return success (email will be sent in Phase 6)
+- [x] POST /api/auth/forgot-password
+  - [x] Validate email exists
+  - [x] Generate reset token (6 digit OTP or link)
+  - [x] Store reset token with expiry
+  - [x] Return success (email will be sent in Phase 6)
 
-- [ ] POST /api/auth/reset-password
-  - [ ] Validate reset token
-  - [ ] Update password
-  - [ ] Clear reset token
-  - [ ] Return success
+- [x] POST /api/auth/reset-password
+  - [x] Validate reset token
+  - [x] Update password
+  - [x] Clear reset token
+  - [x] Return success
 
-- [ ] GET /api/auth/me
-  - [ ] Return current user data
-
-- [ ] POST /api/auth/refresh-token
-  - [ ] Validate refresh token
-  - [ ] Generate new access token
-  - [ ] Return new tokens
+- [x] GET /api/auth/me
+  - [x] Return current user data
 
 #### Admin Auth Endpoints
-- [ ] POST /api/admin/auth/login
-  - [ ] Validate admin credentials
-  - [ ] Generate admin tokens
-  - [ ] Return admin data + tokens
+- [x] POST /api/admin/auth/login
+  - [x] Validate admin credentials
+  - [x] Generate admin tokens
+  - [x] Return admin data + tokens
 
 #### Seed Data
-- [ ] Create seed script for test admin user
+- [x] Create seed script for test admin user
 
 ---
 
@@ -131,7 +125,7 @@
 ### Part A: Database Models
 
 #### Categories Table
-- [ ] Categories table:
+- [x] Categories table:
   ```sql
   - id (UUID, PK)
   - name (VARCHAR)
@@ -146,7 +140,7 @@
   ```
 
 #### Products Table
-- [ ] Products table:
+- [x] Products table:
   ```sql
   - id (UUID, PK)
   - sku (VARCHAR, unique)
@@ -168,7 +162,7 @@
   ```
 
 #### Product Variants Table
-- [ ] Product_Variants table:
+- [x] Product_Variants table:
   ```sql
   - id (UUID, PK)
   - product_id (UUID, FK)
@@ -185,7 +179,7 @@
   ```
 
 #### Product Images Table
-- [ ] Product_Images table:
+- [x] Product_Images table:
   ```sql
   - id (UUID, PK)
   - product_id (UUID, FK)
@@ -198,92 +192,92 @@
 ### Part B: Product & Category APIs
 
 #### Public Category Endpoints
-- [ ] GET /api/categories
-  - [ ] Return all active categories
-  - [ ] Include product count
-  - [ ] Tree structure (parent-child)
+- [x] GET /api/categories
+  - [x] Return all active categories
+  - [x] Include product count
+  - [x] Tree structure (parent-child)
 
-- [ ] GET /api/categories/:id
-  - [ ] Return category details
+- [x] GET /api/categories/:id
+  - [x] Return category details
 
-- [ ] GET /api/categories/:id/products
-  - [ ] Return products in category
-  - [ ] Support pagination
+- [x] GET /api/categories/:id/products
+  - [x] Return products in category
+  - [x] Support pagination
 
 #### Public Product Endpoints
-- [ ] GET /api/products
-  - [ ] Query params:
-    - [ ] category_id
-    - [ ] search
-    - [ ] min_price, max_price
-    - [ ] min_rating
-    - [ ] in_stock (boolean)
-    - [ ] sort (price_asc, price_desc, newest, rating)
-    - [ ] page, limit
-  - [ ] Return products with pagination
-  - [ ] Include primary image, category name
+- [x] GET /api/products
+  - [x] Query params:
+    - [x] category_id
+    - [x] search
+    - [x] min_price, max_price
+    - [x] min_rating
+    - [x] in_stock (boolean)
+    - [x] sort (price_asc, price_desc, newest, rating)
+    - [x] page, limit
+  - [x] Return products with pagination
+  - [x] Include primary image, category name
 
-- [ ] GET /api/products/:id
-  - [ ] Return product with:
-    - [ ] All images
-    - [ ] All variants (if has_variants)
-    - [ ] Category info
+- [x] GET /api/products/:id
+  - [x] Return product with:
+    - [x] All images
+    - [x] All variants (if has_variants)
+    - [x] Category info
 
-- [ ] GET /api/products/:id/variants
-  - [ ] Return product variants
+- [x] GET /api/products/:id/variants
+  - [x] Return product variants
 
-- [ ] GET /api/products/search
-  - [ ] Search by name, SKU
-  - [ ] Return matching products
+- [x] GET /api/products/search
+  - [x] Search by name, SKU
+  - [x] Return matching products
 
-- [ ] GET /api/products/featured
-  - [ ] Return featured/promoted products
+- [x] GET /api/products/featured
+  - [x] Return featured/promoted products
 
-- [ ] GET /api/products/latest
-  - [ ] Return newest products
+- [x] GET /api/products/latest
+  - [x] Return newest products
 
 #### Admin Product Endpoints
-- [ ] POST /api/admin/products
-  - [ ] Create product with variants and images
-  - [ ] Validate required fields
-  - [ ] Generate SKU if not provided
+- [x] POST /api/admin/products
+  - [x] Create product with variants and images
+  - [x] Validate required fields
+  - [x] Generate SKU if not provided
 
-- [ ] PUT /api/admin/products/:id
-  - [ ] Update product details
+- [x] PUT /api/admin/products/:id
+  - [x] Update product details
 
-- [ ] DELETE /api/admin/products/:id
-  - [ ] Soft delete or hard delete
+- [x] DELETE /api/admin/products/:id
+  - [x] Soft delete or hard delete
 
-- [ ] POST /api/admin/products/:id/images
-  - [ ] Upload product images to Supabase Storage
-  - [ ] Return image URLs
+- [x] POST /api/admin/products/:id/images
+  - [x] Upload product images to Supabase Storage
+  - [x] Return image URLs
 
-- [ ] DELETE /api/admin/products/:id/images/:imageId
-  - [ ] Delete product image
+- [x] DELETE /api/admin/products/:id/images/:imageId
+  - [x] Delete product image
 
-- [ ] POST /api/admin/products/:id/variants
-  - [ ] Add variant to product
+- [x] POST /api/admin/products/:id/variants
+  - [x] Add variant to product
 
-- [ ] PUT /api/admin/products/:id/variants/:variantId
-  - [ ] Update variant
+- [x] PUT /api/admin/products/:id/variants/:variantId
+  - [x] Update variant
 
-- [ ] DELETE /api/admin/products/:id/variants/:variantId
-  - [ ] Delete variant
+- [x] DELETE /api/admin/products/:id/variants/:variantId
+  - [x] Delete variant
 
 #### Admin Category Endpoints
-- [ ] POST /api/admin/categories
-  - [ ] Create category
+- [x] POST /api/admin/categories
+  - [x] Create category
 
-- [ ] PUT /api/admin/categories/:id
-  - [ ] Update category
+- [x] PUT /api/admin/categories/:id
+  - [x] Update category
 
-- [ ] DELETE /api/admin/categories/:id
-  - [ ] Delete category (check no products)
+- [x] DELETE /api/admin/categories/:id
+  - [x] Delete category (check no products)
 
 #### Seed Data
-- [ ] Create seed script for:
-  - [ ] Sample categories
-  - [ ] Sample products with variants
+- [x] Create seed script for:
+  - [x] Sample categories
+  - [x] Sample products with variants
 
 ---
 
@@ -292,7 +286,7 @@
 ### Part A: Database Models
 
 #### Cart Items Table
-- [ ] Cart_Items table:
+- [x] Cart_Items table:
   ```sql
   - id (UUID, PK)
   - user_id (UUID, FK)
@@ -304,7 +298,7 @@
   ```
 
 #### Wishlist Table
-- [ ] Wishlist table:
+- [x] Wishlist table:
   ```sql
   - id (UUID, PK)
   - user_id (UUID, FK)
@@ -313,7 +307,7 @@
   ```
 
 #### Addresses Table
-- [ ] Addresses table:
+- [x] Addresses table:
   ```sql
   - id (UUID, PK)
   - user_id (UUID, FK)
@@ -331,7 +325,7 @@
   ```
 
 #### Coupons Table
-- [ ] Coupons table:
+- [x] Coupons table:
   ```sql
   - id (UUID, PK)
   - code (VARCHAR, unique)
@@ -350,7 +344,7 @@
   ```
 
 #### Orders Table
-- [ ] Orders table:
+- [x] Orders table:
   ```sql
   - id (UUID, PK)
   - order_number (VARCHAR, unique)
@@ -374,7 +368,7 @@
   ```
 
 #### Order Items Table
-- [ ] Order_Items table:
+- [x] Order_Items table:
   ```sql
   - id (UUID, PK)
   - order_id (UUID, FK)
@@ -389,7 +383,7 @@
   ```
 
 #### Order Status History Table
-- [ ] Order_Status_History table:
+- [x] Order_Status_History table:
   ```sql
   - id (UUID, PK)
   - order_id (UUID, FK)
@@ -402,82 +396,82 @@
 ### Part B: Cart, Wishlist, Order APIs
 
 #### Cart Endpoints
-- [ ] GET /api/cart
-  - [ ] Return user's cart items with product details
+- [x] GET /api/cart
+  - [x] Return user's cart items with product details
 
-- [ ] POST /api/cart/add
-  - [ ] Add item to cart
-  - [ ] If exists, update quantity
+- [x] POST /api/cart/add
+  - [x] Add item to cart
+  - [x] If exists, update quantity
 
-- [ ] PUT /api/cart/update/:id
-  - [ ] Update cart item quantity
+- [x] PUT /api/cart/update/:id
+  - [x] Update cart item quantity
 
-- [ ] DELETE /api/cart/remove/:id
-  - [ ] Remove item from cart
+- [x] DELETE /api/cart/remove/:id
+  - [x] Remove item from cart
 
-- [ ] DELETE /api/cart/clear
-  - [ ] Clear entire cart
+- [x] DELETE /api/cart/clear
+  - [x] Clear entire cart
 
-- [ ] POST /api/cart/sync
-  - [ ] Sync local cart with server (on login)
+- [x] POST /api/cart/sync
+  - [x] Sync local cart with server (on login)
 
 #### Wishlist Endpoints
-- [ ] GET /api/wishlist
-  - [ ] Return user's wishlist
+- [x] GET /api/wishlist
+  - [x] Return user's wishlist
 
-- [ ] POST /api/wishlist/add
-  - [ ] Add product to wishlist
+- [x] POST /api/wishlist/add
+  - [x] Add product to wishlist
 
-- [ ] DELETE /api/wishlist/remove/:id
-  - [ ] Remove from wishlist
+- [x] DELETE /api/wishlist/remove/:id
+  - [x] Remove from wishlist
 
-- [ ] DELETE /api/wishlist/clear
-  - [ ] Clear wishlist
+- [x] DELETE /api/wishlist/clear
+  - [x] Clear wishlist
 
 #### Address Endpoints
-- [ ] GET /api/users/addresses
-  - [ ] Return user's addresses
+- [x] GET /api/users/addresses
+  - [x] Return user's addresses
 
-- [ ] POST /api/users/addresses
-  - [ ] Add new address
+- [x] POST /api/users/addresses
+  - [x] Add new address
 
-- [ ] PUT /api/users/addresses/:id
-  - [ ] Update address
+- [x] PUT /api/users/addresses/:id
+  - [x] Update address
 
-- [ ] DELETE /api/users/addresses/:id
-  - [ ] Delete address
+- [x] DELETE /api/users/addresses/:id
+  - [x] Delete address
 
-- [ ] PUT /api/users/addresses/:id/default
-  - [ ] Set as default address
+- [x] PUT /api/users/addresses/:id/default
+  - [x] Set as default address
 
 #### Coupon Endpoints
-- [ ] POST /api/coupons/validate
-  - [ ] Validate coupon code
-  - [ ] Check min order value
-  - [ ] Check usage limits
-  - [ ] Return discount details
+- [x] POST /api/coupons/validate
+  - [x] Validate coupon code
+  - [x] Check min order value
+  - [x] Check usage limits
+  - [x] Return discount details
 
 #### Order Endpoints (User)
-- [ ] POST /api/orders/create
-  - [ ] Validate cart items
-  - [ ] Validate address
-  - [ ] Apply coupon (if any)
-  - [ ] Calculate totals (subtotal, delivery, GST, total)
-  - [ ] Create order
-  - [ ] Create order items
-  - [ ] Update stock
-  - [ ] Clear cart
-  - [ ] Create status history
-  - [ ] Return order details
+- [x] POST /api/orders/create
+  - [x] Validate cart items
+  - [x] Validate address
+  - [x] Apply coupon (if any)
+  - [x] Calculate totals (subtotal, delivery, GST, total)
+  - [x] Create order
+  - [x] Create order items
+  - [x] Update stock
+  - [x] Clear cart
+  - [x] Create status history
+  - [x] Return order details
 
 #### Admin Coupon Endpoints
-- [ ] GET /api/admin/coupons
-- [ ] POST /api/admin/coupons
-- [ ] PUT /api/admin/coupons/:id
-- [ ] DELETE /api/admin/coupons/:id
+- [x] GET /api/admin/coupons
+- [x] POST /api/admin/coupons
+- [x] PUT /api/admin/coupons/:id
+- [x] DELETE /api/admin/coupons/:id
 
 #### Seed Data
-- [ ] Sample coupons
+- [x] Sample coupons
 
 ---
 
@@ -486,33 +480,33 @@
 ### Part A: Order Status & History
 
 #### Order Status Flow
-- [ ] Define status transitions:
+- [x] Define status transitions:
   ```
   placed → confirmed → shipped → out_for_delivery → delivered
   placed → cancelled
   confirmed → cancelled
   ```
-- [ ] Validate status transitions
+- [x] Validate status transitions
 
 #### Update Stock on Order
-- [ ] Decrease stock on order creation
-- [ ] Increase stock on cancellation
+- [x] Decrease stock on order creation
+- [x] Increase stock on cancellation
 
 ### Part B: Order & User APIs
 
 #### Order Endpoints (User)
-- [ ] GET /api/orders
-  - [ ] Return user's orders with filters
-  - [ ] Include order items summary
+- [x] GET /api/orders
+  - [x] Return user's orders with filters
+  - [x] Include order items summary
 
-- [ ] GET /api/orders/:id
-  - [ ] Return order details with items
+- [x] GET /api/orders/:id
+  - [x] Return order details with items
 
-- [ ] POST /api/orders/:id/cancel
-  - [ ] Validate order can be cancelled
-  - [ ] Update status
-  - [ ] Restore stock
-  - [ ] Return updated order
+- [x] POST /api/orders/:id/cancel
+  - [x] Validate order can be cancelled
+  - [x] Update status
+  - [x] Restore stock
+  - [x] Return updated order
 
 #### Profile Endpoints
 - [ ] GET /api/users/profile
@@ -529,17 +523,17 @@
   - [ ] Update password
 
 #### Admin Order Endpoints
-- [ ] GET /api/admin/orders
-  - [ ] Return all orders with filters
-  - [ ] Include customer info
+- [x] GET /api/admin/orders
+  - [x] Return all orders with filters
+  - [x] Include customer info
 
-- [ ] GET /api/admin/orders/:id
-  - [ ] Return order details
+- [x] GET /api/admin/orders/:id
+  - [x] Return order details
 
-- [ ] PUT /api/admin/orders/:id/status
-  - [ ] Update order status
-  - [ ] Create status history record
-  - [ ] Validate status transition
+- [x] PUT /api/admin/orders/:id/status
+  - [x] Update order status
+  - [x] Create status history record
+  - [x] Validate status transition
 
 #### Admin User Endpoints
 - [ ] GET /api/admin/users
@@ -734,19 +728,19 @@
 ## Configuration Constants
 
 ### Tax
-- [ ] GST_RATE = 0.18 (18%)
+- [x] GST_RATE = 0.18 (18%)
 
 ### Shipping
-- [ ] FIXED_DELIVERY_CHARGE = 50 (or configurable)
-- [ ] FREE_DELIVERY_THRESHOLD = 500 (optional)
+- [x] FIXED_DELIVERY_CHARGE = 50 (or configurable)
+- [x] FREE_DELIVERY_THRESHOLD = 500 (optional)
 
 ### Order Status
-- [ ] STATUS_PLACED = 'placed'
-- [ ] STATUS_CONFIRMED = 'confirmed'
-- [ ] STATUS_SHIPPED = 'shipped'
-- [ ] STATUS_OUT_FOR_DELIVERY = 'out_for_delivery'
-- [ ] STATUS_DELIVERED = 'delivered'
-- [ ] STATUS_CANCELLED = 'cancelled'
+- [x] STATUS_PLACED = 'placed'
+- [x] STATUS_CONFIRMED = 'confirmed'
+- [x] STATUS_SHIPPED = 'shipped'
+- [x] STATUS_OUT_FOR_DELIVERY = 'out_for_delivery'
+- [x] STATUS_DELIVERED = 'delivered'
+- [x] STATUS_CANCELLED = 'cancelled'
 
 ---
 
@@ -773,9 +767,11 @@
 
 | Phase | Part A | Part B | Status |
 |-------|--------|--------|--------|
-| 1 | [ ] | [ ] | Not Started |
-| 2 | [ ] | [ ] | Not Started |
-| 3 | [ ] | [ ] | Not Started |
-| 4 | [ ] | [ ] | Not Started |
+| 1 | [x] | [x] | Completed |
+| 2 | [x] | [x] | Completed |
+| 3 | [x] | [x] | Completed |
+| 4 | [x] | [~] | 60% (Orders done, Profile & User Management pending) |
 | 5 | [ ] | [ ] | Not Started |
 | 6 | [ ] | [ ] | Not Started |
+
+**Legend:** [x] = Complete, [~] = Partial, [ ] = Not Started
