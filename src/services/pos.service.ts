@@ -72,19 +72,42 @@ export interface OfflineOrderResponse {
   created_at: string;
 }
 
+// API Response types
+interface ProductsApiResponse {
+  status: number;
+  products: POSProduct[];
+}
+
+interface CustomersApiResponse {
+  status: number;
+  customers: POSCustomer[];
+}
+
+interface CustomerApiResponse {
+  status: number;
+  customer: POSCustomer;
+}
+
+interface OrderApiResponse {
+  status: number;
+  order: OfflineOrderResponse;
+}
+
 // Service
 export const posService = {
   searchProducts: async (query: string, limit?: number): Promise<POSProduct[]> => {
     const params = new URLSearchParams();
     params.append("q", query);
     if (limit) params.append("limit", String(limit));
-    return defaultAxios.get(`${API_ROUTES.POS.PRODUCTS}?${params.toString()}`);
+    const response: ProductsApiResponse = await defaultAxios.get(`${API_ROUTES.POS.PRODUCTS}?${params.toString()}`);
+    return response.products || [];
   },
 
   searchCustomers: async (phone: string): Promise<POSCustomer[]> => {
-    return defaultAxios.get(
+    const response: CustomersApiResponse = await defaultAxios.get(
       `${API_ROUTES.POS.CUSTOMERS}?phone=${encodeURIComponent(phone)}`
     );
+    return response.customers || [];
   },
 
   createCustomer: async (data: {
@@ -92,13 +115,15 @@ export const posService = {
     mobile: string;
     email?: string;
   }): Promise<POSCustomer> => {
-    return defaultAxios.post(API_ROUTES.POS.CREATE_CUSTOMER, data);
+    const response: CustomerApiResponse = await defaultAxios.post(API_ROUTES.POS.CREATE_CUSTOMER, data);
+    return response.customer;
   },
 
   createOfflineOrder: async (
     data: CreateOfflineOrderRequest
   ): Promise<OfflineOrderResponse> => {
-    return defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
+    const response: OrderApiResponse = await defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
+    return response.order;
   },
 };
 
