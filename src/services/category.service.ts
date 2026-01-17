@@ -70,7 +70,11 @@ export const categoryService = {
   },
 
   getCategoryById: async (id: string | number): Promise<Category> => {
-    return defaultAxios.get(API_ROUTES.CATEGORIES.GET(id));
+    const response: { category: Category; status: number } = await defaultAxios.get(API_ROUTES.CATEGORIES.GET(id));
+    if (!response.category) {
+      throw new Error("Category not found");
+    }
+    return response.category;
   },
 
   createCategory: async (data: CreateCategoryRequest): Promise<Category> => {

@@ -7,7 +7,7 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
-import { useCategories, useCreateCategory } from "@/hooks/useCategories";
+import { useCategories, useCreateCategory, useUploadCategoryImage } from "@/hooks/useCategories";
 
 const generateSlug = (name: string): string => {
   return name
@@ -32,13 +32,17 @@ export default function AddCategoryPage() {
 
   const { data: categories } = useCategories();
   const { mutate: createCategory, isPending } = useCreateCategory();
+  const { mutateAsync: uploadImage, isPending: isUploading } = useUploadCategoryImage();
 
+  // Only allow root categories as parents (one level nesting only)
   const parentOptions = [
     { value: "", label: "None (Root Category)" },
-    ...(categories?.map((cat) => ({
-      value: cat.id,
-      label: cat.name,
-    })) || []),
+    ...(categories
+      ?.filter((cat) => !cat.parent_id) // Only root categories can be parents
+      .map((cat) => ({
+        value: cat.id,
+        label: cat.name,
+      })) || []),
   ];
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,8 +71,20 @@ export default function AddCategoryPage() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    let image_url: string | undefined;
+
+    // Upload image first if selected
+    if (imageFile) {
+      try {
+        const uploadResult = await uploadImage(imageFile);
+        image_url = uploadResult.image_url;
+      } catch {
+        return; // Error toast shown by hook
+      }
+    }
 
     const data = {
       name: formData.name,
@@ -77,6 +93,7 @@ export default function AddCategoryPage() {
       parent_id: formData.parent_id || undefined,
       display_order: formData.display_order,
       is_active: formData.is_active,
+      image_url,
     };
 
     createCategory(data, {
@@ -242,10 +259,10 @@ export default function AddCategoryPage() {
               </button>
               <button
                 type="submit"
-                disabled={isPending || !formData.name}
+                disabled={isPending || isUploading || !formData.name}
                 className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
               >
-                {isPending ? "Creating..." : "Save Category"}
+                {isUploading ? "Uploading..." : isPending ? "Creating..." : "Save Category"}
               </button>
             </div>
           </form>

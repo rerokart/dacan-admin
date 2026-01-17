@@ -1,7 +1,7 @@
 "use client";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -11,53 +11,45 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
-import { useCategories, useDeleteCategory, buildCategoryTree } from "@/hooks/useCategories";
+import { useCategories, useDeleteCategory } from "@/hooks/useCategories";
 import type { Category } from "@/services/category.service";
 
 export default function CategoriesPage() {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  // Track collapsed IDs (categories are expanded by default)
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
 
-  const { data: categories, isLoading, error } = useCategories();
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Pass debounced search to API
+  const { data: categories, isLoading, error } = useCategories(
+    debouncedSearch ? { search: debouncedSearch } : undefined
+  );
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
 
-  const categoryTree = useMemo(() => {
+  // API already returns tree structure with children populated
+  // Only show root categories (parent_id is null)
+  const filteredCategories = useMemo(() => {
     if (!categories) return [];
-    return buildCategoryTree(categories);
+    return categories.filter((cat) => !cat.parent_id);
   }, [categories]);
 
-  const filteredCategories = useMemo(() => {
-    if (!search.trim()) return categoryTree;
-
-    const searchLower = search.toLowerCase();
-    const filterRecursive = (cats: Category[]): Category[] => {
-      return cats.reduce<Category[]>((acc, cat) => {
-        const matches = cat.name.toLowerCase().includes(searchLower) ||
-          cat.slug.toLowerCase().includes(searchLower);
-
-        if (matches) {
-          acc.push(cat);
-        } else if (cat.children?.length) {
-          const filteredChildren = filterRecursive(cat.children);
-          if (filteredChildren.length > 0) {
-            acc.push({ ...cat, children: filteredChildren });
-          }
-        }
-        return acc;
-      }, []);
-    };
-
-    return filterRecursive(categoryTree);
-  }, [categoryTree, search]);
-
   const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
+    setCollapsedIds((prev: Set<string>) => {
       const next = new Set(prev);
       if (next.has(id)) {
-        next.delete(id);
+        next.delete(id); // Expand (remove from collapsed)
       } else {
-        next.add(id);
+        next.add(id); // Collapse (add to collapsed)
       }
       return next;
     });
@@ -73,7 +65,7 @@ export default function CategoriesPage() {
 
   const renderCategoryRow = (category: Category, depth: number = 0) => {
     const hasChildren = category.children && category.children.length > 0;
-    const isExpanded = expandedIds.has(category.id);
+    const isExpanded = collapsedIds.has(category.id);
 
     return (
       <React.Fragment key={category.id}>
@@ -221,8 +213,8 @@ export default function CategoriesPage() {
               <input
                 type="text"
                 placeholder="Search categories..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               />
             </div>
@@ -240,7 +232,7 @@ export default function CategoriesPage() {
               </div>
             ) : filteredCategories.length === 0 ? (
               <div className="py-12 text-center text-gray-500">
-                {search ? "No categories match your search." : "No categories found."}
+                {debouncedSearch ? "No categories match your search." : "No categories found."}
               </div>
             ) : (
               <Table>

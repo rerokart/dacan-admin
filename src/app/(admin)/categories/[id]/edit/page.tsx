@@ -7,7 +7,7 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
-import { useCategory, useCategories, useUpdateCategory } from "@/hooks/useCategories";
+import { useCategory, useCategories, useUpdateCategory, useUploadCategoryImage } from "@/hooks/useCategories";
 
 const generateSlug = (name: string): string => {
   return name
@@ -29,12 +29,14 @@ export default function EditCategoryPage() {
     display_order: 0,
     is_active: true,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [autoSlug, setAutoSlug] = useState(false);
 
   const { data: category, isLoading: loadingCategory } = useCategory(categoryId);
   const { data: categories } = useCategories();
   const { mutate: updateCategory, isPending } = useUpdateCategory();
+  const { mutateAsync: uploadImage, isPending: isUploading } = useUploadCategoryImage();
 
   // Initialize form with existing data
   useEffect(() => {
@@ -53,11 +55,12 @@ export default function EditCategoryPage() {
     }
   }, [category]);
 
-  // Filter out current category and its children from parent options
+  // Only allow root categories as parents (one level nesting only)
+  // Also exclude current category from options
   const parentOptions = [
     { value: "", label: "None (Root Category)" },
     ...(categories
-      ?.filter((cat) => cat.id !== categoryId)
+      ?.filter((cat) => !cat.parent_id && cat.id !== categoryId) // Only root categories, exclude self
       .map((cat) => ({
         value: cat.id,
         label: cat.name,
@@ -81,6 +84,7 @@ export default function EditCategoryPage() {
   const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -89,8 +93,20 @@ export default function EditCategoryPage() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    let image_url: string | undefined;
+
+    // Upload new image if selected
+    if (imageFile) {
+      try {
+        const uploadResult = await uploadImage(imageFile);
+        image_url = uploadResult.image_url;
+      } catch {
+        return; // Error toast shown by hook
+      }
+    }
 
     const data = {
       name: formData.name,
@@ -99,6 +115,7 @@ export default function EditCategoryPage() {
       parent_id: formData.parent_id || undefined,
       display_order: formData.display_order,
       is_active: formData.is_active,
+      ...(image_url && { image_url }),
     };
 
     updateCategory(
@@ -233,7 +250,10 @@ export default function EditCategoryPage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setImagePreview(null)}
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
                         className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,10 +306,10 @@ export default function EditCategoryPage() {
               </button>
               <button
                 type="submit"
-                disabled={isPending || !formData.name}
+                disabled={isPending || isUploading || !formData.name}
                 className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
               >
-                {isPending ? "Updating..." : "Update Category"}
+                {isUploading ? "Uploading..." : isPending ? "Updating..." : "Update Category"}
               </button>
             </div>
           </form>

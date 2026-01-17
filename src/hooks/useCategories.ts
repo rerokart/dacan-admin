@@ -96,6 +96,22 @@ export const useDeleteCategory = () => {
   });
 };
 
+// Upload Category Image
+export const useUploadCategoryImage = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return categoryService.uploadCategoryImage(formData);
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to upload image");
+    },
+  });
+};
+
 // Helper to build category tree
 export const buildCategoryTree = (categories: Category[]): Category[] => {
   const categoryMap = new Map<string, Category>();
