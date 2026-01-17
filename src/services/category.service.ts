@@ -108,9 +108,8 @@ export const categoryService = {
   },
 
   uploadCategoryImage: async (file: FormData): Promise<{ image_url: string }> => {
-    return defaultAxios.post("categories/upload-image", file, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    // Don't set Content-Type header manually - axios will set it with the correct boundary
+    return defaultAxios.post("categories/upload-image", file);
   },
 };
 

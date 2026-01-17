@@ -45,6 +45,30 @@ export interface ReorderRequest {
   banners: { id: string; display_order: number }[];
 }
 
+// API Response types
+interface BannersApiResponse {
+  status: number;
+  banners: Banner[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}
+
+interface BannerApiResponse {
+  status: number;
+  banner: Banner;
+}
+
+interface ImageUploadResponse {
+  status: number;
+  image_url: string;
+}
+
 // Service
 export const bannerService = {
   getBanners: async (
@@ -62,26 +86,37 @@ export const bannerService = {
     const url = queryString
       ? `${API_ROUTES.BANNERS.LIST}?${queryString}`
       : API_ROUTES.BANNERS.LIST;
-    return defaultAxios.get(url);
+    const response: BannersApiResponse = await defaultAxios.get(url);
+    return {
+      data: response.banners || [],
+      total: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 10,
+      total_pages: response.pagination?.total_pages || 1,
+    };
   },
 
   getActiveBanners: async (): Promise<Banner[]> => {
-    return defaultAxios.get(`${API_ROUTES.BANNERS.LIST}?is_active=true`);
+    const response: BannersApiResponse = await defaultAxios.get(`${API_ROUTES.BANNERS.LIST}?is_active=true`);
+    return response.banners || [];
   },
 
   getBannerById: async (id: string | number): Promise<Banner> => {
-    return defaultAxios.get(API_ROUTES.BANNERS.GET(id));
+    const response: BannerApiResponse = await defaultAxios.get(API_ROUTES.BANNERS.GET(id));
+    return response.banner;
   },
 
   createBanner: async (data: CreateBannerRequest): Promise<Banner> => {
-    return defaultAxios.post(API_ROUTES.BANNERS.CREATE, data);
+    const response: BannerApiResponse = await defaultAxios.post(API_ROUTES.BANNERS.CREATE, data);
+    return response.banner;
   },
 
   updateBanner: async (
     id: string | number,
     data: Partial<CreateBannerRequest>
   ): Promise<Banner> => {
-    return defaultAxios.put(API_ROUTES.BANNERS.UPDATE(id), data);
+    const response: BannerApiResponse = await defaultAxios.put(API_ROUTES.BANNERS.UPDATE(id), data);
+    return response.banner;
   },
 
   deleteBanner: async (id: string | number): Promise<void> => {
@@ -93,9 +128,8 @@ export const bannerService = {
   },
 
   uploadBannerImage: async (file: FormData): Promise<{ image_url: string }> => {
-    return defaultAxios.post("banners/upload-image", file, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response: ImageUploadResponse = await defaultAxios.post("banners/upload-image", file);
+    return { image_url: response.image_url };
   },
 };
 

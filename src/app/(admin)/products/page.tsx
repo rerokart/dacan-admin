@@ -1,7 +1,7 @@
 "use client";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
+import Select from "@/components/form/Select";
 import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import type { ProductFilters } from "@/services/product.service";
@@ -39,30 +40,85 @@ const getStatusBadge = (stockQty: number, threshold: number) => {
 };
 
 export default function AllProducts() {
-  const [filters, setFilters] = useState<ProductFilters>({
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filters, setFilters] = useState<Omit<ProductFilters, "search">>({
     page: 1,
     limit: 10,
   });
-  const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: productsData, isLoading, error } = useProducts(filters);
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Combine debounced search with other filters for API call
+  const apiFilters: ProductFilters = useMemo(() => ({
+    ...filters,
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+  }), [filters, debouncedSearch]);
+
+  const { data: productsData, isLoading, error } = useProducts(apiFilters);
   const { data: categories } = useCategories();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   const products = productsData?.data || [];
-  const totalPages = productsData?.total_pages || 1;
+  const totalPages = productsData?.pagination?.total_pages || 1;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFilters((prev) => ({ ...prev, search, page: 1 }));
-  };
+  // Build category options from API - flatten the tree for dropdown
+  const categoryOptions = useMemo(() => {
+    if (!categories) return [{ value: "", label: "All Categories" }];
+    const options: { value: string; label: string }[] = [{ value: "", label: "All Categories" }];
 
-  const handleFilterChange = (key: keyof ProductFilters, value: string | undefined) => {
+    const flattenCategories = (cats: typeof categories, prefix = "") => {
+      cats.forEach((cat) => {
+        options.push({
+          value: cat.id,
+          label: prefix ? `${prefix} > ${cat.name}` : cat.name,
+        });
+        if (cat.children?.length) {
+          flattenCategories(cat.children, cat.name);
+        }
+      });
+    };
+
+    // Only process root categories (parent_id is null)
+    flattenCategories(categories.filter(cat => !cat.parent_id));
+    return options;
+  }, [categories]);
+
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "true", label: "Active" },
+    { value: "false", label: "Inactive" },
+  ];
+
+  const stockOptions = [
+    { value: "", label: "All Stock" },
+    { value: "true", label: "In Stock" },
+    { value: "false", label: "Out of Stock" },
+  ];
+
+  const sortOptions = [
+    { value: "", label: "Sort By" },
+    { value: "newest", label: "Newest First" },
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
+    { value: "name_asc", label: "Name: A to Z" },
+    { value: "name_desc", label: "Name: Z to A" },
+    { value: "rating", label: "Top Rated" },
+  ];
+
+  const handleFilterChange = (key: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,
-      page: 1,
+      page: 1, // Reset to first page when filters change
     }));
   };
 
@@ -109,15 +165,8 @@ export default function AllProducts() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
-              <form onSubmit={handleSearch} className="flex-1">
+              <div className="flex-1">
                 <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pl-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                  />
                   <svg
                     className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
                     fill="none"
@@ -131,69 +180,51 @@ export default function AllProducts() {
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pl-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  />
                 </div>
-              </form>
+              </div>
 
               {/* Category Filter */}
-              <select
-                value={filters.category_id || ""}
-                onChange={(e) => handleFilterChange("category_id", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Categories</option>
-                {categories && categories?.length > 0 && categories?.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <div className="min-w-[180px]">
+                <Select
+                  options={categoryOptions}
+                  defaultValue={filters.category_id || ""}
+                  onChange={(val) => handleFilterChange("category_id", val)}
+                />
+              </div>
 
               {/* Status Filter */}
-              <select
-                value={filters.is_active === undefined ? "" : String(filters.is_active)}
-                onChange={(e) =>
-                  handleFilterChange(
-                    "is_active",
-                    e.target.value === "" ? "" : e.target.value
-                  )
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Status</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+              <div className="min-w-[140px]">
+                <Select
+                  options={statusOptions}
+                  defaultValue={filters.is_active === undefined ? "" : String(filters.is_active)}
+                  onChange={(val) => handleFilterChange("is_active", val)}
+                />
+              </div>
 
               {/* Stock Filter */}
-              <select
-                value={filters.in_stock === undefined ? "" : String(filters.in_stock)}
-                onChange={(e) =>
-                  handleFilterChange(
-                    "in_stock",
-                    e.target.value === "" ? "" : e.target.value
-                  )
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Stock</option>
-                <option value="true">In Stock</option>
-                <option value="false">Out of Stock</option>
-              </select>
+              <div className="min-w-[140px]">
+                <Select
+                  options={stockOptions}
+                  defaultValue={filters.in_stock === undefined ? "" : String(filters.in_stock)}
+                  onChange={(val) => handleFilterChange("in_stock", val)}
+                />
+              </div>
 
               {/* Sort */}
-              <select
-                value={filters.sort || ""}
-                onChange={(e) =>
-                  handleFilterChange("sort", e.target.value as ProductFilters["sort"])
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">Sort By</option>
-                <option value="newest">Newest First</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-              </select>
+              <div className="min-w-[180px]">
+                <Select
+                  options={sortOptions}
+                  defaultValue={filters.sort || ""}
+                  onChange={(val) => handleFilterChange("sort", val)}
+                />
+              </div>
             </div>
           </div>
 
@@ -209,7 +240,7 @@ export default function AllProducts() {
               </div>
             ) : products.length === 0 ? (
               <div className="py-12 text-center text-gray-500">
-                No products found.
+                {debouncedSearch ? "No products match your search." : "No products found."}
               </div>
             ) : (
               <Table>
@@ -300,7 +331,7 @@ export default function AllProducts() {
                         {product.sku}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-gray-600 dark:text-gray-400">
-                        {product.category_name || "-"}
+                        {product.category?.name || product.category_name || "-"}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
                         ₹{product.base_price.toLocaleString()}

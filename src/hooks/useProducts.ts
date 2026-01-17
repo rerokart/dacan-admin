@@ -8,6 +8,7 @@ import {
   type CreateProductRequest,
   type ProductVariant,
   type CreateVariantRequest,
+  type AddImageRequest,
 } from "@/services/product.service";
 import { useToast } from "@/components/ui/toast";
 
@@ -240,6 +241,42 @@ export const useDeleteProductImage = () => {
     },
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to delete image");
+    },
+  });
+};
+
+// Upload Product Image (standalone - returns image_url)
+export const useUploadProductImage = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (file: FormData) => productService.uploadImage(file),
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to upload image");
+    },
+  });
+};
+
+// Add Image URL to Product
+export const useAddProductImage = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      productId,
+      data,
+    }: {
+      productId: string | number;
+      data: AddImageRequest;
+    }) => productService.addProductImage(productId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: productKeys.detail(variables.productId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to add image to product");
     },
   });
 };

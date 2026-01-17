@@ -31,14 +31,21 @@ export interface Product {
   description: string;
   category_id: string;
   category_name?: string;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   base_price: number;
   original_price?: number;
   has_variants: boolean;
   stock_quantity: number;
   low_stock_threshold: number;
   is_active: boolean;
+  is_featured?: boolean;
   average_rating: number;
   total_reviews: number;
+  view_count?: number;
   created_at: string;
   updated_at: string;
   images?: ProductImage[];
@@ -54,17 +61,21 @@ export interface ProductFilters {
   min_rating?: number;
   in_stock?: boolean;
   is_active?: boolean;
-  sort?: "price_asc" | "price_desc" | "newest" | "rating";
+  sort?: "newest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "rating";
   page?: number;
   limit?: number;
 }
 
 export interface PaginatedResponse<T> {
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
 }
 
 export interface CreateProductRequest {
@@ -92,6 +103,12 @@ export interface CreateVariantRequest {
   is_active?: boolean;
 }
 
+export interface AddImageRequest {
+  image_url: string;
+  is_primary?: boolean;
+  display_order?: number;
+}
+
 // Service
 export const productService = {
   getProducts: async (
@@ -109,18 +126,21 @@ export const productService = {
   },
 
   getProductById: async (id: string | number): Promise<Product> => {
-    return defaultAxios.get(API_ROUTES.PRODUCTS.GET(id));
+    const response: { product: Product; status: number } = await defaultAxios.get(API_ROUTES.PRODUCTS.GET(id));
+    return response.product;
   },
 
   createProduct: async (data: CreateProductRequest): Promise<Product> => {
-    return defaultAxios.post(API_ROUTES.PRODUCTS.CREATE, data);
+    const response: { product: Product; status: number } = await defaultAxios.post(API_ROUTES.PRODUCTS.CREATE, data);
+    return response.product;
   },
 
   updateProduct: async (
     id: string | number,
     data: Partial<CreateProductRequest>
   ): Promise<Product> => {
-    return defaultAxios.put(API_ROUTES.PRODUCTS.UPDATE(id), data);
+    const response: { product: Product; status: number } = await defaultAxios.put(API_ROUTES.PRODUCTS.UPDATE(id), data);
+    return response.product;
   },
 
   deleteProduct: async (id: string | number): Promise<void> => {
@@ -129,14 +149,21 @@ export const productService = {
 
   // Variants
   getVariants: async (productId: string | number): Promise<ProductVariant[]> => {
-    return defaultAxios.get(API_ROUTES.PRODUCTS.VARIANTS(productId));
+    const response: { variants: ProductVariant[]; status: number } = await defaultAxios.get(
+      API_ROUTES.PRODUCTS.VARIANTS(productId)
+    );
+    return response.variants || [];
   },
 
   addVariant: async (
     productId: string | number,
     data: CreateVariantRequest
   ): Promise<ProductVariant> => {
-    return defaultAxios.post(API_ROUTES.PRODUCTS.VARIANTS(productId), data);
+    const response: { variant: ProductVariant; status: number } = await defaultAxios.post(
+      API_ROUTES.PRODUCTS.VARIANTS(productId),
+      data
+    );
+    return response.variant;
   },
 
   updateVariant: async (
@@ -144,10 +171,11 @@ export const productService = {
     variantId: string | number,
     data: Partial<CreateVariantRequest>
   ): Promise<ProductVariant> => {
-    return defaultAxios.put(
+    const response: { variant: ProductVariant; status: number } = await defaultAxios.put(
       API_ROUTES.PRODUCTS.VARIANT(productId, variantId),
       data
     );
+    return response.variant;
   },
 
   deleteVariant: async (
@@ -158,13 +186,40 @@ export const productService = {
   },
 
   // Images
+  // Upload image file and get URL back
+  uploadImage: async (file: FormData): Promise<{ image_url: string }> => {
+    const response: { image_url: string; status: number } = await defaultAxios.post(
+      API_ROUTES.PRODUCTS.UPLOAD_IMAGE,
+      file
+    );
+    return { image_url: response.image_url };
+  },
+
+  // Add image URL to product
+  addProductImage: async (
+    productId: string | number,
+    data: { image_url: string; is_primary?: boolean; display_order?: number }
+  ): Promise<ProductImage> => {
+    const response: { image: ProductImage; status: number } = await defaultAxios.post(
+      API_ROUTES.PRODUCTS.IMAGES(productId),
+      data
+    );
+    return response.image;
+  },
+
+  // Upload and add images to product (convenience method)
   uploadImages: async (
     productId: string | number,
     files: FormData
   ): Promise<ProductImage[]> => {
-    return defaultAxios.post(API_ROUTES.PRODUCTS.IMAGES(productId), files, {
-      headers: { "Content-Type": "multipart/form-data" },
+    // First upload the image file
+    const uploadResponse = await productService.uploadImage(files);
+    // Then add the image URL to the product
+    const image = await productService.addProductImage(productId, {
+      image_url: uploadResponse.image_url,
+      is_primary: false,
     });
+    return [image];
   },
 
   deleteImage: async (

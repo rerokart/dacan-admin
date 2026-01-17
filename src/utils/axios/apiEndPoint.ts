@@ -32,6 +32,7 @@ export const API_ROUTES = {
     VARIANTS: (id: string | number) => `products/${id}/variants`,
     VARIANT: (productId: string | number, variantId: string | number) =>
       `products/${productId}/variants/${variantId}`,
+    UPLOAD_IMAGE: "products/upload-image",
     IMAGES: (id: string | number) => `products/${id}/images`,
     IMAGE: (productId: string | number, imageId: string | number) =>
       `products/${productId}/images/${imageId}`,
