@@ -28,6 +28,7 @@ export default function EditProductPage() {
     stock_quantity: "",
     low_stock_threshold: "10",
     is_active: true,
+    is_featured: false,
     has_variants: false,
   });
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
@@ -58,6 +59,7 @@ export default function EditProductPage() {
         stock_quantity: String(product.stock_quantity),
         low_stock_threshold: String(product.low_stock_threshold),
         is_active: product.is_active,
+        is_featured: product.is_featured || false,
         has_variants: product.has_variants,
       });
     }
@@ -142,6 +144,7 @@ export default function EditProductPage() {
       stock_quantity: parseInt(formData.stock_quantity) || 0,
       low_stock_threshold: parseInt(formData.low_stock_threshold) || 10,
       is_active: formData.is_active,
+      is_featured: formData.is_featured,
       has_variants: formData.has_variants,
     };
 
@@ -281,6 +284,25 @@ export default function EditProductPage() {
                   defaultValue={String(formData.is_active)}
                   onChange={(val) => setFormData((prev) => ({ ...prev, is_active: val === "true" }))}
                 />
+              </div>
+
+              {/* Featured Product */}
+              <div>
+                <Label htmlFor="is_featured">Featured</Label>
+                <div className="mt-2 flex items-center gap-3">
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_featured}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, is_featured: e.target.checked }))}
+                      className="peer sr-only"
+                    />
+                    <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
+                  </label>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {formData.is_featured ? "Featured" : "Not Featured"}
+                  </span>
+                </div>
               </div>
 
               {/* Base Price */}

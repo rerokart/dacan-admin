@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
 import Select from "@/components/form/Select";
-import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
+import { useProducts, useDeleteProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import type { ProductFilters } from "@/services/product.service";
 
@@ -66,6 +66,7 @@ export default function AllProducts() {
   const { data: productsData, isLoading, error } = useProducts(apiFilters);
   const { data: categories } = useCategories();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
 
   const products = productsData?.data || [];
   const totalPages = productsData?.pagination?.total_pages || 1;
@@ -96,6 +97,12 @@ export default function AllProducts() {
     { value: "", label: "All Status" },
     { value: "true", label: "Active" },
     { value: "false", label: "Inactive" },
+  ];
+
+  const featuredOptions = [
+    { value: "", label: "All" },
+    { value: "true", label: "Featured" },
+    { value: "false", label: "Not Featured" },
   ];
 
   const stockOptions = [
@@ -208,6 +215,15 @@ export default function AllProducts() {
                 />
               </div>
 
+              {/* Featured Filter */}
+              <div className="min-w-[140px]">
+                <Select
+                  options={featuredOptions}
+                  defaultValue={filters.is_featured === undefined ? "" : String(filters.is_featured)}
+                  onChange={(val) => handleFilterChange("is_featured", val)}
+                />
+              </div>
+
               {/* Stock Filter */}
               <div className="min-w-[140px]">
                 <Select
@@ -246,6 +262,12 @@ export default function AllProducts() {
               <Table>
                 <TableHeader className="border-b border-gray-200 dark:border-gray-800">
                   <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-6 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Featured
+                    </TableCell>
                     <TableCell
                       isHeader
                       className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400"
@@ -296,19 +318,32 @@ export default function AllProducts() {
                       key={product.id}
                       className="border-b border-gray-100 dark:border-gray-800"
                     >
+                      <TableCell className="px-6 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={product.is_featured || false}
+                          onChange={(e) => {
+                            updateProduct({
+                              id: product.id,
+                              data: { is_featured: e.target.checked },
+                            });
+                          }}
+                          className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 cursor-pointer"
+                        />
+                      </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 overflow-hidden rounded-lg bg-gray-100">
+                          <div className="h-[48px] w-[48px] min-w-[48px] overflow-hidden rounded-lg bg-gray-100">
                             {product.primary_image || product.images?.[0]?.image_url ? (
                               <Image
                                 src={product.primary_image || product.images![0].image_url}
                                 alt={product.name}
                                 width={48}
                                 height={48}
-                                className="h-full w-full object-cover"
+                                className="h-[48px] w-[48px] object-cover"
                               />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center text-gray-400">
+                              <div className="flex h-[48px] w-[48px] items-center justify-center text-gray-400">
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>

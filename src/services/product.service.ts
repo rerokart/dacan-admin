@@ -61,6 +61,7 @@ export interface ProductFilters {
   min_rating?: number;
   in_stock?: boolean;
   is_active?: boolean;
+  is_featured?: boolean;
   sort?: "newest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "rating";
   page?: number;
   limit?: number;
@@ -90,6 +91,7 @@ export interface CreateProductRequest {
   stock_quantity?: number;
   low_stock_threshold?: number;
   is_active?: boolean;
+  is_featured?: boolean;
 }
 
 export interface CreateVariantRequest {
