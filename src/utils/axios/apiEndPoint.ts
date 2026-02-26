@@ -123,6 +123,11 @@ export const API_ROUTES = {
     REORDER: "banners/reorder",
   },
 
+  // Wishlists
+  WISHLISTS: {
+    LIST: "wishlists",
+  },
+
   // Payments
   PAYMENTS: {
     CREATE_ORDER: "payments/create-order",

@@ -53,6 +53,9 @@ export const ROUTES = {
   BANNERS_ADD: "/banners/add",
   BANNERS_EDIT: (id: string | number) => `/banners/${id}/edit`,
 
+  // Wishlists
+  WISHLISTS: "/wishlists",
+
   // User
   PROFILE: "/profile",
 
@@ -109,6 +112,7 @@ export const AUTHENTICATED_ROUTES: string[] = [
   ROUTES.POS,
   ROUTES.BANNERS,
   ROUTES.BANNERS_ADD,
+  ROUTES.WISHLISTS,
   ROUTES.PROFILE,
   ROUTES.DEMO.CHARTS.BAR,
   ROUTES.DEMO.CHARTS.LINE,

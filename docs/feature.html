@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decan India - Mobile App Screens & Features</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0D1117;
+            color: #E6EDF3;
+            line-height: 1.6;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: sticky; top: 0; z-index: 200;
+            background: rgba(22,27,34,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid #30363D;
+            padding: 12px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .top-bar-left { display: flex; align-items: center; gap: 12px; }
+        .top-bar-logo {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 13px;
+        }
+        .top-bar h1 { font-size: 15px; font-weight: 600; }
+        .top-bar-right { display: flex; gap: 8px; }
+        .tb-badge {
+            font-size: 11px; font-weight: 600; padding: 3px 10px;
+            border-radius: 12px; background: #1F2937; color: #8B949E;
+        }
+        .tb-badge.v { background: #0D2818; color: #3FB950; }
+
+        /* Sidebar */
+        .layout { display: flex; min-height: calc(100vh - 52px); }
+        .sidebar {
+            width: 220px; min-width: 220px;
+            background: #161B22;
+            border-right: 1px solid #30363D;
+            padding: 16px 0;
+            position: sticky; top: 52px;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+        }
+        .sidebar-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: #484F58; padding: 0 16px; margin-bottom: 8px;
+        }
+        .sidebar a {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 16px; font-size: 13px; color: #8B949E;
+            text-decoration: none; border-left: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .sidebar a:hover { background: #1C2128; color: #C9D1D9; }
+        .sidebar a.active {
+            background: #1C2128; color: #58A6FF;
+            border-left-color: #58A6FF; font-weight: 600;
+        }
+
+        /* Main */
+        .main { flex: 1; padding: 32px; max-width: 1100px; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px; padding: 36px; color: #fff; margin-bottom: 40px;
+        }
+        .hero h2 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .hero p { font-size: 14px; opacity: 0.85; margin-bottom: 20px; }
+        .hero-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .hero-stat {
+            background: rgba(255,255,255,0.15); border-radius: 10px;
+            padding: 10px 18px; text-align: center;
+        }
+        .hero-stat .num { font-size: 22px; font-weight: 700; }
+        .hero-stat .label { font-size: 11px; opacity: 0.8; }
+
+        /* Screen Section */
+        .screen-section {
+            margin-bottom: 56px;
+            scroll-margin-top: 68px;
+        }
+        .screen-section-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 24px; padding-bottom: 12px;
+            border-bottom: 1px solid #30363D;
+        }
+        .sec-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .sec-icon.purple { background: rgba(102,126,234,0.15); }
+        .sec-icon.green { background: rgba(63,185,80,0.15); }
+        .sec-icon.blue { background: rgba(88,166,255,0.15); }
+        .sec-icon.orange { background: rgba(210,153,34,0.15); }
+        .sec-icon.red { background: rgba(248,81,73,0.15); }
+        .sec-icon.teal { background: rgba(63,185,80,0.15); }
+        .sec-icon.yellow { background: rgba(210,153,34,0.15); }
+        .sec-icon.pink { background: rgba(219,127,248,0.15); }
+        .screen-section-header h3 { font-size: 18px; font-weight: 700; color: #E6EDF3; }
+
+        /* Screen Row: phone + features side by side */
+        .screen-row {
+            display: flex; gap: 28px; margin-bottom: 32px;
+            align-items: flex-start;
+        }
+        .screen-row.reverse { flex-direction: row-reverse; }
+
+        /* Mobile Phone Frame */
+        .phone-wrap { flex-shrink: 0; }
+        .phone {
+            width: 260px; background: #000;
+            border-radius: 32px; padding: 6px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+        }
+        .phone-screen {
+            width: 100%; background: #fff;
+            border-radius: 26px; overflow: hidden;
+            color: #1F2937; min-height: 480px;
+            display: flex; flex-direction: column;
+        }
+        .ph-status {
+            height: 36px; padding: 0 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 12px; font-weight: 600; color: #fff;
+        }
+        .ph-status.purple-bg { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .ph-status.green-bg { background: linear-gradient(135deg, #059669, #10B981); }
+        .ph-status.blue-bg { background: linear-gradient(135deg, #2563EB, #3B82F6); }
+        .ph-status.orange-bg { background: linear-gradient(135deg, #D97706, #F59E0B); }
+        .ph-status.red-bg { background: linear-gradient(135deg, #DC2626, #EF4444); }
+        .ph-status.teal-bg { background: linear-gradient(135deg, #0D9488, #14B8A6); }
+        .ph-status.dark-bg { background: linear-gradient(135deg, #374151, #4B5563); }
+
+        .ph-body { flex: 1; padding: 14px; font-size: 12px; }
+
+        /* Phone inner components */
+        .ph-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .ph-logo { font-size: 18px; font-weight: 700; background: linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .ph-icons { display: flex; gap: 10px; }
+        .ph-icon { width: 22px; height: 22px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .ph-search { width: 100%; height: 34px; background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 10px; padding: 0 12px; font-size: 11px; color: #9CA3AF; display: flex; align-items: center; margin-bottom: 12px; }
+        .ph-banner { height: 80px; background: linear-gradient(135deg,#667eea,#764ba2); border-radius: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 12px; }
+        .ph-section-title { font-size: 14px; font-weight: 600; color: #1F2937; margin-bottom: 8px; }
+        .ph-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .ph-card { background: #fff; border: 1px solid #F3F4F6; border-radius: 10px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .ph-card-img { height: 50px; background: #F3F4F6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 6px; }
+        .ph-card-name { font-size: 10px; font-weight: 500; color: #374151; margin-bottom: 2px; }
+        .ph-card-price { font-size: 11px; font-weight: 700; color: #059669; }
+        .ph-card-rating { font-size: 9px; color: #9CA3AF; }
+        .ph-btn { width: 100%; padding: 10px; border: none; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        .ph-btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+        .ph-btn-outline { background: #fff; color: #667eea; border: 2px solid #667eea; }
+        .ph-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .ph-back { font-size: 16px; color: #374151; }
+        .ph-nav-title { font-weight: 600; font-size: 13px; color: #1F2937; }
+
+        .ph-variant { display: flex; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+        .ph-var-opt { background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 6px; padding: 5px 10px; font-size: 10px; font-weight: 500; }
+        .ph-var-opt.sel { background: #667eea; color: #fff; border-color: #667eea; }
+        .ph-var-opt.out { opacity: 0.4; }
+
+        .ph-cart-item { display: flex; gap: 10px; padding: 10px; background: #fff; border-radius: 10px; margin-bottom: 6px; border: 1px solid #F3F4F6; }
+        .ph-cart-img { width: 44px; height: 44px; background: #F3F4F6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .ph-cart-info { flex: 1; }
+        .ph-cart-name { font-size: 11px; font-weight: 600; color: #1F2937; }
+        .ph-cart-meta { font-size: 9px; color: #6B7280; }
+        .ph-cart-price { font-size: 11px; font-weight: 700; color: #059669; }
+
+        .ph-summary { background: #F9FAFB; border-radius: 10px; padding: 10px; margin: 8px 0; }
+        .ph-sum-row { display: flex; justify-content: space-between; font-size: 11px; color: #6B7280; margin-bottom: 4px; }
+        .ph-sum-row.total { font-weight: 700; font-size: 13px; color: #1F2937; border-top: 1px solid #E5E7EB; padding-top: 6px; margin-top: 4px; }
+
+        .ph-step-bar { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 14px; }
+        .ph-step { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+        .ph-step.done { background: #059669; color: #fff; }
+        .ph-step.active { background: #667eea; color: #fff; }
+        .ph-step.pending { background: #E5E7EB; color: #9CA3AF; }
+        .ph-step-line { width: 24px; height: 2px; }
+        .ph-step-line.done { background: #059669; }
+        .ph-step-line.pending { background: #E5E7EB; }
+
+        .ph-address { border: 2px solid #E5E7EB; border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 11px; }
+        .ph-address.sel { border-color: #667eea; background: #F8FAFF; }
+        .ph-address-label { font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+
+        .ph-payment { display: flex; align-items: center; gap: 10px; border: 2px solid #E5E7EB; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+        .ph-payment.sel { border-color: #667eea; background: #F8FAFF; }
+        .ph-payment-icon { font-size: 18px; }
+        .ph-payment-info { flex: 1; }
+        .ph-payment-name { font-size: 12px; font-weight: 600; }
+        .ph-payment-desc { font-size: 10px; color: #6B7280; }
+
+        .ph-timeline { position: relative; padding-left: 20px; }
+        .ph-timeline::before { content: ''; position: absolute; left: 8px; top: 12px; bottom: 12px; width: 2px; background: #E5E7EB; }
+        .ph-tl-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; position: relative; }
+        .ph-tl-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; z-index: 2; flex-shrink: 0; margin-left: -20px; }
+        .ph-tl-dot.done { background: #059669; color: #fff; }
+        .ph-tl-dot.active { background: #667eea; color: #fff; }
+        .ph-tl-dot.pending { background: #E5E7EB; color: #9CA3AF; }
+        .ph-tl-text { font-size: 11px; font-weight: 600; color: #1F2937; }
+        .ph-tl-date { font-size: 9px; color: #6B7280; }
+
+        .ph-success { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; padding: 20px 0; }
+        .ph-check { width: 56px; height: 56px; border-radius: 50%; background: #059669; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; margin-bottom: 12px; }
+
+        .ph-review-stars { display: flex; gap: 4px; font-size: 18px; justify-content: center; margin: 8px 0; }
+        .ph-textarea { width: 100%; height: 50px; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px; font-size: 10px; color: #9CA3AF; resize: none; margin-bottom: 8px; background: #F9FAFB; }
+
+        .ph-notif-item { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid #F3F4F6; align-items: flex-start; }
+        .ph-notif-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+        .ph-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .ph-cat-card { background: #F9FAFB; border-radius: 10px; padding: 10px 6px; text-align: center; }
+        .ph-cat-card-icon { font-size: 22px; margin-bottom: 4px; }
+        .ph-cat-card-name { font-size: 9px; font-weight: 600; color: #374151; }
+
+        .ph-filter-chips { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+        .ph-chip { background: #F3F4F6; padding: 4px 10px; border-radius: 14px; font-size: 10px; color: #6B7280; }
+        .ph-chip.active { background: #667eea; color: #fff; }
+
+        .ph-new-badge {
+            display: inline-block; background: #EF4444; color: #fff;
+            font-size: 8px; font-weight: 700; padding: 1px 5px;
+            border-radius: 6px; margin-left: 4px; vertical-align: middle;
+        }
+
+        /* Feature Panel */
+        .feature-panel { flex: 1; min-width: 0; }
+        .fp-title {
+            font-size: 16px; font-weight: 700; color: #E6EDF3;
+            margin-bottom: 4px;
+        }
+        .fp-desc { font-size: 13px; color: #8B949E; margin-bottom: 16px; }
+
+        .fp-group {
+            background: #161B22; border: 1px solid #30363D;
+            border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+        }
+        .fp-group-header {
+            padding: 10px 14px; font-size: 13px; font-weight: 600;
+            color: #C9D1D9; background: #1C2128;
+            border-bottom: 1px solid #30363D;
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer; user-select: none;
+        }
+        .fp-group-header:hover { background: #21262D; }
+        .fp-group-header .chev { margin-left: auto; font-size: 10px; color: #484F58; transition: transform 0.2s; }
+        .fp-group.collapsed .fp-group-body { display: none; }
+        .fp-group.collapsed .chev { transform: rotate(-90deg); }
+        .fp-group-body { padding: 10px 14px; }
+
+        .fp-list { list-style: none; padding: 0; }
+        .fp-list li {
+            position: relative; padding: 4px 0 4px 16px;
+            font-size: 12px; color: #8B949E; line-height: 1.5;
+        }
+        .fp-list li::before {
+            content: ''; position: absolute; left: 2px; top: 10px;
+            width: 5px; height: 5px; border-radius: 50%; background: #30363D;
+        }
+        .fp-list li.new-item::before { background: #EF4444; }
+
+        .fp-sub-title {
+            font-size: 11px; font-weight: 600; color: #58A6FF;
+            margin: 8px 0 4px; display: flex; align-items: center; gap: 6px;
+        }
+        .fp-divider { height: 1px; background: #21262D; margin: 8px 0; }
+
+        .phase-tag {
+            font-size: 9px; font-weight: 600; padding: 1px 6px;
+            border-radius: 4px; background: #2D1F00; color: #D29922;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { padding: 16px; }
+            .screen-row, .screen-row.reverse { flex-direction: column; align-items: center; }
+            .phone { width: 240px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-left">
+        <div class="top-bar-logo">D</div>
+        <h1>Decan India - Mobile App Screens</h1>
+    </div>
+    <div class="top-bar-right">
+        <span class="tb-badge v">v3.0</span>
+        <span class="tb-badge">React Native Expo</span>
+        <span class="tb-badge">150+ Features</span>
+    </div>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+    <div class="sidebar-label">App Screens</div>
+    <a href="#splash" class="active">1. Splash / Login</a>
+    <a href="#home">2. Home Screen</a>
+    <a href="#listing">3. Product Listing</a>
+    <a href="#detail">4. Product Details</a>
+    <a href="#cart">5. Shopping Cart</a>
+    <a href="#address">6. Select Address</a>
+    <a href="#payment">7. Payment Method</a>
+    <a href="#confirm">8. Order Confirm</a>
+    <a href="#success">9. Order Success</a>
+    <a href="#tracking">10. Order Tracking</a>
+    <a href="#delivered">11. Delivered</a>
+    <a href="#review">12. Rate & Review</a>
+    <a href="#notifications">13. Notifications</a>
+    <a href="#profile">14. Profile</a>
+    <a href="#help">15. Help & Settings</a>
+</nav>
+
+<div class="main">
+
+<!-- Hero -->
+<div class="hero">
+    <h2>Mobile App - Screen by Screen</h2>
+    <p>Complete feature specification for every screen in the Decan India customer-facing mobile app (React Native Expo, iOS & Android).</p>
+    <div class="hero-stats">
+        <div class="hero-stat"><div class="num">15</div><div class="label">Screens</div></div>
+        <div class="hero-stat"><div class="num">150+</div><div class="label">Features</div></div>
+        <div class="hero-stat"><div class="num">8</div><div class="label">Modules</div></div>
+    </div>
+</div>
+
+<!-- ============ 1. SPLASH / LOGIN ============ -->
+<div class="screen-section" id="splash">
+    <div class="screen-section-header">
+        <div class="sec-icon purple">🔐</div>
+        <h3>1. Splash / Login Screen</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>100%</span></div>
+                <div class="ph-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+                    <div style="font-size:42px;margin-bottom:14px;">🛍️</div>
+                    <div class="ph-logo" style="font-size:28px;margin-bottom:30px;">Decan India</div>
+                    <div style="color:#6B7280;font-size:13px;margin-bottom:30px;">Your favorite shopping destination</div>
+                    <button class="ph-btn ph-btn-primary">Login with Phone</button>
+                    <button class="ph-btn ph-btn-outline">Create Account</button>
+                    <div style="margin-top:16px;font-size:11px;color:#9CA3AF;">
+                        <u>Biometric Login</u> &bull; <u>Skip for now</u>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Authentication & Authorization</div>
+            <div class="fp-desc">Login, registration, password recovery and social sign-in flows.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔑 Login<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Email + Password login</li>
+                        <li>OTP-based login (SMS)</li>
+                        <li>Remember me option</li>
+                        <li>Biometric login (fingerprint / face ID)</li>
+                        <li>Session management</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📝 Register<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Full name, email, mobile (10 digits)</li>
+                        <li>Password with strength indicator</li>
+                        <li>Terms & conditions acceptance</li>
+                        <li>Email verification (optional)</li>
+                        <li>OTP verification (mobile)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔄 Forgot Password<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Email-based reset link</li>
+                        <li>OTP-based reset (SMS)</li>
+                        <li>Password reset form + confirmation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🌐 Social Login <span class="phase-tag">Phase 2</span><span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Google Sign-In</li>
+                        <li>Facebook Login</li>
+                        <li>Apple Sign-In (iOS)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 2. HOME SCREEN ============ -->
+<div class="screen-section" id="home">
+    <div class="screen-section-header">
+        <div class="sec-icon blue">🏠</div>
+        <h3>2. Home Screen</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>98%</span></div>
+                <div class="ph-body">
+                    <div class="ph-header">
+                        <div class="ph-logo">Decan</div>
+                        <div class="ph-icons">
+                            <div class="ph-icon">🔔</div>
+                            <div class="ph-icon">🛒</div>
+                            <div class="ph-icon">👤</div>
+                        </div>
+                    </div>
+                    <div class="ph-search">🔍 Search products...</div>
+                    <div class="ph-banner">🎉 50% OFF on Fashion</div>
+                    <div class="ph-cat-grid">
+                        <div class="ph-cat-card"><div class="ph-cat-card-icon">👕</div><div class="ph-cat-card-name">Fashion</div></div>
+                        <div class="ph-cat-card"><div class="ph-cat-card-icon">📱</div><div class="ph-cat-card-name">Electronics</div></div>
+                        <div class="ph-cat-card"><div class="ph-cat-card-icon">🏠</div><div class="ph-cat-card-name">Home</div></div>
+                    </div>
+                    <div class="ph-section-title">Featured Products</div>
+                    <div class="ph-grid">
+                        <div class="ph-card"><div class="ph-card-img">👕</div><div class="ph-card-name">Cotton T-Shirt</div><div class="ph-card-price">₹299</div></div>
+                        <div class="ph-card"><div class="ph-card-img">👖</div><div class="ph-card-name">Denim Jeans</div><div class="ph-card-price">₹899</div></div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Home Screen</div>
+            <div class="fp-desc">Main landing page with banners, categories, and product sections.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🎠 Banner Slider<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Promotional banners (auto-scroll)</li>
+                        <li>Click-through to products / categories</li>
+                        <li>Dots indicator + manual swipe</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📂 Category Grid<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Category cards with images & names</li>
+                        <li>Product count per category</li>
+                        <li>Subcategories navigation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⭐ Featured Sections<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Latest products (8 items)</li>
+                        <li>Best sellers (8 items)</li>
+                        <li>Deal of the day</li>
+                        <li>Recommended for you (based on browsing)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔍 Search<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Voice search, search history, suggestions</li>
+                        <li>Trending searches</li>
+                        <li>Product & category matches</li>
+                        <li>Did you mean? (spelling correction)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 3. PRODUCT LISTING ============ -->
+<div class="screen-section" id="listing">
+    <div class="screen-section-header">
+        <div class="sec-icon green">📄</div>
+        <h3>3. Product Listing</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>96%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">T-Shirts</span><div style="margin-left:auto;display:flex;gap:8px;"><div class="ph-icon">🔍</div><div class="ph-icon">⚙️</div></div></div>
+                    <div class="ph-filter-chips">
+                        <span class="ph-chip active">All</span>
+                        <span class="ph-chip">Price</span>
+                        <span class="ph-chip">Brand</span>
+                        <span class="ph-chip">Size</span>
+                    </div>
+                    <div class="ph-grid">
+                        <div class="ph-card" style="border:2px solid #667eea;"><div class="ph-card-img">👕</div><div class="ph-card-name">Premium Cotton Tee</div><div class="ph-card-price">₹399</div><div class="ph-card-rating">⭐ 4.5 (120)</div></div>
+                        <div class="ph-card"><div class="ph-card-img">👕</div><div class="ph-card-name">Basic White T-Shirt</div><div class="ph-card-price">₹299</div><div class="ph-card-rating">⭐ 4.2 (89)</div></div>
+                        <div class="ph-card"><div class="ph-card-img">👕</div><div class="ph-card-name">Graphic Print Tee</div><div class="ph-card-price">₹549</div><div class="ph-card-rating">⭐ 4.7 (203)</div></div>
+                        <div class="ph-card"><div class="ph-card-img">👕</div><div class="ph-card-name">Polo Neck T-Shirt</div><div class="ph-card-price">₹699</div><div class="ph-card-rating">⭐ 4.3 (156)</div></div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Product Listing</div>
+            <div class="fp-desc">Browsable product grid with filters, sorting, and pagination.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🃏 Product Card<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Product image (lazy loading)</li>
+                        <li>Name (2 lines max), price, original price (strikethrough)</li>
+                        <li>Discount % badge, rating stars + count</li>
+                        <li>Wishlist heart, quick add to cart, stock badge</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔧 Filters & Sort<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <div class="fp-sub-title">Filters</div>
+                    <ul class="fp-list">
+                        <li>Category (multi-select), price range (slider)</li>
+                        <li>Rating, availability, discount %</li>
+                        <li>Apply / Clear filters</li>
+                    </ul>
+                    <div class="fp-divider"></div>
+                    <div class="fp-sub-title">Sort</div>
+                    <ul class="fp-list">
+                        <li>Relevance, Price Low/High, Newest, Popularity</li>
+                        <li>Rating High to Low, Discount High to Low</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📜 View & Pagination<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Grid view (2 col) / List view toggle</li>
+                        <li>Infinite scroll + "Load more" button</li>
+                        <li>Loading skeleton</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 4. PRODUCT DETAILS ============ -->
+<div class="screen-section" id="detail">
+    <div class="screen-section-header">
+        <div class="sec-icon orange">📦</div>
+        <h3>4. Product Details</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>94%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><div style="margin-left:auto;display:flex;gap:8px;"><div class="ph-icon">❤️</div><div class="ph-icon">📤</div></div></div>
+                    <div style="height:120px;background:#F3F4F6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:56px;margin-bottom:10px;">👕</div>
+                    <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#1F2937;">Premium Cotton T-Shirt</div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                        <span style="color:#9CA3AF;text-decoration:line-through;font-size:12px;">₹699</span>
+                        <span style="font-weight:700;font-size:16px;color:#059669;">₹399</span>
+                        <span style="background:#FEE2E2;color:#DC2626;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">43% OFF</span>
+                    </div>
+                    <div style="font-size:10px;color:#6B7280;margin-bottom:10px;">⭐ 4.5 (120 reviews) &bull; 50+ bought</div>
+                    <div style="font-weight:600;font-size:11px;margin-bottom:4px;color:#374151;">Size <span class="ph-new-badge">NEW</span></div>
+                    <div class="ph-variant">
+                        <span class="ph-var-opt">S</span>
+                        <span class="ph-var-opt sel">M</span>
+                        <span class="ph-var-opt">L</span>
+                        <span class="ph-var-opt">XL</span>
+                        <span class="ph-var-opt out">XXL</span>
+                    </div>
+                    <div style="font-weight:600;font-size:11px;margin-bottom:4px;color:#374151;">Color</div>
+                    <div class="ph-variant">
+                        <span class="ph-var-opt sel">White</span>
+                        <span class="ph-var-opt">Black</span>
+                        <span class="ph-var-opt">Navy</span>
+                    </div>
+                    <button class="ph-btn ph-btn-primary">Add to Cart</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Product Details</div>
+            <div class="fp-desc">Full product page with images, variants, description and reviews.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📸 Product Info<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Image gallery (swipe / zoom)</li>
+                        <li>Name, SKU, brand, rating & review count</li>
+                        <li>Current price, original price, discount %, you save</li>
+                        <li>Stock: in stock (qty if low) / out of stock / coming soon</li>
+                        <li class="new-item">Size/Variant Selection - dropdown, price per size, stock per size</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📝 Description & Specs<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Short description (above fold)</li>
+                        <li>Full description (expandable)</li>
+                        <li>Key features (bullet points)</li>
+                        <li>Specifications table</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⭐ Reviews & Ratings<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Overall rating, distribution bars (5★ to 1★)</li>
+                        <li>Sort: recent, highest, lowest</li>
+                        <li>Filter: with images, verified purchase</li>
+                        <li>Individual: user, stars, text, images, helpful, date</li>
+                        <li>Write a review button</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔗 Actions & Related<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Add to cart (with size), add to wishlist, share</li>
+                        <li>Size guide</li>
+                        <li>Similar products, customers also bought, you may like</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 5. SHOPPING CART ============ -->
+<div class="screen-section" id="cart">
+    <div class="screen-section-header">
+        <div class="sec-icon orange">🛒</div>
+        <h3>5. Shopping Cart</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>90%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">My Cart (2 items)</span></div>
+                    <div class="ph-cart-item">
+                        <div class="ph-cart-img">👕</div>
+                        <div class="ph-cart-info">
+                            <div class="ph-cart-name">Premium Cotton T-Shirt</div>
+                            <div class="ph-cart-meta">Size: M &bull; Color: White <span class="ph-new-badge">NEW</span></div>
+                            <div class="ph-cart-price">₹399</div>
+                        </div>
+                    </div>
+                    <div class="ph-cart-item">
+                        <div class="ph-cart-img">👖</div>
+                        <div class="ph-cart-info">
+                            <div class="ph-cart-name">Denim Jeans</div>
+                            <div class="ph-cart-meta">Size: 32 &bull; Dark Blue</div>
+                            <div class="ph-cart-price">₹899</div>
+                        </div>
+                    </div>
+                    <div style="background:#F0F4FF;border:1px solid #E0E7FF;border-radius:8px;padding:8px;margin:8px 0;font-size:10px;color:#3730A3;font-weight:600;">🎫 Apply Coupon</div>
+                    <div class="ph-summary">
+                        <div class="ph-sum-row"><span>Subtotal</span><span>₹1,298</span></div>
+                        <div class="ph-sum-row"><span>Delivery</span><span style="color:#059669;">FREE</span></div>
+                        <div class="ph-sum-row"><span>Tax (GST)</span><span>₹78</span></div>
+                        <div class="ph-sum-row total"><span>Total</span><span>₹1,376</span></div>
+                    </div>
+                    <button class="ph-btn ph-btn-primary">Proceed to Checkout</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Shopping Cart</div>
+            <div class="fp-desc">Cart management, coupon application, and order summary.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🛒 Cart Items<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Product image, name, selected size/variant</li>
+                        <li>Price per unit, quantity selector (+/-)</li>
+                        <li>Subtotal per item, remove button</li>
+                        <li>Move to wishlist, stock check</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🎫 Coupon & Summary<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Apply coupon code, available coupons list</li>
+                        <li>Applied coupon display, remove option</li>
+                        <li>Items total, discount, delivery, tax/GST, grand total</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">❤️ Wishlist<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Product image, name, price, stock status</li>
+                        <li>Add to cart, remove, add all to cart</li>
+                        <li>Share wishlist, clear wishlist</li>
+                        <li>Empty state illustration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 6. SELECT ADDRESS ============ -->
+<div class="screen-section" id="address">
+    <div class="screen-section-header">
+        <div class="sec-icon teal">📍</div>
+        <h3>6. Select Address</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>88%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Select Address</span></div>
+                    <div class="ph-step-bar">
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step active">2</div><div class="ph-step-line pending"></div>
+                        <div class="ph-step pending">3</div><div class="ph-step-line pending"></div>
+                        <div class="ph-step pending">4</div>
+                    </div>
+                    <div class="ph-address sel">
+                        <div class="ph-address-label">🏠 Home</div>
+                        <div style="color:#6B7280;line-height:1.4;">123 MG Road, Sector 15<br>Ghaziabad, UP - 201001<br>📞 +91 98765 43210</div>
+                    </div>
+                    <div class="ph-address">
+                        <div class="ph-address-label">🏢 Office</div>
+                        <div style="color:#6B7280;line-height:1.4;">456 Business Park, Noida<br>UP - 201301</div>
+                    </div>
+                    <div style="border:2px dashed #E5E7EB;border-radius:10px;padding:14px;text-align:center;color:#6B7280;font-size:12px;">
+                        <div style="font-size:20px;">➕</div>Add New Address
+                    </div>
+                    <button class="ph-btn ph-btn-primary" style="margin-top:12px;">Continue</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Checkout - Step 1: Address</div>
+            <div class="fp-desc">Address selection with add/edit capabilities and map integration.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📍 Address Management<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>List saved addresses (radio select)</li>
+                        <li>Default address indicator, labels (Home/Work)</li>
+                        <li>Add new address: line 1&2, city, state, pincode, phone</li>
+                        <li>Address type, set as default, location picker (map)</li>
+                        <li>Edit / delete address (confirmation dialog)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 7. PAYMENT METHOD ============ -->
+<div class="screen-section" id="payment">
+    <div class="screen-section-header">
+        <div class="sec-icon red">💳</div>
+        <h3>7. Payment Method</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>86%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Payment Method</span></div>
+                    <div class="ph-step-bar">
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step active">3</div><div class="ph-step-line pending"></div>
+                        <div class="ph-step pending">4</div>
+                    </div>
+                    <div class="ph-payment sel">
+                        <div class="ph-payment-icon">💳</div>
+                        <div class="ph-payment-info"><div class="ph-payment-name">Online Payment</div><div class="ph-payment-desc">Cards, UPI, Net Banking</div></div>
+                        <span style="color:#667eea;">●</span>
+                    </div>
+                    <div class="ph-payment">
+                        <div class="ph-payment-icon">💵</div>
+                        <div class="ph-payment-info"><div class="ph-payment-name">Cash on Delivery</div><div class="ph-payment-desc">Pay when you receive</div></div>
+                        <span style="color:#D1D5DB;">○</span>
+                    </div>
+                    <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:8px;margin:10px 0;font-size:10px;color:#92400E;">
+                        <b>💡 Secure Payment</b><br>Your info is encrypted and secure
+                    </div>
+                    <div class="ph-summary">
+                        <div class="ph-sum-row"><span>Items Total</span><span>₹1,298</span></div>
+                        <div class="ph-sum-row"><span>Delivery</span><span style="color:#059669;">FREE</span></div>
+                        <div class="ph-sum-row total"><span>Pay</span><span>₹1,376</span></div>
+                    </div>
+                    <button class="ph-btn ph-btn-primary">Continue to Payment</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Checkout - Step 3: Payment</div>
+            <div class="fp-desc">Payment method selection with Razorpay and COD options.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">💳 Payment Options<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Online Payment (Razorpay): Credit/Debit, Net Banking, UPI, Wallets</li>
+                        <li>Cash on Delivery (COD charges if any)</li>
+                        <li>Saved cards (if any)</li>
+                        <li>Secure payment indicator</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 8. ORDER CONFIRM ============ -->
+<div class="screen-section" id="confirm">
+    <div class="screen-section-header">
+        <div class="sec-icon purple">🧾</div>
+        <h3>8. Review & Confirm Order</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status purple-bg"><span>9:41</span><span>84%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Review & Confirm</span></div>
+                    <div class="ph-step-bar">
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step done">✓</div><div class="ph-step-line done"></div>
+                        <div class="ph-step active">4</div>
+                    </div>
+                    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;font-size:11px;">
+                        <div style="font-weight:600;margin-bottom:4px;">📍 Delivery Address</div>
+                        <div style="color:#6B7280;">123 MG Road, Ghaziabad, UP - 201001</div>
+                    </div>
+                    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;font-size:11px;">
+                        <div style="font-weight:600;margin-bottom:4px;">💳 Payment</div>
+                        <div style="color:#6B7280;">Online Payment (Razorpay)</div>
+                    </div>
+                    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;font-size:11px;">
+                        <div style="font-weight:600;margin-bottom:4px;">📦 Items (2)</div>
+                        <div style="color:#6B7280;">Premium Cotton T-Shirt (M) × 1<br>Denim Jeans (32) × 1</div>
+                    </div>
+                    <div style="background:#F0FDF4;border:1px solid #22C55E;border-radius:8px;padding:8px;margin:8px 0;font-size:10px;color:#166534;">
+                        🚚 <b>Estimated:</b> 2-3 business days &bull; FREE delivery
+                    </div>
+                    <div class="ph-summary">
+                        <div class="ph-sum-row total"><span>Total</span><span>₹1,376</span></div>
+                    </div>
+                    <button class="ph-btn ph-btn-primary">Place Order</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Checkout - Step 4: Review</div>
+            <div class="fp-desc">Final review before placing order.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🧾 Order Review<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Final summary: address, payment, items, price breakdown</li>
+                        <li>Estimated delivery date</li>
+                        <li>Terms acceptance checkbox</li>
+                        <li>Place order button + processing loader</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 9. ORDER SUCCESS ============ -->
+<div class="screen-section" id="success">
+    <div class="screen-section-header">
+        <div class="sec-icon green">✅</div>
+        <h3>9. Order Success</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status green-bg"><span>9:41</span><span>82%</span></div>
+                <div class="ph-body">
+                    <div class="ph-success">
+                        <div class="ph-check">✓</div>
+                        <div style="font-weight:700;font-size:16px;color:#059669;margin-bottom:6px;">Order Placed!</div>
+                        <div style="color:#6B7280;font-size:11px;margin-bottom:16px;">Order <b>#DI2024001</b> confirmed<br>Updates via SMS & email</div>
+                        <div style="background:#F0FDF4;border-radius:10px;padding:12px;width:100%;text-align:left;margin-bottom:16px;">
+                            <div style="font-weight:600;color:#166534;font-size:11px;margin-bottom:6px;">📦 Order Details</div>
+                            <div style="color:#166534;font-size:11px;line-height:1.5;">Delivery: <b>Jan 15, 2026</b><br>Total: <b>₹1,376</b><br>Payment: <b>Online</b></div>
+                        </div>
+                        <button class="ph-btn ph-btn-primary">Track Order</button>
+                        <button class="ph-btn ph-btn-outline">Continue Shopping</button>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Order Confirmation</div>
+            <div class="fp-desc">Success screen with order details and next steps.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">✅ Success Screen<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Success animation + checkmark</li>
+                        <li>Order number, estimated delivery date</li>
+                        <li>Order summary (items, total, payment)</li>
+                        <li>Track order / Continue shopping buttons</li>
+                        <li>Email, SMS & push notification confirmations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 10. ORDER TRACKING ============ -->
+<div class="screen-section" id="tracking">
+    <div class="screen-section-header">
+        <div class="sec-icon blue">🚚</div>
+        <h3>10. Order Tracking</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status blue-bg"><span>10:15</span><span>76%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Track Order</span></div>
+                    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin-bottom:12px;">
+                        <div style="font-weight:600;font-size:12px;">Order #DI2024001</div>
+                        <div style="font-size:10px;color:#6B7280;margin-bottom:6px;">Placed Jan 12, 2026</div>
+                        <div style="background:#F0FDF4;color:#166534;padding:5px 8px;border-radius:6px;font-size:10px;font-weight:600;text-align:center;">🚚 Out for Delivery</div>
+                    </div>
+                    <div class="ph-timeline">
+                        <div class="ph-tl-item"><div class="ph-tl-dot done">✓</div><div><div class="ph-tl-text">Order Confirmed</div><div class="ph-tl-date">Jan 12, 10:30 AM</div></div></div>
+                        <div class="ph-tl-item"><div class="ph-tl-dot done">✓</div><div><div class="ph-tl-text">Packed</div><div class="ph-tl-date">Jan 13, 2:15 PM</div></div></div>
+                        <div class="ph-tl-item"><div class="ph-tl-dot done">✓</div><div><div class="ph-tl-text">In Transit</div><div class="ph-tl-date">Jan 14, 8:45 AM</div></div></div>
+                        <div class="ph-tl-item"><div class="ph-tl-dot active">🚚</div><div><div class="ph-tl-text" style="color:#667eea;">Out for Delivery</div><div class="ph-tl-date" style="color:#667eea;">Jan 15, 9:30 AM</div></div></div>
+                        <div class="ph-tl-item"><div class="ph-tl-dot pending">📦</div><div><div class="ph-tl-text" style="color:#9CA3AF;">Delivered</div><div class="ph-tl-date">Expected by 6 PM</div></div></div>
+                    </div>
+                    <button class="ph-btn ph-btn-primary" style="margin-top:8px;">Call Delivery Partner</button>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Order Tracking</div>
+            <div class="fp-desc">Real-time order tracking with delivery timeline.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🗺️ Tracking Features<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Status timeline: Confirmed → Packed → Transit → Out → Delivered</li>
+                        <li>Live tracking map</li>
+                        <li>Delivery partner details & contact</li>
+                        <li>Real-time delivery person location</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📋 Order History<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>All orders (newest first), status badges</li>
+                        <li>Filters: All, Delivered, In transit, Cancelled, Returned</li>
+                        <li>Order details: items, address, payment, breakdown</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⚡ Order Actions<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Download invoice (PDF)</li>
+                        <li>Cancel order (if not shipped) - reasons, refund info</li>
+                        <li>Return/Replace (if delivered)</li>
+                        <li>Reorder (add to cart)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 11. DELIVERED ============ -->
+<div class="screen-section" id="delivered">
+    <div class="screen-section-header">
+        <div class="sec-icon green">📦</div>
+        <h3>11. Order Delivered</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status green-bg"><span>6:25</span><span>58%</span></div>
+                <div class="ph-body">
+                    <div class="ph-success">
+                        <div style="width:60px;height:60px;border-radius:50%;background:#F0FDF4;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:12px;">📦</div>
+                        <div style="font-weight:700;font-size:16px;color:#059669;margin-bottom:6px;">Order Delivered!</div>
+                        <div style="color:#6B7280;font-size:11px;margin-bottom:14px;">Order <b>#DI2024001</b> delivered<br>Hope you love it!</div>
+                        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:10px;width:100%;text-align:left;margin-bottom:12px;font-size:11px;">
+                            <b>Delivered to:</b> Home (123 MG Road)<br>
+                            <b>Date:</b> Jan 15, 5:45 PM<br>
+                            <b>By:</b> Raj Kumar
+                        </div>
+                        <button class="ph-btn ph-btn-primary">Rate & Review</button>
+                        <button class="ph-btn ph-btn-outline">Reorder Items</button>
+                        <div style="margin-top:10px;font-size:11px;"><u style="color:#667eea;">Download Invoice</u> &bull; <u style="color:#667eea;">Need Help?</u></div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Order Delivered</div>
+            <div class="fp-desc">Delivery confirmation with post-delivery actions.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📦 Delivery Info<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Delivery confirmation with details</li>
+                        <li>Delivered to, date/time, delivery person</li>
+                        <li>Rate & Review, Reorder Items buttons</li>
+                        <li>Download invoice, need help links</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 12. RATE & REVIEW ============ -->
+<div class="screen-section" id="review">
+    <div class="screen-section-header">
+        <div class="sec-icon yellow">⭐</div>
+        <h3>12. Rate & Review</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status orange-bg"><span>6:30</span><span>56%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Rate & Review</span></div>
+                    <div style="display:flex;gap:10px;margin-bottom:12px;">
+                        <div class="ph-cart-img">👕</div>
+                        <div><div class="ph-cart-name">Premium Cotton T-Shirt</div><div class="ph-cart-meta">Size: M &bull; White</div><div class="ph-cart-price">₹399</div></div>
+                    </div>
+                    <div style="text-align:center;margin-bottom:8px;font-size:12px;font-weight:600;color:#374151;">How was your experience?</div>
+                    <div class="ph-review-stars">
+                        <span style="color:#FCD34D;">⭐</span><span style="color:#FCD34D;">⭐</span><span style="color:#FCD34D;">⭐</span><span style="color:#FCD34D;">⭐</span><span style="color:#E5E7EB;">⭐</span>
+                    </div>
+                    <div style="text-align:center;font-size:10px;color:#6B7280;margin-bottom:10px;">Very Good (4 stars)</div>
+                    <div class="ph-textarea">Tell others about your experience...</div>
+                    <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:6px;">📸 Add Photos</div>
+                    <div style="display:flex;gap:6px;margin-bottom:10px;">
+                        <div style="width:40px;height:40px;border:2px dashed #E5E7EB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#9CA3AF;">📷</div>
+                        <div style="width:40px;height:40px;border:2px dashed #E5E7EB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#9CA3AF;">+</div>
+                    </div>
+                    <button class="ph-btn ph-btn-primary">Submit Review</button>
+                    <div style="background:#FEF3C7;border-radius:6px;padding:6px;margin-top:8px;font-size:9px;color:#92400E;text-align:center;">🎁 Get 50 reward points for your feedback</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Rate & Review</div>
+            <div class="fp-desc">Post-delivery product rating and review submission.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⭐ Write Review<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Rate product (1-5 stars)</li>
+                        <li>Review title & text (500 chars max)</li>
+                        <li>Upload images (max 3)</li>
+                        <li>Submit button</li>
+                        <li>Edit existing review, update rating & images</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 13. NOTIFICATIONS ============ -->
+<div class="screen-section" id="notifications">
+    <div class="screen-section-header">
+        <div class="sec-icon teal">🔔</div>
+        <h3>13. Notifications</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status teal-bg"><span>9:41</span><span>92%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Notifications</span></div>
+                    <div class="ph-notif-item">
+                        <div class="ph-notif-icon" style="background:#F0FDF4;">📦</div>
+                        <div><div style="font-size:11px;font-weight:600;color:#1F2937;">Order Delivered</div><div style="font-size:10px;color:#6B7280;">Your order #DI2024001 has been delivered</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px;">2 min ago</div></div>
+                    </div>
+                    <div class="ph-notif-item">
+                        <div class="ph-notif-icon" style="background:#EEF2FF;">🚚</div>
+                        <div><div style="font-size:11px;font-weight:600;color:#1F2937;">Out for Delivery</div><div style="font-size:10px;color:#6B7280;">Your package is on its way!</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px;">3 hours ago</div></div>
+                    </div>
+                    <div class="ph-notif-item">
+                        <div class="ph-notif-icon" style="background:#FEF3C7;">🏷️</div>
+                        <div><div style="font-size:11px;font-weight:600;color:#1F2937;">Flash Sale!</div><div style="font-size:10px;color:#6B7280;">Up to 70% off on electronics</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px;">1 day ago</div></div>
+                    </div>
+                    <div class="ph-notif-item">
+                        <div class="ph-notif-icon" style="background:#FEE2E2;">❤️</div>
+                        <div><div style="font-size:11px;font-weight:600;color:#1F2937;">Price Drop!</div><div style="font-size:10px;color:#6B7280;">Wishlist item now ₹299</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px;">2 days ago</div></div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Notifications</div>
+            <div class="fp-desc">Push and in-app notification system.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📲 Push Notifications<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Order placed, status updates, delivery updates</li>
+                        <li>Price drops on wishlist items</li>
+                        <li>Back in stock alerts</li>
+                        <li>Promotional offers</li>
+                        <li>Cart abandonment reminders</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🔔 In-App Notifications<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Notification list, mark as read, delete</li>
+                        <li>Badge count</li>
+                        <li>Deep links to relevant screens</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 14. PROFILE ============ -->
+<div class="screen-section" id="profile">
+    <div class="screen-section-header">
+        <div class="sec-icon pink">👤</div>
+        <h3>14. Profile & Account</h3>
+    </div>
+    <div class="screen-row reverse">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status dark-bg"><span>9:41</span><span>95%</span></div>
+                <div class="ph-body">
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px;">👤</div>
+                        <div style="font-weight:700;font-size:14px;color:#1F2937;">Dharma Kumar</div>
+                        <div style="font-size:11px;color:#6B7280;">dharma@email.com &bull; +91 98765 43210</div>
+                    </div>
+                    <div style="background:#F9FAFB;border-radius:10px;overflow:hidden;margin-bottom:10px;">
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">📋 My Orders <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">📍 Addresses <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">❤️ Wishlist <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">🔔 Notifications <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;font-size:12px;display:flex;align-items:center;gap:8px;">⚙️ Settings <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                    </div>
+                    <div style="background:#F9FAFB;border-radius:10px;overflow:hidden;">
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">❓ Help & Support <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;font-size:12px;display:flex;align-items:center;gap:8px;color:#DC2626;">🚪 Logout</div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Profile & Account</div>
+            <div class="fp-desc">User profile, settings, addresses, and account management.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">👤 Profile<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>View: name, email, mobile, photo, member since, orders count</li>
+                        <li>Edit: update name, mobile, photo, email (with verification)</li>
+                        <li>Change password: current + new + strength indicator</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⚙️ Account Settings<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Notification preferences (push / email / SMS)</li>
+                        <li>Language, currency, dark mode</li>
+                        <li>App version info</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📍 Addresses<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>List all, default indicator, labels</li>
+                        <li>Add: lines, city, state, pincode, phone, type, map</li>
+                        <li>Edit / delete (cannot delete if in pending orders)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 15. HELP & SETTINGS ============ -->
+<div class="screen-section" id="help">
+    <div class="screen-section-header">
+        <div class="sec-icon yellow">❓</div>
+        <h3>15. Help & Settings</h3>
+    </div>
+    <div class="screen-row">
+        <div class="phone-wrap">
+            <div class="phone"><div class="phone-screen">
+                <div class="ph-status dark-bg"><span>9:41</span><span>93%</span></div>
+                <div class="ph-body">
+                    <div class="ph-nav"><span class="ph-back">←</span><span class="ph-nav-title">Help & Support</span></div>
+                    <div class="ph-search">🔍 Search FAQ...</div>
+                    <div style="background:#F9FAFB;border-radius:10px;overflow:hidden;margin-bottom:10px;">
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">📋 FAQ <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">📧 Contact Us <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;display:flex;align-items:center;gap:8px;">📞 Call Us <span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                        <div style="padding:10px 12px;font-size:12px;display:flex;align-items:center;gap:8px;">🎫 Raise Ticket <span class="phase-tag" style="margin-left:4px;">Phase 2</span><span style="margin-left:auto;color:#9CA3AF;">→</span></div>
+                    </div>
+                    <div style="background:#F9FAFB;border-radius:10px;overflow:hidden;margin-bottom:10px;">
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;">ℹ️ About Us</div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;">📜 Privacy Policy</div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;">📜 Terms & Conditions</div>
+                        <div style="padding:10px 12px;border-bottom:1px solid #E5E7EB;font-size:12px;">📦 Shipping Policy</div>
+                        <div style="padding:10px 12px;font-size:12px;">↩️ Return & Refund Policy</div>
+                    </div>
+                    <div style="text-align:center;font-size:10px;color:#9CA3AF;margin-top:8px;">App v3.0 &bull; <u>Rate App</u> &bull; <u>Share App</u></div>
+                </div>
+            </div></div>
+        </div>
+        <div class="feature-panel">
+            <div class="fp-title">Help, Policies & Settings</div>
+            <div class="fp-desc">Support pages, legal policies, and app configuration.</div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">🆘 Help & Support<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Searchable FAQ (categorized, expandable)</li>
+                        <li>Contact form, email, phone (click to call)</li>
+                        <li>WhatsApp chat <span class="phase-tag">Phase 2</span></li>
+                        <li>Ticket system <span class="phase-tag">Phase 2</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">📜 Policies<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Privacy Policy, Terms & Conditions</li>
+                        <li>Shipping, Return & Refund, Cancellation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="fp-group">
+                <div class="fp-group-header" onclick="toggle(this)">⚡ Additional Features<span class="chev">▼</span></div>
+                <div class="fp-group-body">
+                    <ul class="fp-list">
+                        <li>Offline Mode: cache data, browse offline, sync</li>
+                        <li>Deep Linking: product, category, order, promo links</li>
+                        <li>Performance: lazy loading, infinite scroll, pull to refresh</li>
+                        <li>App version, check updates, clear cache, rate/share app</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+function toggle(el) { el.parentElement.classList.toggle('collapsed'); }
+
+// Sidebar scroll spy
+const secs = document.querySelectorAll('.screen-section');
+const links = document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll', () => {
+    let cur = '';
+    secs.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+    links.forEach(l => {
+        l.classList.remove('active');
+        if (l.getAttribute('href') === '#' + cur) l.classList.add('active');
+    });
+});
+</script>
+</body>
+</html>

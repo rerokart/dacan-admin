@@ -54,6 +54,11 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     name: "Orders",
     path: ROUTES.ORDERS,
   },
+    {
+    icon: "HeartIcon",
+    name: "Wishlists",
+    path: ROUTES.WISHLISTS,
+  },
   {
     icon: "GroupIcon",
     name: "Users",
@@ -98,6 +103,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
       { name: "All Banners", path: ROUTES.BANNERS },
     ],
   },
+
 ];
 
 // =============================================================================
@@ -216,6 +222,10 @@ export const BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
     { label: "Banners", path: ROUTES.BANNERS },
     { label: "Add Banner" },
   ],
+  [ROUTES.WISHLISTS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Wishlists" },
+  ],
   [ROUTES.PROFILE]: [
     { label: "Dashboard", path: ROUTES.DASHBOARD },
     { label: "Profile" },
@@ -243,6 +253,7 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.POS]: "Point of Sale",
   [ROUTES.BANNERS]: "All Banners",
   [ROUTES.BANNERS_ADD]: "Add Banner",
+  [ROUTES.WISHLISTS]: "Wishlists",
   [ROUTES.PROFILE]: "Profile",
   [ROUTES.SIGN_IN]: "Sign In",
   [ROUTES.SIGN_UP]: "Sign Up",
