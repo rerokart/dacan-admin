@@ -11,6 +11,7 @@ interface SelectProps {
   onChange: (value: string) => void;
   className?: string;
   defaultValue?: string;
+  value?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -19,17 +20,21 @@ const Select: React.FC<SelectProps> = ({
   onChange,
   className = "",
   defaultValue = "",
+  value,
 }) => {
-  const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState<string>(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  // Update selectedValue when defaultValue changes
-  useEffect(() => {
-    setSelectedValue(defaultValue);
-  }, [defaultValue]);
+  const selectedValue = isControlled ? value : internalValue;
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!isControlled) {
+      setInternalValue(defaultValue);
+    }
+  }, [defaultValue, isControlled]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
@@ -41,7 +46,6 @@ const Select: React.FC<SelectProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close dropdown on escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -53,9 +57,11 @@ const Select: React.FC<SelectProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const handleSelect = (value: string) => {
-    setSelectedValue(value);
-    onChange(value);
+  const handleSelect = (val: string) => {
+    if (!isControlled) {
+      setInternalValue(val);
+    }
+    onChange(val);
     setIsOpen(false);
   };
 
@@ -63,7 +69,6 @@ const Select: React.FC<SelectProps> = ({
 
   return (
     <div ref={selectRef} className={`relative ${className}`}>
-      {/* Select Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -77,7 +82,7 @@ const Select: React.FC<SelectProps> = ({
           {selectedOption?.label || placeholder}
         </span>
         <svg
-          className={`ml-2 h-5 w-5 text-gray-400 transition-transform duration-200 ${
+          className={`ml-2 h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -93,9 +98,8 @@ const Select: React.FC<SelectProps> = ({
         </svg>
       </button>
 
-      {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute z-[9999999] mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <div className="max-h-60 overflow-auto">
             {options.map((option) => (
               <button

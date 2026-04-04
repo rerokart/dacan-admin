@@ -19,6 +19,27 @@ import {
   PAYMENT_STATUS_COLORS,
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
+import Select from "@/components/form/Select";
+
+const PAYMENT_STATUS_FILTER_OPTIONS = [
+  { value: "", label: "All Payment" },
+  { value: "pending", label: "Pending" },
+  { value: "paid", label: "Paid" },
+  { value: "failed", label: "Failed" },
+  { value: "refunded", label: "Refunded" },
+];
+
+const PAYMENT_METHOD_FILTER_OPTIONS = [
+  { value: "", label: "All Methods" },
+  { value: "cod", label: "COD" },
+  { value: "online", label: "Online" },
+];
+
+const SOURCE_FILTER_OPTIONS = [
+  { value: "", label: "All Sources" },
+  { value: "online", label: "Online" },
+  { value: "offline", label: "Offline (POS)" },
+];
 
 const getStatusBadge = (status: string | undefined, colorMap: Record<string, string>) => {
   const s = status ?? "";
@@ -108,55 +129,40 @@ export default function OrdersPage() {
               </form>
 
               {/* Order Status Filter */}
-              <select
+              <Select
+                options={[{ value: "", label: "All Status" }, ...ORDER_STATUS_OPTIONS]}
                 value={filters.status || ""}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Status</option>
-                {ORDER_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange("status", val)}
+                placeholder="All Status"
+                className="w-full lg:w-44"
+              />
 
               {/* Payment Status Filter */}
-              <select
+              <Select
+                options={PAYMENT_STATUS_FILTER_OPTIONS}
                 value={filters.payment_status || ""}
-                onChange={(e) => handleFilterChange("payment_status", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Payment</option>
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="failed">Failed</option>
-                <option value="refunded">Refunded</option>
-              </select>
+                onChange={(val) => handleFilterChange("payment_status", val)}
+                placeholder="All Payment"
+                className="w-full lg:w-44"
+              />
 
               {/* Payment Method Filter */}
-              <select
+              <Select
+                options={PAYMENT_METHOD_FILTER_OPTIONS}
                 value={filters.payment_method || ""}
-                onChange={(e) => handleFilterChange("payment_method", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Methods</option>
-                <option value="cod">COD</option>
-                <option value="online">Online</option>
-              </select>
+                onChange={(val) => handleFilterChange("payment_method", val)}
+                placeholder="All Methods"
+                className="w-full lg:w-44"
+              />
 
               {/* Source Filter */}
-              <select
+              <Select
+                options={SOURCE_FILTER_OPTIONS}
                 value={filters.source || ""}
-                onChange={(e) =>
-                  handleFilterChange("source", e.target.value as "online" | "offline")
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Sources</option>
-                <option value="online">Online</option>
-                <option value="offline">Offline (POS)</option>
-              </select>
+                onChange={(val) => handleFilterChange("source", val)}
+                placeholder="All Sources"
+                className="w-full lg:w-44"
+              />
             </div>
           </div>
 

@@ -2,6 +2,7 @@
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import React, { useState } from "react";
+import Select from "@/components/form/Select";
 import {
   Table,
   TableBody,
@@ -183,18 +184,18 @@ export default function InventoryPage() {
                 </div>
               </form>
 
-              <select
+              <Select
+                options={[
+                  { value: "", label: "All Stock Status" },
+                  { value: "in_stock", label: "In Stock" },
+                  { value: "low_stock", label: "Low Stock" },
+                  { value: "out_of_stock", label: "Out of Stock" },
+                ]}
                 value={filters.status || ""}
-                onChange={(e) =>
-                  handleFilterChange("status", e.target.value as StockFilters["status"])
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Stock Status</option>
-                <option value="in_stock">In Stock</option>
-                <option value="low_stock">Low Stock</option>
-                <option value="out_of_stock">Out of Stock</option>
-              </select>
+                onChange={(val) => handleFilterChange("status", val as StockFilters["status"])}
+                placeholder="All Stock Status"
+                className="w-full lg:w-44"
+              />
             </div>
           </div>
 
@@ -406,18 +407,19 @@ export default function InventoryPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Reason *
                 </label>
-                <select
+                <Select
+                  options={[
+                    { value: "", label: "Select reason" },
+                    { value: "Restock", label: "Restock" },
+                    { value: "Adjustment", label: "Adjustment" },
+                    { value: "Return", label: "Return" },
+                    { value: "Damaged", label: "Damaged" },
+                    { value: "Other", label: "Other" },
+                  ]}
                   value={stockReason}
-                  onChange={(e) => setStockReason(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                >
-                  <option value="">Select reason</option>
-                  <option value="Restock">Restock</option>
-                  <option value="Adjustment">Adjustment</option>
-                  <option value="Return">Return</option>
-                  <option value="Damaged">Damaged</option>
-                  <option value="Other">Other</option>
-                </select>
+                  onChange={(val) => setStockReason(val)}
+                  placeholder="Select reason"
+                />
               </div>
             </div>
 

@@ -18,6 +18,7 @@ import {
   PAYMENT_STATUS_COLORS,
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
+import Select from "@/components/form/Select";
 
 const formatDate = (dateStr: string | undefined) => {
   if (!dateStr) return "—";
@@ -389,17 +390,11 @@ export default function OrderDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Status
                 </label>
-                <select
+                <Select
+                  options={ORDER_STATUS_OPTIONS}
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                >
-                  {ORDER_STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewStatus(val)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -485,17 +480,11 @@ export default function OrderDetailPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Payment Status
               </label>
-              <select
+              <Select
+                options={PAYMENT_STATUS_OPTIONS}
                 value={newPaymentStatus}
-                onChange={(e) => setNewPaymentStatus(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                {PAYMENT_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setNewPaymentStatus(val)}
+              />
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button

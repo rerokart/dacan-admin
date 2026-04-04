@@ -2,6 +2,7 @@
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import React, { useState } from "react";
+import Select from "@/components/form/Select";
 import Link from "next/link";
 import {
   Table,
@@ -133,17 +134,17 @@ export default function CouponsPage() {
                 </div>
               </form>
 
-              <select
+              <Select
+                options={[
+                  { value: "", label: "All Status" },
+                  { value: "active", label: "Active" },
+                  { value: "expired", label: "Expired" },
+                ]}
                 value={filters.status || ""}
-                onChange={(e) =>
-                  handleFilterChange("status", e.target.value || "")
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="expired">Expired</option>
-              </select>
+                onChange={(val) => handleFilterChange("status", val || "")}
+                placeholder="All Status"
+                className="w-full lg:w-44"
+              />
             </div>
           </div>
 

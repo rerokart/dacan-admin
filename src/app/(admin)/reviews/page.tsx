@@ -2,6 +2,7 @@
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import React, { useState } from "react";
+import Select from "@/components/form/Select";
 import {
   Table,
   TableBody,
@@ -142,33 +143,28 @@ export default function ReviewsPage() {
                 </div>
               </form>
 
-              <select
+              <Select
+                options={[{ value: "", label: "All Status" }, ...REVIEW_STATUS_OPTIONS]}
                 value={filters.status || ""}
-                onChange={(e) =>
-                  handleFilterChange("status", e.target.value as ReviewFilters["status"])
-                }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Status</option>
-                {REVIEW_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange("status", val as ReviewFilters["status"])}
+                placeholder="All Status"
+                className="w-full lg:w-44"
+              />
 
-              <select
+              <Select
+                options={[
+                  { value: "", label: "All Ratings" },
+                  { value: "5", label: "5 Stars" },
+                  { value: "4", label: "4 Stars" },
+                  { value: "3", label: "3 Stars" },
+                  { value: "2", label: "2 Stars" },
+                  { value: "1", label: "1 Star" },
+                ]}
                 value={filters.rating || ""}
-                onChange={(e) => handleFilterChange("rating", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Ratings</option>
-                <option value="5">5 Stars</option>
-                <option value="4">4 Stars</option>
-                <option value="3">3 Stars</option>
-                <option value="2">2 Stars</option>
-                <option value="1">1 Star</option>
-              </select>
+                onChange={(val) => handleFilterChange("rating", val)}
+                placeholder="All Ratings"
+                className="w-full lg:w-44"
+              />
             </div>
           </div>
 

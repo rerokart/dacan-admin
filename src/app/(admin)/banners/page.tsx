@@ -2,6 +2,7 @@
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import React, { useState } from "react";
+import Select from "@/components/form/Select";
 import Link from "next/link";
 import {
   Table,
@@ -104,15 +105,17 @@ export default function BannersPage() {
           {/* Filters */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex flex-col sm:flex-row gap-4">
-              <select
+              <Select
+                options={[
+                  { value: "", label: "All Status" },
+                  { value: "true", label: "Active" },
+                  { value: "false", label: "Inactive" },
+                ]}
                 value={filters.is_active === undefined ? "" : String(filters.is_active)}
-                onChange={(e) => handleFilterChange("is_active", e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">All Status</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+                onChange={(val) => handleFilterChange("is_active", val)}
+                placeholder="All Status"
+                className="w-full lg:w-44"
+              />
             </div>
           </div>
 
