@@ -20,17 +20,21 @@ import {
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 
-const getStatusBadge = (status: string, colorMap: Record<string, string>) => {
-  const color = colorMap[status] || "default";
+const getStatusBadge = (status: string | undefined, colorMap: Record<string, string>) => {
+  const s = status ?? "";
+  const color = colorMap[s] || "default";
   return (
     <Badge variant="light" color={color as "success" | "warning" | "error" | "info" | "primary"}>
-      {status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+      {s.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "—"}
     </Badge>
   );
 };
 
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
+const formatDate = (dateStr: string | undefined) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -105,8 +109,8 @@ export default function OrdersPage() {
 
               {/* Order Status Filter */}
               <select
-                value={filters.order_status || ""}
-                onChange={(e) => handleFilterChange("order_status", e.target.value)}
+                value={filters.status || ""}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option value="">All Status</option>
@@ -255,7 +259,7 @@ export default function OrdersPage() {
                         <div className="flex flex-col items-center gap-1">
                           {getStatusBadge(order.payment_status, PAYMENT_STATUS_COLORS)}
                           <span className="text-xs text-gray-500 uppercase">
-                            {order.payment_method}
+                            {order.payment_method ?? "—"}
                           </span>
                         </div>
                       </TableCell>
@@ -267,7 +271,7 @@ export default function OrdersPage() {
                           variant="light"
                           color={order.source === "online" ? "primary" : "info"}
                         >
-                          {order.source}
+                          {order.source ?? "—"}
                         </Badge>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right">

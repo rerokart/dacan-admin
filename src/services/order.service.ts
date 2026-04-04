@@ -81,7 +81,7 @@ export interface Order {
 
 export interface OrderFilters {
   search?: string;
-  order_status?: string;
+  status?: string;
   payment_status?: string;
   payment_method?: string;
   source?: "online" | "offline";
@@ -126,18 +126,21 @@ export const orderService = {
   },
 
   getOrderById: async (id: string | number): Promise<Order> => {
-    return defaultAxios.get(API_ROUTES.ORDERS.GET(id));
+    const response: { order: Order; status: number } = await defaultAxios.get(API_ROUTES.ORDERS.GET(id));
+    return response.order;
   },
 
   updateOrderStatus: async (
     id: string | number,
     data: UpdateOrderStatusRequest
   ): Promise<Order> => {
-    return defaultAxios.put(API_ROUTES.ORDERS.UPDATE_STATUS(id), data);
+    const response: { order: Order; status: number } = await defaultAxios.put(API_ROUTES.ORDERS.UPDATE_STATUS(id), data);
+    return response.order;
   },
 
   cancelOrder: async (id: string | number, reason?: string): Promise<Order> => {
-    return defaultAxios.post(API_ROUTES.ORDERS.CANCEL(id), { reason });
+    const response: { order: Order; status: number } = await defaultAxios.post(API_ROUTES.ORDERS.CANCEL(id), { reason });
+    return response.order;
   },
 
   getOrderInvoice: async (id: string | number): Promise<Blob> => {

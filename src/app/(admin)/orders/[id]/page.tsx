@@ -17,8 +17,11 @@ import {
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
+const formatDate = (dateStr: string | undefined) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -332,7 +335,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="pb-4">
                         <p className="font-medium text-gray-900 dark:text-white">
-                          {history.status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {(history.status ?? "").replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "—"}
                         </p>
                         {history.notes && (
                           <p className="text-gray-500">{history.notes}</p>
@@ -353,7 +356,7 @@ export default function OrderDetailPage() {
 
       {/* Update Status Modal */}
       {showStatusModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Update Order Status
@@ -409,7 +412,7 @@ export default function OrderDetailPage() {
 
       {/* Cancel Order Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Cancel Order
