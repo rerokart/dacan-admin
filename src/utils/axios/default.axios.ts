@@ -33,6 +33,8 @@ defaultAxios.interceptors.request.use(
 // Response interceptor - handle success and errors
 defaultAxios.interceptors.response.use(
   (response) => {
+    // Blob responses (e.g., PDF invoice download) don't have status field
+    if (response.config?.responseType === 'blob') return response.data;
     if (response.data?.status === 1) return response.data;
     return Promise.reject(response.data);
   },

@@ -10,15 +10,7 @@ import {
 } from "@/hooks/usePOS";
 import type { POSProduct, POSCartItem, OfflineOrderResponse, POSCustomer } from "@/services/pos.service";
 import { formatReceiptDate } from "@/services/pos.service";
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from "@/utils/helpers/helperfn";
 
 type PaymentMethod = "cash" | "card" | "upi";
 

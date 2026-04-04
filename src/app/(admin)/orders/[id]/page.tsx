@@ -15,6 +15,7 @@ import {
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
 } from "@/services/order.service";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -91,7 +92,7 @@ export default function OrderDetailPage() {
                 variant="light"
                 color={ORDER_STATUS_COLORS[order.order_status] as "success" | "warning" | "error" | "info" | "primary"}
               >
-                {order.order_status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                {(order.order_status ?? "").replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               </Badge>
               <Badge
                 variant="light"
@@ -118,6 +119,7 @@ export default function OrderDetailPage() {
             <button
               onClick={() => {
                 setNewStatus(order.order_status);
+                setStatusNotes("");
                 setShowStatusModal(true);
               }}
               className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
@@ -126,7 +128,10 @@ export default function OrderDetailPage() {
             </button>
             {canCancel && (
               <button
-                onClick={() => setShowCancelModal(true)}
+                onClick={() => {
+                  setCancelReason("");
+                  setShowCancelModal(true);
+                }}
                 className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
               >
                 Cancel Order
@@ -178,10 +183,10 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900 dark:text-white">
-                        ₹{item.unit_price.toLocaleString()} x {item.quantity}
+                        {formatCurrency(item.unit_price)} x {item.quantity}
                       </p>
                       <p className="text-sm text-gray-500">
-                        ₹{item.subtotal.toLocaleString()}
+                        {formatCurrency(item.subtotal)}
                       </p>
                     </div>
                   </div>
@@ -194,29 +199,29 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Subtotal</span>
                     <span className="text-gray-900 dark:text-white">
-                      ₹{order.subtotal.toLocaleString()}
+                      {formatCurrency(order.subtotal)}
                     </span>
                   </div>
-                  {order.discount_amount > 0 && (
+                  {(order.discount_amount ?? 0) > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">
                         Discount {order.coupon_code && `(${order.coupon_code})`}
                       </span>
                       <span className="text-green-600">
-                        -₹{order.discount_amount.toLocaleString()}
+                        -{formatCurrency(order.discount_amount)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Delivery</span>
                     <span className="text-gray-900 dark:text-white">
-                      ₹{order.delivery_charge.toLocaleString()}
+                      {formatCurrency(order.delivery_charge)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">GST (18%)</span>
                     <span className="text-gray-900 dark:text-white">
-                      ₹{order.tax_amount.toLocaleString()}
+                      {formatCurrency(order.tax_amount)}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
@@ -224,7 +229,7 @@ export default function OrderDetailPage() {
                       Total
                     </span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      ₹{order.total_amount.toLocaleString()}
+                      {formatCurrency(order.total_amount)}
                     </span>
                   </div>
                 </div>

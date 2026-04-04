@@ -108,6 +108,16 @@ export const capitalizeWords = (text: string): string => {
     .join(" ");
 };
 
+// Format amount as INR currency (null-safe)
+export const formatCurrency = (amount: number | null | undefined): string => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount ?? 0);
+};
+
 // Format number with commas
 export const formatNumber = (num: number): string => {
   if (typeof num !== "number" || isNaN(num)) return "";

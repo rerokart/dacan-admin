@@ -11,6 +11,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import { useRecentOrders } from "@/hooks/useDashboard";
 import { ROUTES } from "@/utils/constants/NavigationRoutes";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -120,7 +121,7 @@ export default function RecentOrders() {
                     </p>
                   </TableCell>
                   <TableCell className="py-3 text-gray-700 text-theme-sm dark:text-gray-300">
-                    ₹{order.amount.toLocaleString()}
+                    {formatCurrency(order.amount)}
                   </TableCell>
                   <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {formatDate(order.date)}

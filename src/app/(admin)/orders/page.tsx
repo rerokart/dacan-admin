@@ -18,6 +18,7 @@ import {
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
 } from "@/services/order.service";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 
 const getStatusBadge = (status: string, colorMap: Record<string, string>) => {
   const color = colorMap[status] || "default";
@@ -248,7 +249,7 @@ export default function OrdersPage() {
                         {formatDate(order.created_at)}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                        ₹{order.total_amount.toLocaleString()}
+                        {formatCurrency(order.total_amount)}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center gap-1">
