@@ -138,6 +138,17 @@ export const orderService = {
     return response.order;
   },
 
+  updatePaymentStatus: async (
+    id: string | number,
+    payment_status: string
+  ): Promise<Order> => {
+    const response: { order: Order; status: number } = await defaultAxios.put(
+      API_ROUTES.ORDERS.UPDATE_PAYMENT(id),
+      { payment_status }
+    );
+    return response.order;
+  },
+
   cancelOrder: async (id: string | number, reason?: string): Promise<Order> => {
     const response: { order: Order; status: number } = await defaultAxios.post(API_ROUTES.ORDERS.CANCEL(id), { reason });
     return response.order;

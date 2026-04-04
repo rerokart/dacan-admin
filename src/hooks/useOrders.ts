@@ -61,6 +61,32 @@ export const useUpdateOrderStatus = () => {
   });
 };
 
+// Update Payment Status
+export const useUpdatePaymentStatus = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payment_status,
+    }: {
+      id: string | number;
+      payment_status: string;
+    }) => orderService.updatePaymentStatus(id, payment_status),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: orderKeys.detail(variables.id),
+      });
+      toast.success("Payment status updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to update payment status");
+    },
+  });
+};
+
 // Cancel Order
 export const useCancelOrder = () => {
   const queryClient = useQueryClient();

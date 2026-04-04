@@ -7,11 +7,13 @@ import Badge from "@/components/ui/badge/Badge";
 import {
   useOrder,
   useUpdateOrderStatus,
+  useUpdatePaymentStatus,
   useCancelOrder,
   useDownloadInvoice,
 } from "@/hooks/useOrders";
 import {
   ORDER_STATUS_OPTIONS,
+  PAYMENT_STATUS_OPTIONS,
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
 } from "@/services/order.service";
@@ -37,19 +39,31 @@ export default function OrderDetailPage() {
   const { data: order, isLoading, error } = useOrder(orderId);
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateOrderStatus();
   const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder();
+  const { mutate: updatePaymentStatus, isPending: isUpdatingPayment } = useUpdatePaymentStatus();
   const { mutate: downloadInvoice, isPending: isDownloading } = useDownloadInvoice();
 
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [statusNotes, setStatusNotes] = useState("");
   const [cancelReason, setCancelReason] = useState("");
+  const [newPaymentStatus, setNewPaymentStatus] = useState("");
 
   const handleStatusUpdate = () => {
     if (newStatus) {
       updateStatus(
         { id: orderId, data: { status: newStatus, notes: statusNotes } },
         { onSuccess: () => setShowStatusModal(false) }
+      );
+    }
+  };
+
+  const handlePaymentStatusUpdate = () => {
+    if (newPaymentStatus) {
+      updatePaymentStatus(
+        { id: orderId, payment_status: newPaymentStatus },
+        { onSuccess: () => setShowPaymentModal(false) }
       );
     }
   };
@@ -312,6 +326,15 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                 )}
+                <button
+                  onClick={() => {
+                    setNewPaymentStatus(order.payment_status ?? "");
+                    setShowPaymentModal(true);
+                  }}
+                  className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  Update Payment Status
+                </button>
               </div>
             </div>
 
@@ -445,6 +468,48 @@ export default function OrderDetailPage() {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {isCancelling ? "Cancelling..." : "Cancel Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Payment Status Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Update Payment Status
+            </h3>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Payment Status
+              </label>
+              <select
+                value={newPaymentStatus}
+                onChange={(e) => setNewPaymentStatus(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              >
+                {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePaymentStatusUpdate}
+                disabled={isUpdatingPayment}
+                className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+              >
+                {isUpdatingPayment ? "Updating..." : "Update Payment"}
               </button>
             </div>
           </div>

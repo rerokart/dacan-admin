@@ -48,6 +48,7 @@ export const API_ROUTES = {
     DELETE: (id: string | number) => `orders/${id}`,
     UPDATE_STATUS: (id: string | number) => `orders/${id}/status`,
     CANCEL: (id: string | number) => `orders/${id}/cancel`,
+    UPDATE_PAYMENT: (id: string | number) => `orders/${id}/payment`,
     INVOICE: (id: string | number) => `orders/${id}/invoice`,
     OFFLINE: "orders/offline",
   },
