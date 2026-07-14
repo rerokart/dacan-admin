@@ -1,5 +1,5 @@
 # Backend Implementation Plan
-# Flask REST API - Decan India E-Commerce
+# Flask REST API - Rerokart E-Commerce
 
 **Version:** 3.0  
 **Framework:** Flask + SQLAlchemy + PostgreSQL  
@@ -279,7 +279,7 @@ RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 # Email (Zepto Mail)
 ZEPTO_API_KEY=your-zepto-api-key
 ZEPTO_FROM_EMAIL=orders@decanindia.com
-ZEPTO_FROM_NAME=Decan India
+ZEPTO_FROM_NAME=Rerokart
 
 # SMS (MSG91)
 MSG91_API_KEY=your-msg91-api-key

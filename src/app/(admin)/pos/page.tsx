@@ -494,7 +494,7 @@ export default function POSPage() {
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 dark:bg-gray-900">
             <div className="text-center border-b border-dashed border-gray-300 pb-4 dark:border-gray-700">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Decan India
+                Rerokart
               </h3>
               <p className="text-sm text-gray-500 mt-1">Tax Invoice</p>
               <p className="text-sm text-gray-500">{formatReceiptDate(new Date(completedOrder.created_at))}</p>

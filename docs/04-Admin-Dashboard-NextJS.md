@@ -1,5 +1,5 @@
 # Admin Dashboard Implementation Plan
-# Next.js Web Application - Decan India E-Commerce
+# Next.js Web Application - Rerokart E-Commerce
 
 **Version:** 3.0  
 **Framework:** Next.js 14 + TypeScript  

@@ -1,5 +1,5 @@
 # Backend Development Phases
-## Flask API - Decan India E-Commerce
+## Flask API - Rerokart E-Commerce
 
 **Tech Stack:** Flask + Supabase (PostgreSQL) + JWT Auth + Razorpay + Zepto Mail
 

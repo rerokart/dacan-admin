@@ -1,5 +1,5 @@
 # Complete Feature List
-# Decan India E-Commerce Platform
+# Rerokart E-Commerce Platform
 
 **Version:** 3.0  
 **Architecture:** Flask Backend + React Native Mobile App + Next.js Admin Dashboard  

@@ -1,5 +1,5 @@
 # Admin Dashboard Development Phases
-## Next.js - Decan India E-Commerce
+## Next.js - Rerokart E-Commerce
 
 **Tech Stack:** Next.js 14 (App Router) + shadcn/ui + Tailwind CSS + React Query + Recharts
 

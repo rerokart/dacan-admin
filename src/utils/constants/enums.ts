@@ -1,4 +1,4 @@
-export const ACCESS_TOKEN_NAME = "dacan_admin_access_token";
+export const ACCESS_TOKEN_NAME = "rerokart_admin_access_token";
 
 export enum ProductStatus {
   IN_STOCK = "in_stock",

@@ -5,8 +5,8 @@ import RecentOrders from "@/components/ecommerce/RecentOrders";
 import LowStockAlerts from "@/components/ecommerce/LowStockAlerts";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Decan India Admin",
-  description: "E-commerce Admin Dashboard for Decan India",
+  title: "Dashboard | Rerokart Admin",
+  description: "E-commerce Admin Dashboard for Rerokart",
 };
 
 export default function Dashboard() {

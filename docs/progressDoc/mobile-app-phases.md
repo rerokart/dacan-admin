@@ -1,5 +1,5 @@
 # Mobile App Development Phases
-## React Native Expo - Decan India E-Commerce
+## React Native Expo - Rerokart E-Commerce
 
 **Tech Stack:** Expo + React Native + NativeWind + React Native Paper + Zustand + React Query
 

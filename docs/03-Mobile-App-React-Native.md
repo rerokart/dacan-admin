@@ -1,5 +1,5 @@
 # Mobile App Implementation Plan
-# React Native Expo - Decan India E-Commerce
+# React Native Expo - Rerokart E-Commerce
 
 **Version:** 3.0  
 **Framework:** React Native + Expo  
@@ -325,7 +325,7 @@ RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 GOOGLE_MAPS_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXX
 
 # App Config
-APP_NAME=Decan India
+APP_NAME=Rerokart
 APP_VERSION=1.0.0
 ```
 
@@ -338,7 +338,7 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "Decan India",
+  name: "Rerokart",
   slug: "decan-india",
   version: "1.0.0",
   orientation: "portrait",
@@ -1187,7 +1187,7 @@ export const paymentService = {
       currency: 'INR',
       key: razorpayKeyId,
       amount: options.amount * 100, // Convert to paise
-      name: 'Decan India',
+      name: 'Rerokart',
       order_id: options.orderId,
       prefill: {
         email: options.email,
