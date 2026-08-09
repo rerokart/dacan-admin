@@ -111,3 +111,6 @@ storybook-static/
 # PWA
 **/public/sw.js
 **/public/workbox-*.js
+
+# graphify generated output (regenerated via graphify update / post-commit hook)
+graphify-out/
