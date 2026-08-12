@@ -18,7 +18,10 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginRequest) => authService.login(data),
     onSuccess: (response) => {
-      setTokens({ accessToken: response.access_token });
+      // Match the cookie lifetime to the server-issued token TTL so the browser
+      // drops the cookie at the same time the token stops working.
+      const expiresInHours = response.expires_in ? response.expires_in / 3600 : 24;
+      setTokens({ accessToken: response.access_token, expiresAt: expiresInHours });
       // Store user data for display in header
       if (response.admin) {
         setUserData({

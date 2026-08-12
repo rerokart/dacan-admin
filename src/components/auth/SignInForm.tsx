@@ -14,21 +14,25 @@ import { useLogin } from "@/hooks/useAuth";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const { mutate: login, isPending } = useLogin();
 
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+      remember_me: false,
     },
   });
+
+  const rememberMe = watch("remember_me") ?? false;
 
   const onSubmit = (data: LoginFormData) => {
     login(data);
@@ -94,20 +98,19 @@ export default function SignInForm() {
                 </div>
 
                 {/* Remember Me & Forgot Password */}
-                {/* <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Checkbox checked={rememberMe} onChange={setRememberMe} />
+                    <Checkbox
+                      checked={rememberMe}
+                      onChange={(checked) =>
+                        setValue("remember_me", checked, { shouldDirty: true })
+                      }
+                    />
                     <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
                       Keep me logged in
                     </span>
                   </div>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                  >
-                    Forgot password?
-                  </Link>
-                </div> */}
+                </div>
 
                 {/* Submit Button */}
                 <div>

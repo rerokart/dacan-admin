@@ -4,6 +4,7 @@ import { defaultAxios } from "@/utils/axios/default.axios";
 export interface LoginRequest {
   email: string;
   password: string;
+  remember_me?: boolean;
 }
 
 export interface RegisterRequest {
@@ -35,6 +36,7 @@ export interface LoginResponse {
   access_token: string;
   admin: AuthUser;
   message: string;
+  expires_in: number;
 }
 
 export interface RegisterResponse {
