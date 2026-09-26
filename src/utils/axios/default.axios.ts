@@ -61,6 +61,12 @@ defaultAxios.interceptors.response.use(
     // Backend convention is { error, status: 0 }; fall back to `message` for
     // any responses that don't follow it.
     const message = response?.data?.error || response?.data?.message || response?.data || 'Something went wrong';
-    return Promise.reject(new Error(typeof message === 'string' ? message : 'Something went wrong'));
+    const rejectedError = new Error(typeof message === 'string' ? message : 'Something went wrong') as Error & {
+      status?: number;
+    };
+    // Attach the HTTP status so callers that need to branch on it (e.g. a
+    // 410 expired/used invitation link) don't have to parse the message.
+    rejectedError.status = response?.status;
+    return Promise.reject(rejectedError);
   }
 );

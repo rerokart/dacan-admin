@@ -67,6 +67,7 @@ export const ROUTES = {
   SIGN_UP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
+  ACCEPT_INVITE: "/accept-invite",
 
   // Error Pages
   ERROR_404: "/error-404",
@@ -138,9 +139,8 @@ export const AUTHENTICATED_ROUTES: string[] = [
 
 export const UNAUTHENTICATED_ROUTES: string[] = [
   ROUTES.SIGN_IN,
-  ROUTES.SIGN_UP,
   ROUTES.FORGOT_PASSWORD,
-  ROUTES.RESET_PASSWORD,
+  ROUTES.ACCEPT_INVITE,
   ROUTES.ERROR_404,
   ROUTES.ERROR_500,
 ];

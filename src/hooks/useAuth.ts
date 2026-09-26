@@ -1,12 +1,14 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   authService,
   LoginRequest,
   ForgotPasswordRequest,
+  VerifyOtpRequest,
   ResetPasswordRequest,
+  AcceptInvitationRequest,
 } from "@/services/auth.service";
 import { setTokens, setUserData, handleLogout } from "@/utils/helpers/token";
 import { AUTH_ME_QUERY_KEY } from "@/context/AuthContext";
@@ -106,12 +108,22 @@ export const useForgotPassword = () => {
 
   return useMutation({
     mutationFn: (data: ForgotPasswordRequest) => authService.forgotPassword(data),
-    onSuccess: () => {
-      toast.success("If an account exists for that email, a reset code has been sent.");
+    onSuccess: (response) => {
+      toast.success(response?.message || "If this email is registered, a code has been sent");
     },
     onError: (error: Error & { message?: string }) => {
-      toast.error(error?.message || "Failed to send reset email. Please try again.");
+      toast.error(error?.message || "Failed to send reset code. Please try again.");
     },
+  });
+};
+
+// =============================================================================
+// VERIFY OTP HOOK
+// =============================================================================
+
+export const useVerifyOtp = () => {
+  return useMutation({
+    mutationFn: (data: VerifyOtpRequest) => authService.verifyOtp(data),
   });
 };
 
@@ -131,6 +143,41 @@ export const useResetPassword = () => {
     },
     onError: (error: Error & { message?: string }) => {
       toast.error(error?.message || "Failed to reset password. Please try again.");
+    },
+  });
+};
+
+// =============================================================================
+// INVITATION HOOKS
+// =============================================================================
+
+/** Query key factory so callers can invalidate/refetch a specific token's lookup. */
+export const INVITATION_QUERY_KEY = (token: string | null) => ["invitation", token] as const;
+
+/**
+ * Loads an invitation by token for the accept-invitation page. Does not
+ * retry — a 410 (expired/used/revoked) or 404 is a terminal result, not a
+ * transient failure.
+ */
+export const useInvitation = (token: string | null) => {
+  return useQuery({
+    queryKey: INVITATION_QUERY_KEY(token),
+    queryFn: () => authService.getInvitation(token as string),
+    enabled: !!token,
+    retry: false,
+  });
+};
+
+export const useAcceptInvitation = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (data: AcceptInvitationRequest) => authService.acceptInvitation(data),
+    onSuccess: () => {
+      toast.success("Account activated. Please sign in.");
+    },
+    onError: (error: Error & { message?: string }) => {
+      toast.error(error?.message || "Failed to accept invitation. Please try again.");
     },
   });
 };

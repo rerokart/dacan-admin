@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -11,9 +12,13 @@ import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { loginSchema, LoginFormData } from "@/validations/auth.schema";
 import { useLogin } from "@/hooks/useAuth";
+import { ROUTES } from "@/utils/constants/NavigationRoutes";
 
-export default function SignInForm() {
+function SignInFormInner() {
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  // Prefilled after e.g. accepting an invitation — never auto-submitted.
+  const prefilledEmail = searchParams.get("email") ?? "";
 
   const { mutate: login, isPending } = useLogin();
 
@@ -26,7 +31,7 @@ export default function SignInForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: prefilledEmail,
       password: "",
       remember_me: false,
     },
@@ -110,6 +115,12 @@ export default function SignInForm() {
                       Keep me logged in
                     </span>
                   </div>
+                  <Link
+                    href={ROUTES.FORGOT_PASSWORD}
+                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
 
                 {/* Submit Button */}
@@ -166,5 +177,15 @@ export default function SignInForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInForm() {
+  // useSearchParams() opts this subtree into client-side rendering, so Next
+  // requires a Suspense boundary around it.
+  return (
+    <Suspense fallback={null}>
+      <SignInFormInner />
+    </Suspense>
   );
 }
