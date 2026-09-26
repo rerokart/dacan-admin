@@ -8,6 +8,8 @@ import { usePermissions } from "@/context/AuthContext";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/tabs";
 import AdminsTab from "@/components/admin-access/AdminsTab";
 import RolesMatrixTab from "@/components/admin-access/RolesMatrixTab";
+import AuditLogTab from "@/components/admin-access/AuditLogTab";
+import LoginHistoryTab from "@/components/admin-access/LoginHistoryTab";
 
 type TabKey = "admins" | "roles" | "audit-log" | "login-history";
 
@@ -83,12 +85,12 @@ function AdminAccessPageInner() {
             )}
             {can("audit_log.view") && (
               <TabPanel value="audit-log">
-                <ComingSoonPanel />
+                <AuditLogTab />
               </TabPanel>
             )}
             {can("audit_log.view") && (
               <TabPanel value="login-history">
-                <ComingSoonPanel />
+                <LoginHistoryTab />
               </TabPanel>
             )}
           </Tabs>
