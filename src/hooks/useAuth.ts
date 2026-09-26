@@ -127,6 +127,10 @@ export const useLogoutAll = () => {
     },
     onError: (error: Error & { message?: string }) => {
       toast.error(error?.message || "Failed to log out of all devices.");
+      // Even if the API call fails, still log out locally — the admin asked
+      // to be signed out everywhere, including here.
+      queryClient.clear();
+      handleLogout();
     },
   });
 };
