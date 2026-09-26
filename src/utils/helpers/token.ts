@@ -7,7 +7,6 @@ export interface StoredUser {
   id: string;
   email: string;
   full_name: string;
-  role: string;
 }
 
 export const setTokens = ({ accessToken, expiresAt = 144 }: { accessToken: string; expiresAt?: number }) => {
@@ -82,4 +81,27 @@ export const refreshToken = (newToken: string, expiresAt = 144) => {
 
 export const isTokenExpired = () => {
   return !isAuthenticated();
+};
+
+/**
+ * One-time cleanup: older builds stored a `role` string on the cached
+ * `admin_user` record. Role is now server-driven (see AuthContext /
+ * usePermissions) and must not be trusted from localStorage, so strip it
+ * from any stale entry left over from a previous session.
+ */
+export const cleanupStoredUserRole = () => {
+  if (typeof window === "undefined") return;
+
+  const raw = localStorage.getItem(USER_DATA_KEY);
+  if (!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if ("role" in parsed) {
+      const { id, email, full_name } = parsed as Partial<StoredUser>;
+      setUserData({ id: id ?? "", email: email ?? "", full_name: full_name ?? "" });
+    }
+  } catch {
+    // Malformed entry — leave it for getUserData() to fail safe on.
+  }
 };

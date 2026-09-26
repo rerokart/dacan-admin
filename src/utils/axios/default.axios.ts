@@ -47,7 +47,20 @@ defaultAxios.interceptors.response.use(
       return Promise.reject(new Error('Session expired. Please login again.'));
     }
 
-    const message = response?.data?.message || response?.data || 'Something went wrong';
+    // Handle 403 Forbidden - authenticated but not permitted. Do NOT log out;
+    // let the calling hook's onError toast the message, and tell AuthContext
+    // to refetch permissions in case the admin's role just changed.
+    if (response?.status === 403) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('auth:forbidden'));
+      }
+      const forbiddenMessage = response?.data?.error || response?.data?.message || "You don't have permission to do that.";
+      return Promise.reject(new Error(typeof forbiddenMessage === 'string' ? forbiddenMessage : "You don't have permission to do that."));
+    }
+
+    // Backend convention is { error, status: 0 }; fall back to `message` for
+    // any responses that don't follow it.
+    const message = response?.data?.error || response?.data?.message || response?.data || 'Something went wrong';
     return Promise.reject(new Error(typeof message === 'string' ? message : 'Something went wrong'));
   }
 );

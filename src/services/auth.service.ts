@@ -7,43 +7,73 @@ export interface LoginRequest {
   remember_me?: boolean;
 }
 
-export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
-
 export interface ForgotPasswordRequest {
   email: string;
 }
 
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
 export interface ResetPasswordRequest {
-  token: string;
+  reset_token: string;
   password: string;
 }
 
-export interface AuthUser {
+export interface AcceptInvitationRequest {
+  token: string;
+  password: string;
+  full_name?: string;
+}
+
+export interface AdminRole {
+  key: string;
+  name: string;
+  is_super: boolean;
+}
+
+export type AdminStatus = "invited" | "active" | "suspended" | "archived";
+
+export interface AuthAdmin {
   id: string;
   email: string;
   full_name: string;
-  role: string;
-  is_active: boolean;
+  status: AdminStatus;
+  role: AdminRole;
+  last_login_at: string | null;
   created_at: string;
 }
 
 export interface LoginResponse {
-  access_token: string;
-  admin: AuthUser;
   message: string;
+  admin: AuthAdmin;
+  permissions: string[];
+  access_token: string;
   expires_in: number;
 }
 
-export interface RegisterResponse {
-  message: string;
-  user: AuthUser;
+export interface MeResponse {
+  admin: AuthAdmin;
+  permissions: string[];
 }
 
+export interface AdminSession {
+  id: string;
+  ip: string;
+  user_agent: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  is_current: boolean;
+}
+
+export interface InvitationResponse {
+  email: string;
+  full_name: string;
+  role: Pick<AdminRole, "key" | "name">;
+  expires_at: string;
+}
 
 export const authService = {
   /**
@@ -54,42 +84,73 @@ export const authService = {
   },
 
   /**
-   * Register new user
+   * Logout current session
    */
-  register: async (data: RegisterRequest): Promise<RegisterResponse> => {
-    const response = await defaultAxios.post(API_ROUTES.AUTH.REGISTER, data);
-    return response.data;
+  logout: async (): Promise<{ message: string }> => {
+    return defaultAxios.post(API_ROUTES.AUTH.LOGOUT);
   },
 
   /**
-   * Logout current user
+   * Logout all sessions for the current admin
    */
-  logout: async (): Promise<void> => {
-    await defaultAxios.post(API_ROUTES.AUTH.LOGOUT);
+  logoutAll: async (): Promise<{ message: string; revoked: number }> => {
+    return defaultAxios.post(API_ROUTES.AUTH.LOGOUT_ALL);
   },
 
   /**
-   * Request password reset email
+   * Fetch the current admin + their permission set
+   */
+  me: async (): Promise<MeResponse> => {
+    return defaultAxios.get(API_ROUTES.AUTH.ME);
+  },
+
+  /**
+   * List active sessions for the current admin
+   */
+  listSessions: async (): Promise<{ sessions: AdminSession[] }> => {
+    return defaultAxios.get(API_ROUTES.AUTH.SESSIONS);
+  },
+
+  /**
+   * Revoke a single session by id
+   */
+  revokeSession: async (id: string): Promise<{ message: string }> => {
+    return defaultAxios.delete(API_ROUTES.AUTH.SESSION(id));
+  },
+
+  /**
+   * Request password reset OTP
    */
   forgotPassword: async (data: ForgotPasswordRequest): Promise<{ message: string }> => {
-    const response = await defaultAxios.post(API_ROUTES.AUTH.FORGOT_PASSWORD, data);
-    return response.data;
+    return defaultAxios.post(API_ROUTES.AUTH.FORGOT_PASSWORD, data);
   },
 
   /**
-   * Reset password with token
+   * Verify OTP sent for password reset
+   */
+  verifyOtp: async (data: VerifyOtpRequest): Promise<{ reset_token: string }> => {
+    return defaultAxios.post(API_ROUTES.AUTH.VERIFY_OTP, data);
+  },
+
+  /**
+   * Reset password with a verified reset token
    */
   resetPassword: async (data: ResetPasswordRequest): Promise<{ message: string }> => {
-    const response = await defaultAxios.post(API_ROUTES.AUTH.RESET_PASSWORD, data);
-    return response.data;
+    return defaultAxios.post(API_ROUTES.AUTH.RESET_PASSWORD, data);
   },
 
   /**
-   * Refresh access token
+   * Look up an invitation by token (for the accept-invitation page)
    */
-  refreshToken: async (): Promise<{ accessToken: string }> => {
-    const response = await defaultAxios.post(API_ROUTES.AUTH.REFRESH);
-    return response.data;
+  getInvitation: async (token: string): Promise<InvitationResponse> => {
+    return defaultAxios.get(API_ROUTES.AUTH.INVITATION(token));
+  },
+
+  /**
+   * Accept an invitation, setting the admin's password (and optionally name)
+   */
+  acceptInvitation: async (data: AcceptInvitationRequest): Promise<{ message: string }> => {
+    return defaultAxios.post(API_ROUTES.AUTH.ACCEPT_INVITATION, data);
   },
 };
 
