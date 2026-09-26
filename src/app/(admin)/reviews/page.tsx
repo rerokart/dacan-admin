@@ -22,6 +22,8 @@ import {
   REVIEW_STATUS_COLORS,
 } from "@/services/review.service";
 import type { ReviewFilters, Review } from "@/services/review.service";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -50,7 +52,7 @@ const StarRating = ({ rating }: { rating: number }) => {
   );
 };
 
-export default function ReviewsPage() {
+function ReviewsPageContent() {
   const [filters, setFilters] = useState<ReviewFilters>({
     page: 1,
     limit: 10,
@@ -318,7 +320,7 @@ export default function ReviewsPage() {
                             </svg>
                           </button>
                           {review.status === "pending" && (
-                            <>
+                            <Can permission="reviews.approve">
                               <button
                                 onClick={() => handleApprove(review.id)}
                                 disabled={isApproving}
@@ -357,7 +359,7 @@ export default function ReviewsPage() {
                                   />
                                 </svg>
                               </button>
-                            </>
+                            </Can>
                           )}
                         </div>
                       </TableCell>
@@ -501,17 +503,19 @@ export default function ReviewsPage() {
             </div>
 
             <div className="mt-6 flex justify-between">
-              <button
-                onClick={() => {
-                  setDeleteId(selectedReview.id);
-                }}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete Review
-              </button>
+              <Can permission="reviews.delete" fallback={<span />}>
+                <button
+                  onClick={() => {
+                    setDeleteId(selectedReview.id);
+                  }}
+                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Delete Review
+                </button>
+              </Can>
               <div className="flex gap-3">
                 {selectedReview.status === "pending" && (
-                  <>
+                  <Can permission="reviews.approve">
                     <button
                       onClick={() => handleReject(selectedReview.id)}
                       disabled={isRejecting}
@@ -526,7 +530,7 @@ export default function ReviewsPage() {
                     >
                       {isApproving ? "Approving..." : "Approve"}
                     </button>
-                  </>
+                  </Can>
                 )}
                 {selectedReview.status !== "pending" && (
                   <button
@@ -571,5 +575,13 @@ export default function ReviewsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ReviewsPage() {
+  return (
+    <PermissionGuard permission="reviews.view">
+      <ReviewsPageContent />
+    </PermissionGuard>
   );
 }

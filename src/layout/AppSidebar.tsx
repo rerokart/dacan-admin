@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { usePermissions } from "../context/AuthContext";
 import {
   BoxCubeIcon,
   BoxIconLine,
@@ -14,6 +15,7 @@ import {
   GroupIcon,
   HorizontaLDots,
   ListIcon,
+  LockIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -27,6 +29,7 @@ import {
   MENU_LABELS,
   SIDEBAR_CONFIG,
   type NavItem as NavItemConfig,
+  type NavSubItem as NavSubItemConfig,
 } from "../utils/constants/navigation";
 
 // Icon mapping from string names to components
@@ -44,6 +47,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   BoxIconLine: <BoxIconLine />,
   TableIcon: <TableIcon />,
   PageIcon: <PageIcon />,
+  LockIcon: <LockIcon />,
 };
 
 type NavItem = {
@@ -60,12 +64,50 @@ const transformNavItems = (items: NavItemConfig[]): NavItem[] =>
     icon: ICON_MAP[item.icon] || <GridIcon />,
   }));
 
-const navItems: NavItem[] = transformNavItems(MAIN_NAV_ITEMS);
-const othersItems: NavItem[] = transformNavItems(OTHER_NAV_ITEMS);
+/**
+ * Filters nav config by the admin's permissions before the icon transform.
+ * A group is dropped if its own `permission` fails, or if it has subItems
+ * and every one of them gets filtered out (a group's own `path`-only entries
+ * are unaffected). `superOnly` groups (leftover template/demo pages) only
+ * render for a Super Admin, regardless of `permission`.
+ */
+const filterNavItems = (
+  items: NavItemConfig[],
+  can: (key: string | string[]) => boolean,
+  isSuper: boolean
+): NavItemConfig[] =>
+  items.reduce<NavItemConfig[]>((acc, item) => {
+    if (item.superOnly && !isSuper) return acc;
+    if (item.permission && !can(item.permission)) return acc;
+
+    if (item.subItems) {
+      const visibleSubItems = item.subItems.filter(
+        (sub: NavSubItemConfig) => !sub.permission || can(sub.permission)
+      );
+      if (visibleSubItems.length === 0) return acc;
+      acc.push({ ...item, subItems: visibleSubItems });
+      return acc;
+    }
+
+    acc.push(item);
+    return acc;
+  }, []);
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { can, isSuper, permissions } = usePermissions();
+
+  const navItems: NavItem[] = useMemo(
+    () => transformNavItems(filterNavItems(MAIN_NAV_ITEMS, can, isSuper)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [permissions, isSuper]
+  );
+  const othersItems: NavItem[] = useMemo(
+    () => transformNavItems(filterNavItems(OTHER_NAV_ITEMS, can, isSuper)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [permissions, isSuper]
+  );
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -227,9 +269,8 @@ const AppSidebar: React.FC = () => {
       if (matchedSubmenu) break;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenSubmenu(matchedSubmenu);
-  }, [pathname]);
+  }, [pathname, navItems, othersItems]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened

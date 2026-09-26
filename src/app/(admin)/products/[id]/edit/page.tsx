@@ -12,8 +12,9 @@ import { useProduct, useUpdateProduct, useUploadProductImage, useAddProductImage
 import { VariantModal } from "@/components/products/VariantModal";
 import type { ProductVariant } from "@/services/product.service";
 import Badge from "@/components/ui/badge/Badge";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
-export default function EditProductPage() {
+function EditProductPageContent() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
@@ -612,5 +613,13 @@ export default function EditProductPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function EditProductPage() {
+  return (
+    <PermissionGuard permission="products.edit">
+      <EditProductPageContent />
+    </PermissionGuard>
   );
 }

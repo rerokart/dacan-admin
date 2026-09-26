@@ -20,6 +20,7 @@ import {
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 import Select from "@/components/form/Select";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const PAYMENT_STATUS_FILTER_OPTIONS = [
   { value: "", label: "All Payment" },
@@ -62,7 +63,7 @@ const formatDate = (dateStr: string | undefined) => {
   });
 };
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const [filters, setFilters] = useState<OrderFilters>({
     page: 1,
     limit: 10,
@@ -339,5 +340,13 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <PermissionGuard permission="orders.view">
+      <OrdersPageContent />
+    </PermissionGuard>
   );
 }

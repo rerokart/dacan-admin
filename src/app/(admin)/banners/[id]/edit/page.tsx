@@ -8,13 +8,14 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useBanner, useUpdateBanner } from "@/hooks/useBanners";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const formatDateForInput = (dateStr: string | undefined): string => {
   if (!dateStr) return "";
   return dateStr.split("T")[0];
 };
 
-export default function EditBannerPage() {
+function EditBannerPageContent() {
   const router = useRouter();
   const params = useParams();
   const bannerId = params.id as string;
@@ -302,5 +303,13 @@ export default function EditBannerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditBannerPage() {
+  return (
+    <PermissionGuard permission="banners.edit">
+      <EditBannerPageContent />
+    </PermissionGuard>
   );
 }

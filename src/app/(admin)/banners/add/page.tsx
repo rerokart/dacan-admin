@@ -8,12 +8,13 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCreateBanner } from "@/hooks/useBanners";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const formatDateForInput = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-export default function AddBannerPage() {
+function AddBannerPageContent() {
   const router = useRouter();
   const today = new Date();
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
@@ -254,5 +255,13 @@ export default function AddBannerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AddBannerPage() {
+  return (
+    <PermissionGuard permission="banners.create">
+      <AddBannerPageContent />
+    </PermissionGuard>
   );
 }

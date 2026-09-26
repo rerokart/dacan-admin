@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useWishlists } from "@/hooks/useWishlists";
 import type { WishlistFilters } from "@/services/wishlist.service";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -21,7 +22,7 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-export default function WishlistsPage() {
+function WishlistsPageContent() {
   const [filters, setFilters] = useState<WishlistFilters>({
     page: 1,
     limit: 10,
@@ -226,5 +227,13 @@ export default function WishlistsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function WishlistsPage() {
+  return (
+    <PermissionGuard permission="wishlist.view">
+      <WishlistsPageContent />
+    </PermissionGuard>
   );
 }

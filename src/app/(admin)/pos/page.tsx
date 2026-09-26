@@ -11,10 +11,12 @@ import {
 import type { POSProduct, POSCartItem, OfflineOrderResponse, POSCustomer } from "@/services/pos.service";
 import { formatReceiptDate } from "@/services/pos.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
 type PaymentMethod = "cash" | "card" | "upi";
 
-export default function POSPage() {
+function POSPageContent() {
   const [productSearch, setProductSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
@@ -274,13 +276,15 @@ export default function POSPage() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleCreateCustomer}
-                  disabled={creatingCustomer || !newCustomer.full_name || !newCustomer.mobile}
-                  className="flex-1 rounded-lg bg-brand-500 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-                >
-                  {creatingCustomer ? "..." : "Add"}
-                </button>
+                <Can permission="pos.create">
+                  <button
+                    onClick={handleCreateCustomer}
+                    disabled={creatingCustomer || !newCustomer.full_name || !newCustomer.mobile}
+                    className="flex-1 rounded-lg bg-brand-500 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                  >
+                    {creatingCustomer ? "..." : "Add"}
+                  </button>
+                </Can>
               </div>
             </div>
           ) : (
@@ -314,12 +318,14 @@ export default function POSPage() {
                 </div>
               )}
               <div className="flex gap-2">
-                <button
-                  onClick={() => setShowNewCustomerForm(true)}
-                  className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300"
-                >
-                  + New Customer
-                </button>
+                <Can permission="pos.create">
+                  <button
+                    onClick={() => setShowNewCustomerForm(true)}
+                    className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300"
+                  >
+                    + New Customer
+                  </button>
+                </Can>
                 <button
                   onClick={() => setSelectedCustomer({ id: "", full_name: "Walk-in Customer", mobile: "" })}
                   className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300"
@@ -417,17 +423,19 @@ export default function POSPage() {
           </div>
 
           {/* Complete Sale Button */}
-          <button
-            onClick={handleCompleteSale}
-            disabled={
-              cart.length === 0 ||
-              creatingOrder ||
-              (paymentMethod === "cash" && amountPaid < totals.total)
-            }
-            className="mt-4 w-full rounded-xl bg-green-600 py-3 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {creatingOrder ? "Processing..." : `Complete Sale - ${formatCurrency(totals.total)}`}
-          </button>
+          <Can permission="pos.create">
+            <button
+              onClick={handleCompleteSale}
+              disabled={
+                cart.length === 0 ||
+                creatingOrder ||
+                (paymentMethod === "cash" && amountPaid < totals.total)
+              }
+              className="mt-4 w-full rounded-xl bg-green-600 py-3 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {creatingOrder ? "Processing..." : `Complete Sale - ${formatCurrency(totals.total)}`}
+            </button>
+          </Can>
         </div>
       </div>
 
@@ -565,6 +573,14 @@ export default function POSPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function POSPage() {
+  return (
+    <PermissionGuard permission="pos.view">
+      <POSPageContent />
+    </PermissionGuard>
   );
 }
 

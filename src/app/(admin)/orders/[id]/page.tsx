@@ -19,6 +19,8 @@ import {
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 import Select from "@/components/form/Select";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
 const formatDate = (dateStr: string | undefined) => {
   if (!dateStr) return "—";
@@ -33,7 +35,7 @@ const formatDate = (dateStr: string | undefined) => {
   });
 };
 
-export default function OrderDetailPage() {
+function OrderDetailPageContent() {
   const params = useParams();
   const orderId = params.id as string;
 
@@ -134,26 +136,30 @@ export default function OrderDetailPage() {
               </svg>
               {isDownloading ? "Downloading..." : "Download Invoice"}
             </button>
-            <button
-              onClick={() => {
-                setNewStatus(order.order_status);
-                setStatusNotes("");
-                setShowStatusModal(true);
-              }}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
-            >
-              Update Status
-            </button>
-            {canCancel && (
+            <Can permission="orders.edit">
               <button
                 onClick={() => {
-                  setCancelReason("");
-                  setShowCancelModal(true);
+                  setNewStatus(order.order_status);
+                  setStatusNotes("");
+                  setShowStatusModal(true);
                 }}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
               >
-                Cancel Order
+                Update Status
               </button>
+            </Can>
+            {canCancel && (
+              <Can permission="orders.edit">
+                <button
+                  onClick={() => {
+                    setCancelReason("");
+                    setShowCancelModal(true);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Cancel Order
+                </button>
+              </Can>
             )}
           </div>
         </div>
@@ -327,15 +333,17 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                 )}
-                <button
-                  onClick={() => {
-                    setNewPaymentStatus(order.payment_status ?? "");
-                    setShowPaymentModal(true);
-                  }}
-                  className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                >
-                  Update Payment Status
-                </button>
+                <Can permission="orders.manage">
+                  <button
+                    onClick={() => {
+                      setNewPaymentStatus(order.payment_status ?? "");
+                      setShowPaymentModal(true);
+                    }}
+                    className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    Update Payment Status
+                  </button>
+                </Can>
               </div>
             </div>
 
@@ -505,5 +513,13 @@ export default function OrderDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrderDetailPage() {
+  return (
+    <PermissionGuard permission="orders.view">
+      <OrderDetailPageContent />
+    </PermissionGuard>
   );
 }

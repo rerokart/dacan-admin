@@ -9,12 +9,13 @@ import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCreateCoupon } from "@/hooks/useCoupons";
 import { couponService } from "@/services/coupon.service";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const formatDateForInput = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-export default function AddCouponPage() {
+function AddCouponPageContent() {
   const router = useRouter();
   const today = new Date();
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
@@ -275,5 +276,13 @@ export default function AddCouponPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AddCouponPage() {
+  return (
+    <PermissionGuard permission="coupons.create">
+      <AddCouponPageContent />
+    </PermissionGuard>
   );
 }

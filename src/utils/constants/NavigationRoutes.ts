@@ -59,6 +59,9 @@ export const ROUTES = {
   // User
   PROFILE: "/profile",
 
+  // Settings (Admin Access screen ships in a later task)
+  SETTINGS_ADMIN_ACCESS: "/settings/admin-access",
+
   // Authentication
   SIGN_IN: "/signin",
   SIGN_UP: "/signup",

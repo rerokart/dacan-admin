@@ -31,12 +31,13 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const COLORS = ["#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
 
 type DatePreset = "week" | "month" | "year" | "custom";
 
-export default function ReportsPage() {
+function ReportsPageContent() {
   const presets = useMemo(() => getDateRangePresets(), []);
 
   const [datePreset, setDatePreset] = useState<DatePreset>("month");
@@ -378,6 +379,14 @@ export default function ReportsPage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <PermissionGuard permission="analytics.view">
+      <ReportsPageContent />
+    </PermissionGuard>
   );
 }
 
