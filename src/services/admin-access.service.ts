@@ -85,9 +85,20 @@ export interface RolesResponse {
   roles: Role[];
 }
 
-/** Permission catalog grouped by area, e.g. `{ products: ["view", "create", ...] }`. */
+export interface PermissionCatalogEntry {
+  key: string;
+  action: string;
+  description: string;
+}
+
+export interface PermissionCatalogArea {
+  area: string;
+  permissions: PermissionCatalogEntry[];
+}
+
+/** Permission catalog grouped by area, in catalog order (spec §4.5). */
 export interface PermissionCatalogResponse {
-  permissions: Record<string, string[]>;
+  areas: PermissionCatalogArea[];
 }
 
 const buildQueryString = <T extends object>(params?: T): string => {
@@ -158,7 +169,7 @@ export const adminAccessService = {
 
   updateRolePermissions: async (roleId: string, keys: string[]): Promise<{ role: Role }> => {
     return defaultAxios.put(API_ROUTES.ROLES.UPDATE_PERMISSIONS(roleId), {
-      permission_keys: keys,
+      permissions: keys,
     });
   },
 };

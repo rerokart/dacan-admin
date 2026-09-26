@@ -8,6 +8,7 @@ import {
   type UpdateAdminRequest,
 } from "@/services/admin-access.service";
 import { useToast } from "@/components/ui/toast";
+import { AUTH_ME_QUERY_KEY } from "@/context/AuthContext";
 
 // =============================================================================
 // QUERY KEYS
@@ -223,6 +224,8 @@ export const useUpdateRolePermissions = () => {
       adminAccessService.updateRolePermissions(roleId, keys),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rolesKeys.all });
+      // The editor may have just edited their own role's permissions.
+      queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
       toast.success("Role permissions updated");
     },
     onError: (error: Error) => {

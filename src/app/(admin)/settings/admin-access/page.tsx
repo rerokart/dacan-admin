@@ -1,12 +1,13 @@
 "use client";
 
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import { usePermissions } from "@/context/AuthContext";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/tabs";
 import AdminsTab from "@/components/admin-access/AdminsTab";
+import RolesMatrixTab from "@/components/admin-access/RolesMatrixTab";
 
 type TabKey = "admins" | "roles" | "audit-log" | "login-history";
 
@@ -23,6 +24,7 @@ function AdminAccessPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [rolesTabDirty, setRolesTabDirty] = useState(false);
 
   const availableTabs = useMemo(() => {
     const tabs: { key: TabKey; label: string }[] = [];
@@ -43,6 +45,13 @@ function AdminAccessPageInner() {
     : availableTabs[0]?.key;
 
   const handleTabChange = (tab: string) => {
+    if (activeTab === "roles" && rolesTabDirty && tab !== activeTab) {
+      const confirmed = window.confirm(
+        "You have unsaved role permission changes. Leave this tab and discard them?"
+      );
+      if (!confirmed) return;
+      setRolesTabDirty(false);
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.replace(`${pathname}?${params.toString()}`);
@@ -69,7 +78,7 @@ function AdminAccessPageInner() {
             )}
             {can("admin_access.view") && (
               <TabPanel value="roles">
-                <ComingSoonPanel />
+                <RolesMatrixTab onDirtyChange={setRolesTabDirty} />
               </TabPanel>
             )}
             {can("audit_log.view") && (
