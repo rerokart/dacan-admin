@@ -1,6 +1,7 @@
 import { API_ROUTES } from "@/utils/axios/apiEndPoint";
 import { defaultAxios } from "@/utils/axios/default.axios";
 import type { AdminRole, AdminSession, AdminStatus, AuthAdmin } from "@/services/auth.service";
+import type { LoginHistoryEntry } from "@/services/audit.service";
 
 export type { AdminRole, AdminSession, AdminStatus, AuthAdmin };
 
@@ -27,18 +28,14 @@ export interface AdminListResponse {
   per_page: number;
 }
 
-export interface LoginHistoryEntry {
-  id: string;
-  success: boolean;
-  ip: string;
-  user_agent: string;
-  created_at: string;
-  reason?: string | null;
-}
+/** A session row as returned by GET /api/admin/admins/:id — no `is_current`
+ *  (that flag only exists on the caller's own /auth/sessions list). */
+export type AdminDetailSession = Omit<AdminSession, "is_current">;
 
 export interface AdminDetailResponse {
   admin: AuthAdmin;
-  sessions: AdminSession[];
+  sessions: AdminDetailSession[];
+  /** Same row shape as the Login History tab (admin_login_history). */
   login_history: LoginHistoryEntry[];
 }
 

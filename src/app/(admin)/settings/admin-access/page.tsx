@@ -13,14 +13,6 @@ import LoginHistoryTab from "@/components/admin-access/LoginHistoryTab";
 
 type TabKey = "admins" | "roles" | "audit-log" | "login-history";
 
-function ComingSoonPanel() {
-  return (
-    <div className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-      Coming in next task
-    </div>
-  );
-}
-
 function AdminAccessPageInner() {
   const { can } = usePermissions();
   const router = useRouter();
@@ -94,11 +86,8 @@ function AdminAccessPageInner() {
               </TabPanel>
             )}
           </Tabs>
-        ) : (
-          // PermissionGuard already screens out an admin with neither
-          // admin_access.view nor audit_log.view before this renders.
-          <ComingSoonPanel />
-        )}
+        ) : null /* PermissionGuard screens out an admin with neither
+                    admin_access.view nor audit_log.view before this renders. */}
       </div>
     </div>
   );
