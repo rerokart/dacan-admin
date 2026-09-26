@@ -6,10 +6,14 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Image from "next/image";
+import { usePermissions } from "@/context/AuthContext";
 
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
+  // Role is server-driven (see AuthContext) — never read it from the
+  // localStorage-cached `admin_user` record.
+  const { admin } = usePermissions();
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
@@ -34,7 +38,7 @@ export default function UserMetaCard() {
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Team Manager
+                  {admin?.role.name ?? "—"}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">

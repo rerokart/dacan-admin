@@ -79,6 +79,38 @@ export const useLogout = () => {
 };
 
 // =============================================================================
+// SESSIONS HOOKS
+// =============================================================================
+
+export const sessionsKeys = {
+  all: ["auth", "sessions"] as const,
+};
+
+/** The signed-in admin's own active sessions (Profile → active sessions). */
+export const useMySessions = () => {
+  return useQuery({
+    queryKey: sessionsKeys.all,
+    queryFn: () => authService.listSessions(),
+  });
+};
+
+export const useRevokeMySession = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => authService.revokeSession(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sessionsKeys.all });
+      toast.success("Signed out of that session");
+    },
+    onError: (error: Error & { message?: string }) => {
+      toast.error(error?.message || "Failed to sign out of that session");
+    },
+  });
+};
+
+// =============================================================================
 // LOGOUT ALL DEVICES HOOK
 // =============================================================================
 
