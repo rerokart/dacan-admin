@@ -1,7 +1,24 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { getToken, handleLogout } from '@/utils/helpers/token';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Public auth endpoints answer 401 for "wrong password / account locked /
+// wrong or expired code / expired reset link". Those are form errors, not an
+// expired session, so they must never trigger a logout.
+const PUBLIC_AUTH_PATH =
+  /(^|\/)auth\/(login|forgot-password|verify-otp|reset-password|invitations(\/[^/]*)?)\/?$/;
+
+function isPublicAuthRequest(url: string | undefined): boolean {
+  if (!url) return false;
+  const path = url.split(/[?#]/)[0];
+  return PUBLIC_AUTH_PATH.test(path);
+}
+
+function requestCarriedToken(config: InternalAxiosRequestConfig | undefined): boolean {
+  const header = config?.headers?.Authorization ?? config?.headers?.get?.('Authorization');
+  return typeof header === 'string' && header.startsWith('Bearer ');
+}
 
 export const defaultAxios = axios.create({
   baseURL: BASE_URL,
@@ -41,8 +58,11 @@ defaultAxios.interceptors.response.use(
   (error) => {
     const { response } = error;
 
-    // Handle 401 Unauthorized - token expired or invalid
-    if (response?.status === 401) {
+    // Handle 401 Unauthorized on an authenticated call - token expired,
+    // revoked or invalid. A 401 from a public auth endpoint (or from a call
+    // made without a token) falls through to the generic error below so the
+    // form can show the backend's message.
+    if (response?.status === 401 && requestCarriedToken(error.config) && !isPublicAuthRequest(error.config?.url)) {
       handleLogout();
       return Promise.reject(new Error('Session expired. Please login again.'));
     }
