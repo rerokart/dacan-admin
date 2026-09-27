@@ -41,11 +41,19 @@ export default function UserMetaCard() {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<NameFormData>({
     resolver: zodResolver(nameSchema),
-    values: { full_name: admin?.full_name ?? "" },
+    defaultValues: { full_name: "" },
   });
+
+  // Start every edit from the current saved name, so a cancelled draft never
+  // reappears and a background /me refetch never overwrites what's typed.
+  const startEdit = () => {
+    reset({ full_name: admin?.full_name ?? "" });
+    openModal();
+  };
 
   const draft = useWatch({ control, name: "full_name" }) ?? "";
   const unchanged = draft.trim() === (admin?.full_name ?? "").trim();
@@ -84,7 +92,7 @@ export default function UserMetaCard() {
           </div>
           <button
             type="button"
-            onClick={openModal}
+            onClick={startEdit}
             disabled={!admin}
             className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 xl:w-auto xl:whitespace-nowrap"
           >
