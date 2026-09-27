@@ -21,6 +21,15 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
+export interface UpdateMeRequest {
+  full_name: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
 export interface AcceptInvitationRequest {
   token: string;
   password: string;
@@ -102,6 +111,23 @@ export const authService = {
    */
   me: async (): Promise<MeResponse> => {
     return defaultAxios.get(API_ROUTES.AUTH.ME);
+  },
+
+  /**
+   * Edit the current admin's own name (the only self-editable field)
+   */
+  updateMe: async (data: UpdateMeRequest): Promise<MeResponse> => {
+    return defaultAxios.put(API_ROUTES.AUTH.ME, data);
+  },
+
+  /**
+   * Change the current admin's password. This session stays signed in;
+   * every other session is revoked.
+   */
+  changePassword: async (
+    data: ChangePasswordRequest
+  ): Promise<{ message: string; revoked: number }> => {
+    return defaultAxios.post(API_ROUTES.AUTH.CHANGE_PASSWORD, data);
   },
 
   /**

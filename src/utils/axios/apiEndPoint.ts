@@ -10,6 +10,7 @@ export const API_ROUTES = {
     FORGOT_PASSWORD: "auth/forgot-password",
     VERIFY_OTP: "auth/verify-otp",
     RESET_PASSWORD: "auth/reset-password",
+    CHANGE_PASSWORD: "auth/change-password",
     INVITATION: (token: string) => `auth/invitations/${token}`,
     ACCEPT_INVITATION: "auth/invitations/accept",
   },
