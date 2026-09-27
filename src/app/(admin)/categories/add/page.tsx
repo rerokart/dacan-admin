@@ -8,6 +8,7 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCategories, useCreateCategory, useUploadCategoryImage } from "@/hooks/useCategories";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const generateSlug = (name: string): string => {
   return name
@@ -16,7 +17,7 @@ const generateSlug = (name: string): string => {
     .replace(/^-|-$/g, "");
 };
 
-export default function AddCategoryPage() {
+function AddCategoryPageContent() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -269,5 +270,13 @@ export default function AddCategoryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AddCategoryPage() {
+  return (
+    <PermissionGuard permission="categories.create">
+      <AddCategoryPageContent />
+    </PermissionGuard>
   );
 }

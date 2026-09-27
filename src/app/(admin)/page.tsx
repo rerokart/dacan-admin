@@ -3,13 +3,14 @@ import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
 import LowStockAlerts from "@/components/ecommerce/LowStockAlerts";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 export const metadata: Metadata = {
   title: "Dashboard | Rerokart Admin",
   description: "E-commerce Admin Dashboard for Rerokart",
 };
 
-export default function Dashboard() {
+function DashboardContent() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       {/* Stats Cards - Full Width */}
@@ -32,5 +33,13 @@ export default function Dashboard() {
         <LowStockAlerts />
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <PermissionGuard permission="analytics.view">
+      <DashboardContent />
+    </PermissionGuard>
   );
 }

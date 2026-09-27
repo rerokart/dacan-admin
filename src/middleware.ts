@@ -3,6 +3,7 @@ import {
   isPublicRoute,
   getLoginRedirect,
   getPostLoginRedirect,
+  ROUTES,
 } from "./utils/constants/NavigationRoutes";
 import { ACCESS_TOKEN_NAME } from "./utils/constants/enums";
 
@@ -13,8 +14,11 @@ export function middleware(request: NextRequest) {
 
   // Authenticated user
   if (accessToken) {
-    // Redirect from auth pages (signin, signup, etc.) to dashboard
-    if (isPublicRoute(pathname)) {
+    // Redirect from auth pages (signin, signup, etc.) to dashboard — except
+    // accept-invite: an already-signed-in admin may be opening an invite
+    // link for a *different* account (e.g. an invitee who is also an admin
+    // elsewhere), so let the page load and decide instead of bouncing them.
+    if (isPublicRoute(pathname) && pathname !== ROUTES.ACCEPT_INVITE) {
       return NextResponse.redirect(new URL(getPostLoginRedirect(), request.url));
     }
     return NextResponse.next();

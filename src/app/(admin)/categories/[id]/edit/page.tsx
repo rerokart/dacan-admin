@@ -8,6 +8,7 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCategory, useCategories, useUpdateCategory, useUploadCategoryImage } from "@/hooks/useCategories";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const generateSlug = (name: string): string => {
   return name
@@ -16,7 +17,7 @@ const generateSlug = (name: string): string => {
     .replace(/^-|-$/g, "");
 };
 
-export default function EditCategoryPage() {
+function EditCategoryPageContent() {
   const router = useRouter();
   const params = useParams();
   const categoryId = params.id as string;
@@ -316,5 +317,13 @@ export default function EditCategoryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditCategoryPage() {
+  return (
+    <PermissionGuard permission="categories.edit">
+      <EditCategoryPageContent />
+    </PermissionGuard>
   );
 }

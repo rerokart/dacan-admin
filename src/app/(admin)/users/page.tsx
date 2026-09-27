@@ -14,6 +14,8 @@ import {
 import Badge from "@/components/ui/badge/Badge";
 import { useUsers, useToggleUserBlock } from "@/hooks/useUsers";
 import type { UserFilters } from "@/services/user.service";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -23,7 +25,7 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-export default function UsersPage() {
+function UsersPageContent() {
   const [filters, setFilters] = useState<UserFilters>({
     page: 1,
     limit: 10,
@@ -246,45 +248,47 @@ export default function UsersPage() {
                               />
                             </svg>
                           </Link>
-                          <button
-                            onClick={() => handleToggleBlock(user.id, user.is_active)}
-                            disabled={isToggling}
-                            className={`rounded-lg p-2 ${
-                              user.is_active
-                                ? "text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                                : "text-gray-500 hover:bg-green-50 hover:text-green-600 dark:text-gray-400 dark:hover:bg-green-900/20 dark:hover:text-green-400"
-                            }`}
-                          >
-                            {user.is_active ? (
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            )}
-                          </button>
+                          <Can permission="customers.manage">
+                            <button
+                              onClick={() => handleToggleBlock(user.id, user.is_active)}
+                              disabled={isToggling}
+                              className={`rounded-lg p-2 ${
+                                user.is_active
+                                  ? "text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                                  : "text-gray-500 hover:bg-green-50 hover:text-green-600 dark:text-gray-400 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                              }`}
+                            >
+                              {user.is_active ? (
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          </Can>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -325,5 +329,13 @@ export default function UsersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <PermissionGuard permission="customers.view">
+      <UsersPageContent />
+    </PermissionGuard>
   );
 }

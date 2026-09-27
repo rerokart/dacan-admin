@@ -2,11 +2,45 @@ export const API_ROUTES = {
   // Auth
   AUTH: {
     LOGIN: "auth/login",
-    REGISTER: "auth/register",
     LOGOUT: "auth/logout",
-    REFRESH: "auth/refresh",
+    LOGOUT_ALL: "auth/logout-all",
+    ME: "auth/me",
+    SESSIONS: "auth/sessions",
+    SESSION: (id: string | number) => `auth/sessions/${id}`,
     FORGOT_PASSWORD: "auth/forgot-password",
+    VERIFY_OTP: "auth/verify-otp",
     RESET_PASSWORD: "auth/reset-password",
+    INVITATION: (token: string) => `auth/invitations/${token}`,
+    ACCEPT_INVITATION: "auth/invitations/accept",
+  },
+
+  // Admins (admin user management)
+  ADMINS: {
+    LIST: "admins",
+    GET: (id: string | number) => `admins/${id}`,
+    INVITE: "admins/invite",
+    RESEND: (id: string | number) => `admins/${id}/resend-invite`,
+    REVOKE_INVITE: (id: string | number) => `admins/${id}/invite`,
+    UPDATE: (id: string | number) => `admins/${id}`,
+    SUSPEND: (id: string | number) => `admins/${id}/suspend`,
+    REACTIVATE: (id: string | number) => `admins/${id}/reactivate`,
+    ARCHIVE: (id: string | number) => `admins/${id}/archive`,
+    REVOKE_SESSIONS: (id: string | number) => `admins/${id}/sessions`,
+  },
+
+  // Roles & permissions
+  ROLES: {
+    LIST: "roles",
+    PERMISSIONS: "permissions",
+    UPDATE_PERMISSIONS: (id: string | number) => `roles/${id}/permissions`,
+  },
+
+  // Audit log & login history
+  AUDIT: {
+    LIST: "audit-log",
+    EXPORT: "audit-log/export",
+    VERIFY: "audit-log/verify",
+    LOGIN_HISTORY: "login-history",
   },
 
   // Categories

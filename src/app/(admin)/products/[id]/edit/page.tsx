@@ -12,8 +12,10 @@ import { useProduct, useUpdateProduct, useUploadProductImage, useAddProductImage
 import { VariantModal } from "@/components/products/VariantModal";
 import type { ProductVariant } from "@/services/product.service";
 import Badge from "@/components/ui/badge/Badge";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
-export default function EditProductPage() {
+function EditProductPageContent() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
@@ -486,16 +488,18 @@ export default function EditProductPage() {
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
                 Product Variants
               </h3>
-              <button
-                type="button"
-                onClick={handleAddVariant}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Variant
-              </button>
+              <Can permission="products.create">
+                <button
+                  type="button"
+                  onClick={handleAddVariant}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Variant
+                </button>
+              </Can>
             </div>
 
             {loadingVariants ? (
@@ -547,15 +551,17 @@ export default function EditProductPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteVariantId(variant.id)}
-                              className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
+                            <Can permission="products.delete">
+                              <button
+                                type="button"
+                                onClick={() => setDeleteVariantId(variant.id)}
+                                className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </Can>
                           </div>
                         </td>
                       </tr>
@@ -600,17 +606,27 @@ export default function EditProductPage() {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleDeleteVariant}
-                disabled={isDeletingVariant}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {isDeletingVariant ? "Deleting..." : "Delete"}
-              </button>
+              <Can permission="products.delete">
+                <button
+                  onClick={handleDeleteVariant}
+                  disabled={isDeletingVariant}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeletingVariant ? "Deleting..." : "Delete"}
+                </button>
+              </Can>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function EditProductPage() {
+  return (
+    <PermissionGuard permission="products.edit">
+      <EditProductPageContent />
+    </PermissionGuard>
   );
 }

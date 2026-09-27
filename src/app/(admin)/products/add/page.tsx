@@ -9,8 +9,9 @@ import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCategories } from "@/hooks/useCategories";
 import { useCreateProduct, useUploadProductImage, useAddProductImage } from "@/hooks/useProducts";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
-export default function AddProduct() {
+function AddProductContent() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -392,5 +393,13 @@ export default function AddProduct() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AddProduct() {
+  return (
+    <PermissionGuard permission="products.create">
+      <AddProductContent />
+    </PermissionGuard>
   );
 }

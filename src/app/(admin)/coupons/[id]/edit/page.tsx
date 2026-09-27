@@ -7,12 +7,13 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import { useCoupon, useUpdateCoupon } from "@/hooks/useCoupons";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 const formatDateForInput = (dateStr: string): string => {
   return dateStr.split("T")[0];
 };
 
-export default function EditCouponPage() {
+function EditCouponPageContent() {
   const router = useRouter();
   const params = useParams();
   const couponId = params.id as string;
@@ -309,5 +310,13 @@ export default function EditCouponPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditCouponPage() {
+  return (
+    <PermissionGuard permission="coupons.edit">
+      <EditCouponPageContent />
+    </PermissionGuard>
   );
 }

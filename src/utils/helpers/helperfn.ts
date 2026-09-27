@@ -215,6 +215,43 @@ export const downloadFile = (url: string, filename: string): void => {
   document.body.removeChild(link);
 };
 
+// Download an in-memory Blob (e.g. a CSV export response) as a file
+export const downloadBlob = (blob: Blob, filename: string): void => {
+  const url = window.URL.createObjectURL(blob);
+  downloadFile(url, filename);
+  window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Best-effort "Browser on OS" summary of a raw User-Agent string, shared by
+ * the Audit Log / Login History tabs and the Profile "active sessions" card.
+ * Order matters: Edge and Opera UAs also match the Chrome/Safari patterns,
+ * so the more specific checks run first.
+ */
+export const shortenUserAgent = (userAgent?: string | null): string => {
+  if (!userAgent || typeof userAgent !== "string") return "Unknown device";
+
+  let os = "Unknown OS";
+  if (/windows/i.test(userAgent)) os = "Windows";
+  else if (/android/i.test(userAgent)) os = "Android";
+  else if (/iphone|ipad|ipod/i.test(userAgent)) os = "iOS";
+  else if (/mac os x|macintosh/i.test(userAgent)) os = "macOS";
+  else if (/linux/i.test(userAgent)) os = "Linux";
+
+  let browser = "Unknown browser";
+  if (/edg\//i.test(userAgent)) browser = "Edge";
+  else if (/opr\/|opera/i.test(userAgent)) browser = "Opera";
+  else if (/chrome\//i.test(userAgent) && !/chromium/i.test(userAgent)) browser = "Chrome";
+  else if (/firefox\//i.test(userAgent)) browser = "Firefox";
+  else if (/safari\//i.test(userAgent) && !/chrome\//i.test(userAgent)) browser = "Safari";
+
+  if (browser === "Unknown browser" && os === "Unknown OS") {
+    return truncateText(userAgent, 40);
+  }
+
+  return `${browser} on ${os}`;
+};
+
 // Generate random hex color
 export const randomColor = (): string => {
   return (

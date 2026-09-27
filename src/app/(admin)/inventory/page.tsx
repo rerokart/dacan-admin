@@ -17,6 +17,8 @@ import {
   useUpdateStock,
 } from "@/hooks/useInventory";
 import type { StockFilters, UpdateStockRequest } from "@/services/inventory.service";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import Can from "@/components/auth/Can";
 
 const getStockStatusBadge = (status: string) => {
   switch (status) {
@@ -43,7 +45,7 @@ const getStockStatusBadge = (status: string) => {
   }
 };
 
-export default function InventoryPage() {
+function InventoryPageContent() {
   const [filters, setFilters] = useState<StockFilters>({
     page: 1,
     limit: 10,
@@ -296,21 +298,23 @@ export default function InventoryPage() {
                         {getStockStatusBadge(item.status)}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right">
-                        <button
-                          onClick={() =>
-                            setUpdateModal({
-                              product_id: item.product_id,
-                              variant_id: item.variant_id,
-                              product_name: `${item.product_name}${
-                                item.variant_name ? ` - ${item.variant_name}` : ""
-                              }`,
-                              current_stock: item.current_stock,
-                            })
-                          }
-                          className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
-                        >
-                          Update Stock
-                        </button>
+                        <Can permission="inventory.edit">
+                          <button
+                            onClick={() =>
+                              setUpdateModal({
+                                product_id: item.product_id,
+                                variant_id: item.variant_id,
+                                product_name: `${item.product_name}${
+                                  item.variant_name ? ` - ${item.variant_name}` : ""
+                                }`,
+                                current_stock: item.current_stock,
+                              })
+                            }
+                            className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
+                          >
+                            Update Stock
+                          </button>
+                        </Can>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -446,5 +450,13 @@ export default function InventoryPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function InventoryPage() {
+  return (
+    <PermissionGuard permission="inventory.view">
+      <InventoryPageContent />
+    </PermissionGuard>
   );
 }
