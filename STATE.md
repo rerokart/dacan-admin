@@ -10,6 +10,10 @@ _Last updated: 2026-09-27_
 - Dashboard shell + several template pages present
 - **Admin Access & RBAC (Phase 1, branch `feature/admin-rbac`, `3e18d45`)**: `AuthContext`/`usePermissions()` fed by `/auth/login` + `/auth/me` (M4 fix — `role` removed from `localStorage`); axios 401→logout / 403→toast+refetch (no logout); new public Forgot-password (3-step) and Accept-invitation pages; Settings → Admin Access screen (Admins / Roles & Permissions / Audit Log / Login History tabs); Profile page Active-sessions list + "Log out all devices"; `<Can>` gating + sidebar filtering + page-level 403 guard wired across every existing screen. Full detail: `docs/api/ADMIN.md`, `.claude/Arch/ARCHITECTURE_AD.md`.
 
+- **Profile page cleanup (branch `feature/admin-profile`, 2026-09-27)**: fake template data removed.
+  - The page now has a real header with an Edit name modal, read-only Account details and a Change password card, plus the existing Preferences and Active sessions cards.
+  - Needs the backend `feature/admin-profile` branch.
+
 ## In Progress
 - (feature complete — one pre-existing build blocker below needs a fix before deploy)
 
