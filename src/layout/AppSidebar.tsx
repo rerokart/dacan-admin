@@ -94,9 +94,27 @@ const filterNavItems = (
   }, []);
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const {
+    isExpanded,
+    isMobileOpen,
+    isHovered,
+    setIsHovered,
+    toggleSidebar,
+    toggleMobileSidebar,
+  } = useSidebar();
   const pathname = usePathname();
   const { can, isSuper, permissions } = usePermissions();
+
+  const showLabels = isExpanded || isHovered || isMobileOpen;
+
+  // Desktop: collapse/expand the rail. Mobile: close the drawer.
+  const handleToggle = () => {
+    if (window.innerWidth >= 1024) {
+      toggleSidebar();
+    } else {
+      toggleMobileSidebar();
+    }
+  };
 
   const navItems: NavItem[] = useMemo(
     () => transformNavItems(filterNavItems(MAIN_NAV_ITEMS, can, isSuper)),
@@ -303,7 +321,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-4 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
+      className={`fixed flex flex-col top-0 px-4 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
         ${
           isExpanded || isMobileOpen
             ? expandedWidth
@@ -317,12 +335,12 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex  ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        className={`py-8 flex items-center gap-2 ${
+          !isExpanded && !isHovered ? "lg:justify-center" : "justify-between"
         }`}
       >
-        <Link href="/">
-          {isExpanded || isHovered || isMobileOpen ? (
+        {showLabels && (
+          <Link href="/">
             <Image
               className="object-contain"
               src="/logo.jpeg"
@@ -330,18 +348,35 @@ const AppSidebar: React.FC = () => {
               width={150}
               height={40}
             />
+          </Link>
+        )}
+        <button
+          onClick={handleToggle}
+          aria-label={isMobileOpen ? "Close sidebar" : "Toggle sidebar"}
+          className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg shrink-0 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          {isMobileOpen ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           ) : (
-            <Image
-              className="object-contain"
-              src="/logo.jpeg"
-              alt="Rerokart"
-              width={40}
-              height={18}
-            />
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+              <path
+                d="M1.33 1h13.34M1.33 11h13.34M1.33 6H8"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           )}
-        </Link>
+        </button>
       </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
@@ -361,6 +396,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(navItems, "main")}
             </div>
 
+            {othersItems.length > 0 && (
             <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
@@ -377,10 +413,12 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(othersItems, "others")}
             </div>
+            )}
           </div>
         </nav>
         {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
+
     </aside>
   );
 };

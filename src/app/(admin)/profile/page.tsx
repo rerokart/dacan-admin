@@ -2,6 +2,7 @@ import UserAddressCard from "@/components/user-profile/UserAddressCard";
 import UserInfoCard from "@/components/user-profile/UserInfoCard";
 import UserMetaCard from "@/components/user-profile/UserMetaCard";
 import SessionsCard from "@/components/user-profile/SessionsCard";
+import PreferencesCard from "@/components/user-profile/PreferencesCard";
 import { Metadata } from "next";
 import React from "react";
 
@@ -22,6 +23,7 @@ export default function Profile() {
           <UserMetaCard />
           <UserInfoCard />
           <UserAddressCard />
+          <PreferencesCard />
           <SessionsCard />
         </div>
       </div>
