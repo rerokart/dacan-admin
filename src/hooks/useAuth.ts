@@ -9,6 +9,8 @@ import {
   VerifyOtpRequest,
   ResetPasswordRequest,
   AcceptInvitationRequest,
+  UpdateMeRequest,
+  ChangePasswordRequest,
 } from "@/services/auth.service";
 import { setTokens, setUserData, handleLogout } from "@/utils/helpers/token";
 import { AUTH_ME_QUERY_KEY } from "@/context/AuthContext";
@@ -131,6 +133,57 @@ export const useLogoutAll = () => {
       // to be signed out everywhere, including here.
       queryClient.clear();
       handleLogout();
+    },
+  });
+};
+
+// =============================================================================
+// SELF-SERVICE PROFILE HOOKS
+// =============================================================================
+
+/** Edit own name. Writes the response straight into the auth.me cache so the
+ *  profile and sidebar update without a refetch. */
+export const useUpdateMe = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateMeRequest) => authService.updateMe(data),
+    onSuccess: (response) => {
+      queryClient.setQueryData(AUTH_ME_QUERY_KEY, {
+        admin: response.admin,
+        permissions: response.permissions,
+      });
+      setUserData({
+        id: response.admin.id,
+        email: response.admin.email,
+        full_name: response.admin.full_name,
+      });
+      toast.success("Profile updated");
+    },
+    onError: (error: Error & { message?: string }) => {
+      toast.error(error?.message || "Failed to update profile.");
+    },
+  });
+};
+
+/** Change own password. The server keeps this session and revokes the rest. */
+export const useChangePassword = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) => authService.changePassword(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: sessionsKeys.all });
+      toast.success(
+        response?.revoked > 0
+          ? "Password changed. Other devices were signed out."
+          : "Password changed"
+      );
+    },
+    onError: (error: Error & { message?: string }) => {
+      toast.error(error?.message || "Failed to change password.");
     },
   });
 };
