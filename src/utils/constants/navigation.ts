@@ -143,27 +143,6 @@ export const OTHER_NAV_ITEMS: NavItem[] = [
     name: "Profile",
     path: ROUTES.PROFILE,
   },
-  {
-    icon: "PieChartIcon",
-    name: "Demo Pages",
-    superOnly: true,
-    subItems: [
-      { name: "Charts", path: ROUTES.DEMO.CHARTS.BAR },
-      { name: "Forms", path: ROUTES.DEMO.FORMS },
-      { name: "Tables", path: ROUTES.DEMO.TABLES },
-      { name: "Calendar", path: ROUTES.DEMO.CALENDAR },
-      { name: "UI Elements", path: ROUTES.DEMO.UI_ELEMENTS.BUTTONS },
-    ],
-  },
-  {
-    icon: "PlugInIcon",
-    name: "Authentication",
-    superOnly: true,
-    subItems: [
-      { name: "Sign In", path: ROUTES.SIGN_IN },
-      { name: "Sign Up", path: ROUTES.SIGN_UP },
-    ],
-  },
 ];
 
 // =============================================================================
