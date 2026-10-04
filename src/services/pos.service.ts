@@ -135,8 +135,10 @@ export const posService = {
 export const calculateCartTotals = (items: POSCartItem[]) => {
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const taxRate = 0.18; // 18% GST
-  const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  // Round to paise exactly like the server (round(subtotal * GST, 2)) so the
+  // displayed total matches what the backend charges.
+  const tax = Math.round(subtotal * taxRate * 100) / 100;
+  const total = Math.round((subtotal + tax) * 100) / 100;
 
   return {
     subtotal,

@@ -99,7 +99,8 @@ function POSPageContent() {
         })),
         customer_id: selectedCustomer?.id,
         payment_method: paymentMethod,
-        amount_paid: paymentMethod === "cash" ? amountPaid : totals.total,
+        // Card/UPI: omit amount_paid so the server defaults it to its own total.
+        ...(paymentMethod === "cash" ? { amount_paid: amountPaid } : {}),
       },
       {
         onSuccess: (order) => {
@@ -108,7 +109,7 @@ function POSPageContent() {
         },
       }
     );
-  }, [cart, selectedCustomer, paymentMethod, amountPaid, totals.total, createOrder]);
+  }, [cart, selectedCustomer, paymentMethod, amountPaid, createOrder]);
 
   const handleNewSale = useCallback(() => {
     clearCart();
