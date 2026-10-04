@@ -16,6 +16,7 @@ import {
   PAYMENT_STATUS_OPTIONS,
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
+  getPaymentMethodLabel,
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 import Select from "@/components/form/Select";
@@ -94,7 +95,7 @@ function OrderDetailPageContent() {
     );
   }
 
-  const canCancel = ["placed", "confirmed"].includes(order.order_status);
+  const canCancel = ["placed", "confirmed", "shipped", "out_for_delivery"].includes(order.order_status);
 
   return (
     <div>
@@ -313,7 +314,7 @@ function OrderDetailPageContent() {
                 <div className="flex justify-between">
                   <span className="text-gray-500">Method</span>
                   <span className="font-medium text-gray-900 dark:text-white uppercase">
-                    {order.payment_method}
+                    {getPaymentMethodLabel(order.payment_method)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

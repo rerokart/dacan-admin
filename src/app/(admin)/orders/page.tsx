@@ -17,6 +17,7 @@ import {
   ORDER_STATUS_OPTIONS,
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
+  getPaymentMethodLabel,
 } from "@/services/order.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
 import Select from "@/components/form/Select";
@@ -27,13 +28,15 @@ const PAYMENT_STATUS_FILTER_OPTIONS = [
   { value: "pending", label: "Pending" },
   { value: "paid", label: "Paid" },
   { value: "failed", label: "Failed" },
-  { value: "refunded", label: "Refunded" },
 ];
 
 const PAYMENT_METHOD_FILTER_OPTIONS = [
   { value: "", label: "All Methods" },
   { value: "cod", label: "COD" },
   { value: "online", label: "Online" },
+  { value: "cash", label: "Cash" },
+  { value: "card", label: "Card" },
+  { value: "upi", label: "UPI" },
 ];
 
 const SOURCE_FILTER_OPTIONS = [
@@ -266,7 +269,7 @@ function OrdersPageContent() {
                         <div className="flex flex-col items-center gap-1">
                           {getStatusBadge(order.payment_status, PAYMENT_STATUS_COLORS)}
                           <span className="text-xs text-gray-500 uppercase">
-                            {order.payment_method ?? "—"}
+                            {getPaymentMethodLabel(order.payment_method)}
                           </span>
                         </div>
                       </TableCell>

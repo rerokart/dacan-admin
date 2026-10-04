@@ -32,7 +32,7 @@ export interface ReviewFilters {
   product_id?: string;
   user_id?: string;
   status?: "pending" | "approved" | "rejected";
-  rating?: number;
+  rating?: string; // "1"-"5", sent as the query param
   min_rating?: number;
   max_rating?: number;
   page?: number;

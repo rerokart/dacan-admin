@@ -94,7 +94,10 @@ export const useCancelOrder = () => {
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: string | number; reason?: string }) =>
-      orderService.cancelOrder(id, reason),
+      orderService.updateOrderStatus(id, {
+        status: "cancelled",
+        notes: reason,
+      }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({
