@@ -117,8 +117,8 @@ export const API_ROUTES = {
 
   // Inventory
   INVENTORY: {
-    OVERVIEW: "inventory",
-    STOCK_LEVELS: "inventory/stock",
+    OVERVIEW: "inventory/overview",
+    STOCK_LEVELS: "inventory",
     UPDATE_STOCK: "inventory/update",
     HISTORY: "inventory/history",
   },

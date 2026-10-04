@@ -5,7 +5,6 @@ import {
   type SalesChartData,
   type OrdersByStatusData,
   type RecentOrder,
-  type LowStockItem,
 } from "@/services/dashboard.service";
 
 // Dummy data for development/fallback
@@ -86,49 +85,6 @@ const DUMMY_RECENT_ORDERS: RecentOrder[] = [
   },
 ];
 
-const DUMMY_LOW_STOCK: LowStockItem[] = [
-  {
-    id: "1",
-    productName: "Premium Cotton T-Shirt - Blue",
-    sku: "TSH-BLU-001",
-    currentStock: 5,
-    threshold: 20,
-    status: "critical",
-  },
-  {
-    id: "2",
-    productName: "Denim Jeans - Slim Fit",
-    sku: "JNS-SLM-002",
-    currentStock: 12,
-    threshold: 25,
-    status: "low",
-  },
-  {
-    id: "3",
-    productName: "Running Shoes - Black",
-    sku: "SHO-RUN-003",
-    currentStock: 0,
-    threshold: 15,
-    status: "out_of_stock",
-  },
-  {
-    id: "4",
-    productName: "Wireless Earbuds",
-    sku: "EAR-WIR-004",
-    currentStock: 8,
-    threshold: 30,
-    status: "critical",
-  },
-  {
-    id: "5",
-    productName: "Laptop Backpack",
-    sku: "BAG-LAP-005",
-    currentStock: 18,
-    threshold: 25,
-    status: "low",
-  },
-];
-
 // Query keys
 export const dashboardKeys = {
   all: ["dashboard"] as const,
@@ -204,14 +160,6 @@ export const useRecentOrders = () => {
 export const useLowStockAlerts = () => {
   return useQuery({
     queryKey: dashboardKeys.lowStock(),
-    queryFn: async () => {
-      try {
-        const data = await dashboardService.getLowStockAlerts();
-        return data;
-      } catch {
-        return DUMMY_LOW_STOCK;
-      }
-    },
-    placeholderData: DUMMY_LOW_STOCK,
+    queryFn: () => dashboardService.getLowStockAlerts(),
   });
 };

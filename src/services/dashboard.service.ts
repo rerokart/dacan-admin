@@ -1,4 +1,5 @@
 import { defaultAxios } from "@/utils/axios/default.axios";
+import { inventoryService } from "@/services/inventory.service";
 import { API_ROUTES } from "@/utils/axios/apiEndPoint";
 
 // Types for Dashboard Data
@@ -41,7 +42,7 @@ export interface LowStockItem {
   sku: string;
   currentStock: number;
   threshold: number;
-  status: "low" | "critical" | "out_of_stock";
+  status: "low_stock" | "out_of_stock";
 }
 
 // API Service
@@ -63,6 +64,17 @@ export const dashboardService = {
   },
 
   getLowStockAlerts: async (): Promise<LowStockItem[]> => {
-    return defaultAxios.get(API_ROUTES.DASHBOARD.LOW_STOCK);
+    const res = await inventoryService.getStockLevels({
+      status: "low_stock,out_of_stock",
+      limit: 5,
+    });
+    return res.inventory.map((item) => ({
+      id: `${item.type}-${item.id}`,
+      productName: item.variant_info ? `${item.name} - ${item.variant_info}` : item.name,
+      sku: item.sku,
+      currentStock: item.stock_quantity,
+      threshold: item.low_stock_threshold,
+      status: item.stock_status === "out_of_stock" ? "out_of_stock" : "low_stock",
+    }));
   },
 };

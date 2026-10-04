@@ -9,20 +9,19 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
+import Can from "@/components/auth/Can";
 import { useLowStockAlerts } from "@/hooks/useDashboard";
 import { ROUTES } from "@/utils/constants/NavigationRoutes";
 
-export default function LowStockAlerts() {
-  const { data: lowStockItems, isLoading } = useLowStockAlerts();
+function LowStockAlertsContent() {
+  const { data: lowStockItems, isLoading, isError, error } = useLowStockAlerts();
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "out_of_stock":
         return "error";
-      case "critical":
+      case "low_stock":
         return "warning";
-      case "low":
-        return "info";
       default:
         return "light";
     }
@@ -32,9 +31,7 @@ export default function LowStockAlerts() {
     switch (status) {
       case "out_of_stock":
         return "Out of Stock";
-      case "critical":
-        return "Critical";
-      case "low":
+      case "low_stock":
         return "Low Stock";
       default:
         return status;
@@ -67,6 +64,12 @@ export default function LowStockAlerts() {
         {isLoading ? (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             Loading...
+          </div>
+        ) : isError ? (
+          <div className="py-8 text-center text-red-500">
+            {error instanceof Error && error.message
+              ? error.message
+              : "Failed to load low stock items."}
           </div>
         ) : (
           <Table>
@@ -119,9 +122,9 @@ export default function LowStockAlerts() {
                   <TableCell className="py-3">
                     <span
                       className={`font-medium text-theme-sm ${
-                        item.currentStock === 0
+                        item.status === "out_of_stock"
                           ? "text-red-600 dark:text-red-400"
-                          : item.currentStock <= 10
+                          : item.status === "low_stock"
                           ? "text-amber-600 dark:text-amber-400"
                           : "text-gray-800 dark:text-white/90"
                       }`}
@@ -143,12 +146,20 @@ export default function LowStockAlerts() {
           </Table>
         )}
 
-        {!isLoading && (!lowStockItems || lowStockItems.length === 0) && (
+        {!isLoading && !isError && (!lowStockItems || lowStockItems.length === 0) && (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-            No low stock alerts
+            All items are well stocked
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function LowStockAlerts() {
+  return (
+    <Can permission="inventory.view">
+      <LowStockAlertsContent />
+    </Can>
   );
 }

@@ -58,7 +58,9 @@ export const useUpdateStock = () => {
   return useMutation({
     mutationFn: (data: UpdateStockRequest) => inventoryService.updateStock(data),
     onSuccess: () => {
+      // inventoryKeys.all covers both the list and the overview cards.
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "lowStock"] });
       toast.success("Stock updated successfully!");
     },
     onError: (error: Error) => {
