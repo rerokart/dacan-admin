@@ -15,6 +15,7 @@ import Badge from "@/components/ui/badge/Badge";
 import Select from "@/components/form/Select";
 import { useProducts, useDeleteProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { flattenCategoryOptions } from "@/utils/categoryOptions";
 import type { ProductFilters } from "@/services/product.service";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
@@ -73,27 +74,11 @@ function AllProductsContent() {
   const products = productsData?.data || [];
   const totalPages = productsData?.pagination?.total_pages || 1;
 
-  // Build category options from API - flatten the tree for dropdown
-  const categoryOptions = useMemo(() => {
-    if (!categories) return [{ value: "", label: "All Categories" }];
-    const options: { value: string; label: string }[] = [{ value: "", label: "All Categories" }];
-
-    const flattenCategories = (cats: typeof categories, prefix = "") => {
-      cats.forEach((cat) => {
-        options.push({
-          value: cat.id,
-          label: prefix ? `${prefix} > ${cat.name}` : cat.name,
-        });
-        if (cat.children?.length) {
-          flattenCategories(cat.children, cat.name);
-        }
-      });
-    };
-
-    // Only process root categories (parent_id is null)
-    flattenCategories(categories.filter(cat => !cat.parent_id));
-    return options;
-  }, [categories]);
+  // Category filter options: full path, archived left out
+  const categoryOptions = useMemo(
+    () => [{ value: "", label: "All Categories" }, ...flattenCategoryOptions(categories)],
+    [categories]
+  );
 
   const statusOptions = [
     { value: "", label: "All Status" },

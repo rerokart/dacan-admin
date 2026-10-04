@@ -96,6 +96,43 @@ export const useDeleteCategory = () => {
   });
 };
 
+// Archive Category (optionally moving its products first)
+export const useArchiveCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, moveProductsTo }: { id: string; moveProductsTo?: string }) =>
+      categoryService.archiveCategory(id, moveProductsTo),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.detail(variables.id) });
+      toast.success("Category archived");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to archive category");
+    },
+  });
+};
+
+// Restore Category (comes back as Inactive)
+export const useRestoreCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => categoryService.restoreCategory(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
+      toast.success("Category restored as Inactive");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to restore category");
+    },
+  });
+};
+
 // Upload Category Image
 export const useUploadCategoryImage = () => {
   const { toast } = useToast();

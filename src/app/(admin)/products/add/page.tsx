@@ -8,6 +8,7 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCategories } from "@/hooks/useCategories";
+import { flattenCategoryOptions } from "@/utils/categoryOptions";
 import { useCreateProduct, useUploadProductImage, useAddProductImage } from "@/hooks/useProducts";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 
@@ -34,27 +35,8 @@ function AddProductContent() {
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadProductImage();
   const { mutateAsync: addProductImage } = useAddProductImage();
 
-  // Build category options from API - flatten the tree for dropdown
-  const categoryOptions = (() => {
-    if (!categories) return [];
-    const options: { value: string; label: string }[] = [];
-
-    const flattenCategories = (cats: typeof categories, prefix = "") => {
-      cats.forEach((cat) => {
-        options.push({
-          value: cat.id,
-          label: prefix ? `${prefix} > ${cat.name}` : cat.name,
-        });
-        if (cat.children?.length) {
-          flattenCategories(cat.children, cat.name);
-        }
-      });
-    };
-
-    // Only process root categories (parent_id is null)
-    flattenCategories(categories.filter(cat => !cat.parent_id));
-    return options;
-  })();
+  // Category options: full path, archived left out
+  const categoryOptions = flattenCategoryOptions(categories);
 
   const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
