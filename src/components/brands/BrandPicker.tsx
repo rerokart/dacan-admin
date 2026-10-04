@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useBrands } from "@/hooks/useBrands";
 import { usePermissions } from "@/context/AuthContext";
+import { preventEnterSubmit } from "@/utils/formHelpers";
 import BrandFormModal from "@/components/brands/BrandFormModal";
 
 export interface BrandPickerProps {
@@ -89,6 +90,7 @@ export default function BrandPicker({ value, onChange, currentBrand, disabled }:
             <input
               type="text"
               autoFocus
+              onKeyDown={preventEnterSubmit}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search brands..."

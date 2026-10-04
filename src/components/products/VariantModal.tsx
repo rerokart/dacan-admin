@@ -69,7 +69,13 @@ const toFormState = (variant: ProductVariant | null): FormState => ({
 
 type Errors = Partial<Record<string, string>>;
 
-const validate = (state: FormState, options: ProductOption[], isEdit: boolean, taken: Set<string>): Errors => {
+const validate = (
+  state: FormState,
+  options: ProductOption[],
+  isEdit: boolean,
+  taken: Set<string>,
+  baselineSku = ""
+): Errors => {
   const errors: Errors = {};
   if (!isEdit) {
     const chosen = options.map((o) => state.values[o.id]).filter(Boolean);
@@ -77,8 +83,10 @@ const validate = (state: FormState, options: ProductOption[], isEdit: boolean, t
     else if (taken.has(combinationKey(chosen))) errors.values = "This combination already exists";
   }
   const sku = state.sku.trim().toUpperCase();
-  if (isEdit && !sku) errors.sku = "SKU can't be empty";
-  else if (sku && !SKU_PATTERN.test(sku)) errors.sku = "3-50 characters: A-Z, 0-9 and hyphens";
+  // Format is only checked when the SKU changed, so a legacy SKU never blocks other edits.
+  const skuBefore = baselineSku.trim().toUpperCase();
+  if (isEdit && !sku && skuBefore) errors.sku = "SKU can't be empty";
+  else if (sku && sku !== skuBefore && !SKU_PATTERN.test(sku)) errors.sku = "3-50 characters: A-Z, 0-9 and hyphens";
   if (state.barcode.trim() && !BARCODE_PATTERN.test(state.barcode.trim().toUpperCase())) {
     errors.barcode = "4-48 characters: A-Z, 0-9 and hyphens";
   }
@@ -99,7 +107,12 @@ const validate = (state: FormState, options: ProductOption[], isEdit: boolean, t
   return errors;
 };
 
-const toRequest = (state: FormState, options: ProductOption[], isEdit: boolean): CreateVariantRequest => {
+const toRequest = (
+  state: FormState,
+  options: ProductOption[],
+  isEdit: boolean,
+  baselineSku = ""
+): CreateVariantRequest => {
   const data: CreateVariantRequest = {
     price: Number(state.price),
     original_price: num(state.original_price),
@@ -110,7 +123,7 @@ const toRequest = (state: FormState, options: ProductOption[], isEdit: boolean):
   };
   for (const m of MEASURES) data[m.key] = num(state.measures[m.key]);
   const sku = state.sku.trim().toUpperCase();
-  if (sku) data.sku = sku;
+  if (sku && !(isEdit && sku === (baselineSku ?? "").trim().toUpperCase())) data.sku = sku;
   if (!isEdit) {
     data.option_value_ids = options.map((o) => state.values[o.id]);
     data.stock_quantity = num(state.stock_quantity) ?? 0;
@@ -145,7 +158,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
   const isPending = isAdding || isUpdating;
   const skuLocked = !!variant?.sku_locked;
 
-  const errors = validate(form, options, isEdit, takenCombinations);
+  const errors = validate(form, options, isEdit, takenCombinations, variant?.sku ?? "");
   const shown: Errors = showErrors ? errors : {};
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
@@ -158,12 +171,12 @@ export const VariantModal: React.FC<VariantModalProps> = ({
     setShowErrors(true);
     if (Object.keys(errors).length) return;
 
-    const data = toRequest(form, options, isEdit);
+    const data = toRequest(form, options, isEdit, variant?.sku ?? "");
     const done = { onSuccess: onClose, onError: (error: Error) => setServerError(error.message) };
 
     if (isEdit && variant) {
       // Send only what changed; option values and stock never change here.
-      const before = toRequest(toFormState(variant), options, true);
+      const before = toRequest(toFormState(variant), options, true, variant?.sku ?? "");
       const changed = Object.fromEntries(
         Object.entries(data).filter(([key, value]) => !sameValue(value, before[key as keyof CreateVariantRequest]))
       ) as Partial<CreateVariantRequest>;

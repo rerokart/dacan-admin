@@ -6,6 +6,7 @@ import {
   type StockFilters,
   type UpdateStockRequest,
 } from "@/services/inventory.service";
+import { invalidateCatalog } from "./catalogInvalidation";
 import { useToast } from "@/components/ui/toast";
 
 // Query keys
@@ -58,9 +59,8 @@ export const useUpdateStock = () => {
   return useMutation({
     mutationFn: (data: UpdateStockRequest) => inventoryService.updateStock(data),
     onSuccess: () => {
-      // inventoryKeys.all covers both the list and the overview cards.
-      queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "lowStock"] });
+      // Products, variants, inventory and low-stock all mirror stock.
+      invalidateCatalog(queryClient);
       toast.success("Stock updated successfully!");
     },
     onError: (error: Error) => {

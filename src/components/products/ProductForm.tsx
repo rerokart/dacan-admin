@@ -1,5 +1,6 @@
 "use client";
 
+import { preventEnterSubmit } from "@/utils/formHelpers";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -271,7 +272,12 @@ type FieldErrors = Partial<Record<string, { tab: TabKey; message: string }>>;
 const isWholeNumber = (value: string, min: number) =>
   value.trim() === "" || (Number.isInteger(Number(value)) && Number(value) >= min);
 
-const validate = (state: FormState, pricing: boolean, isCreate: boolean): FieldErrors => {
+const validate = (
+  state: FormState,
+  pricing: boolean,
+  isCreate: boolean,
+  baselineSku = ""
+): FieldErrors => {
   const errors: FieldErrors = {};
   const add = (field: string, tab: TabKey, message: string) => {
     if (!errors[field]) errors[field] = { tab, message };
@@ -280,9 +286,12 @@ const validate = (state: FormState, pricing: boolean, isCreate: boolean): FieldE
   if (!state.name.trim()) add("name", "basics", "Name is required");
   if (!state.category_id) add("category_id", "basics", "Choose a category");
   // Create may leave the SKU blank (auto PRD-000123); an existing product always keeps one.
-  if (!isCreate && !state.sku.trim()) {
+  // The format is only checked when the SKU changed, so a legacy SKU never blocks other edits.
+  const skuNow = state.sku.trim().toUpperCase();
+  const skuBefore = baselineSku.trim().toUpperCase();
+  if (!isCreate && !skuNow && skuBefore) {
     add("sku", "basics", "SKU can't be empty");
-  } else if (state.sku.trim() && !SKU_PATTERN.test(state.sku.trim().toUpperCase())) {
+  } else if (skuNow && skuNow !== skuBefore && !SKU_PATTERN.test(skuNow)) {
     add("sku", "basics", "3-50 characters: A-Z, 0-9 and hyphens");
   }
 
@@ -356,10 +365,6 @@ const smallButton =
 const addButton =
   "mt-2 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-brand-600 ring-1 ring-inset ring-brand-200 hover:bg-brand-50 disabled:opacity-40 dark:text-brand-400 dark:ring-brand-800 dark:hover:bg-brand-900/20";
 
-/** Enter inside a single-line editor input must not submit the surrounding form. */
-const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === "Enter") e.preventDefault();
-};
 
 function FieldError({ error }: { error?: { message: string } }) {
   if (!error) return null;
@@ -702,7 +707,10 @@ export default function ProductForm({ mode, initial, onDone }: ProductFormProps)
   const skuLocked = !isCreate && !!defaultVariantOf(baseline)?.sku_locked;
   const categoryOptions = useMemo(() => flattenCategoryOptions(categories), [categories]);
 
-  const errors = useMemo(() => validate(form, hasPricing, isCreate), [form, hasPricing, isCreate]);
+  const errors = useMemo(
+    () => validate(form, hasPricing, isCreate, baseline?.sku ?? ""),
+    [form, hasPricing, isCreate, baseline?.sku]
+  );
   const shownErrors: FieldErrors = showErrors ? errors : {};
   const errorsByTab = useMemo(() => {
     const tabs = new Set<TabKey>();

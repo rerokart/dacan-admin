@@ -217,12 +217,6 @@ export default function ImageManager({ product }: ImageManagerProps) {
           {images.map((image, index) => (
             <li
               key={image.id}
-              draggable
-              onDragStart={(e) => {
-                setDragId(image.id);
-                e.dataTransfer.effectAllowed = "move";
-              }}
-              onDragEnd={() => setDragId(null)}
               onDragOver={(e) => {
                 if (dragId) e.preventDefault();
               }}
@@ -236,7 +230,14 @@ export default function ImageManager({ product }: ImageManagerProps) {
                   : "border-gray-200 dark:border-gray-800"
               }`}
             >
-              <div className="relative aspect-square cursor-move overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+              <div
+                draggable
+                onDragStart={(e) => {
+                  setDragId(image.id);
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragEnd={() => setDragId(null)}
+                className="relative aspect-square cursor-move overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image.thumb_url || image.image_url}

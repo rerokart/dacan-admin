@@ -13,6 +13,7 @@ import {
   type CreateVariantRequest,
   type AddImageRequest,
 } from "@/services/product.service";
+import { invalidateCatalog } from "./catalogInvalidation";
 import { useToast } from "@/components/ui/toast";
 
 // Query keys
@@ -51,7 +52,7 @@ export const useCreateProduct = () => {
   return useMutation({
     mutationFn: (data: CreateProductRequest) => productService.createProduct(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      invalidateCatalog(queryClient);
       toast.success("Product created. Add options and images below.");
     },
     onError: (error: Error) => {
@@ -126,6 +127,7 @@ export const useAddVariant = () => {
       data: CreateVariantRequest;
     }) => productService.addVariant(productId, data),
     onSuccess: (_, variables) => {
+      invalidateCatalog(queryClient);
       // Price and stock mirrors on the list come from the variants.
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
@@ -158,6 +160,7 @@ export const useUpdateVariant = () => {
       data: Partial<CreateVariantRequest>;
     }) => productService.updateVariant(productId, variantId, data),
     onSuccess: (_, variables) => {
+      invalidateCatalog(queryClient);
       // Price and stock mirrors on the list come from the variants.
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
@@ -188,6 +191,7 @@ export const useDeleteVariant = () => {
       variantId: string | number;
     }) => productService.deleteVariant(productId, variantId),
     onSuccess: (_, variables) => {
+      invalidateCatalog(queryClient);
       // Price and stock mirrors on the list come from the variants.
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
@@ -298,6 +302,7 @@ const invalidateProduct = (
   queryClient: ReturnType<typeof useQueryClient>,
   id: string | number
 ) => {
+  invalidateCatalog(queryClient);
   queryClient.invalidateQueries({ queryKey: productKeys.lists() });
   queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
   queryClient.invalidateQueries({ queryKey: productKeys.variants(id) });
