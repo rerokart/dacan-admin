@@ -13,10 +13,18 @@ import {
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
 import Select from "@/components/form/Select";
-import { useProducts, useDeleteProduct, useUpdateProduct } from "@/hooks/useProducts";
+import {
+  useProducts,
+  useDeleteProduct,
+  useUpdateProduct,
+  useArchiveProduct,
+  useRestoreProduct,
+} from "@/hooks/useProducts";
+import { useBrands } from "@/hooks/useBrands";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useCategories } from "@/hooks/useCategories";
 import { flattenCategoryOptions } from "@/utils/categoryOptions";
-import type { ProductFilters } from "@/services/product.service";
+import type { ProductFilters, ProductStatus } from "@/services/product.service";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
 
@@ -42,6 +50,18 @@ const getStatusBadge = (stockQty: number, threshold: number) => {
   );
 };
 
+const PRODUCT_STATUS_BADGE: Record<
+  ProductStatus,
+  { label: string; color: "success" | "warning" | "light" | "error" }
+> = {
+  draft: { label: "Draft", color: "warning" },
+  active: { label: "Active", color: "success" },
+  inactive: { label: "Inactive", color: "light" },
+  archived: { label: "Archived", color: "error" },
+};
+
+const formatPrice = (n: number) => `₹${n.toLocaleString()}`;
+
 function AllProductsContent() {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -50,6 +70,7 @@ function AllProductsContent() {
     limit: 10,
   });
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { confirm } = useConfirm();
 
   // Debounce search input
   useEffect(() => {
@@ -70,6 +91,9 @@ function AllProductsContent() {
   const { data: categories } = useCategories();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const { mutate: updateProduct } = useUpdateProduct();
+  const { mutate: archiveProduct } = useArchiveProduct();
+  const { mutate: restoreProduct } = useRestoreProduct();
+  const { data: brandsData } = useBrands({ limit: 100 });
 
   const products = productsData?.data || [];
   const totalPages = productsData?.pagination?.total_pages || 1;
@@ -80,10 +104,26 @@ function AllProductsContent() {
     [categories]
   );
 
+  const brands = useMemo(() => brandsData?.data || [], [brandsData]);
+  const brandNames = useMemo(
+    () => new Map(brands.map((b) => [b.id, b.name])),
+    [brands]
+  );
+  const brandOptions = useMemo(
+    () => [
+      { value: "", label: "All Brands" },
+      ...brands.map((b) => ({ value: b.id, label: b.name })),
+    ],
+    [brands]
+  );
+
+  // Empty value = every status except archived (the server default)
   const statusOptions = [
-    { value: "", label: "All Status" },
-    { value: "true", label: "Active" },
-    { value: "false", label: "Inactive" },
+    { value: "", label: "All (except archived)" },
+    { value: "draft", label: "Draft" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "archived", label: "Archived" },
   ];
 
   const featuredOptions = [
@@ -116,10 +156,21 @@ function AllProductsContent() {
     }));
   };
 
+  const handleArchive = async (id: string, name: string) => {
+    const ok = await confirm({
+      title: "Archive product",
+      message: `Archive "${name}"? It is hidden from the store, POS and carts, but kept for past orders. You can restore it later as Inactive.`,
+      variant: "danger",
+      confirmText: "Archive",
+    });
+    if (ok) archiveProduct(id);
+  };
+
   const handleDelete = () => {
     if (deleteId) {
       deleteProduct(deleteId, {
         onSuccess: () => setDeleteId(null),
+        onError: () => setDeleteId(null),
       });
     }
   };
@@ -199,8 +250,17 @@ function AllProductsContent() {
               <div className="min-w-[140px]">
                 <Select
                   options={statusOptions}
-                  defaultValue={filters.is_active === undefined ? "" : String(filters.is_active)}
-                  onChange={(val) => handleFilterChange("is_active", val)}
+                  defaultValue={filters.status || ""}
+                  onChange={(val) => handleFilterChange("status", val)}
+                />
+              </div>
+
+              {/* Brand Filter */}
+              <div className="min-w-[160px]">
+                <Select
+                  options={brandOptions}
+                  defaultValue={filters.brand_id || ""}
+                  onChange={(val) => handleFilterChange("brand_id", val)}
                 />
               </div>
 
@@ -274,6 +334,12 @@ function AllProductsContent() {
                       className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400"
                     >
                       Category
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Brand
                     </TableCell>
                     <TableCell
                       isHeader
@@ -357,7 +423,9 @@ function AllProductsContent() {
                             </span>
                             {product.has_variants && (
                               <span className="ml-2 text-xs text-gray-500">
-                                ({product.variants?.length || 0} variants)
+                                {product.variants?.length
+                                  ? `(${product.variants.length} variants)`
+                                  : "(has variants)"}
                               </span>
                             )}
                           </div>
@@ -369,19 +437,36 @@ function AllProductsContent() {
                       <TableCell className="px-6 py-4 text-gray-600 dark:text-gray-400">
                         {product.category?.name || product.category_name || "-"}
                       </TableCell>
+                      <TableCell className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                        {product.brand?.name ||
+                          (product.brand_id ? brandNames.get(product.brand_id) : undefined) ||
+                          "-"}
+                      </TableCell>
                       <TableCell className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
-                        ₹{product.base_price.toLocaleString()}
-                        {product.original_price && product.original_price > product.base_price && (
-                          <span className="ml-2 text-sm text-gray-400 line-through">
-                            ₹{product.original_price.toLocaleString()}
-                          </span>
+                        {product.price_range && product.price_range.max !== product.price_range.min ? (
+                          `${formatPrice(product.price_range.min)} – ${formatPrice(product.price_range.max)}`
+                        ) : (
+                          <>
+                            {product.has_variants && !product.price_range ? "from " : ""}
+                            {formatPrice(product.base_price)}
+                            {product.original_price && product.original_price > product.base_price && (
+                              <span className="ml-2 text-sm text-gray-400 line-through">
+                                {formatPrice(product.original_price)}
+                              </span>
+                            )}
+                          </>
                         )}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center text-gray-600 dark:text-gray-400">
                         {product.stock_quantity}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
-                        {getStatusBadge(product.stock_quantity, product.low_stock_threshold)}
+                        <div className="flex flex-col items-center gap-1">
+                          <Badge variant="light" color={PRODUCT_STATUS_BADGE[product.status]?.color ?? "light"}>
+                            {PRODUCT_STATUS_BADGE[product.status]?.label ?? product.status}
+                          </Badge>
+                          {getStatusBadge(product.stock_quantity, product.low_stock_threshold)}
+                        </div>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -406,24 +491,32 @@ function AllProductsContent() {
                             </Link>
                           </Can>
                           <Can permission="products.delete">
-                            <button
-                              onClick={() => setDeleteId(product.id)}
-                              className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            {product.status === "archived" ? (
+                              <button
+                                onClick={() => restoreProduct(product.id)}
+                                className="rounded-lg px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-gray-800"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </button>
+                                Restore
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleArchive(product.id, product.name)}
+                                className="rounded-lg px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
+                              >
+                                Archive
+                              </button>
+                            )}
+                            {product.status === "draft" && (
+                              <button
+                                onClick={() => setDeleteId(product.id)}
+                                title="Delete draft"
+                                className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            )}
                           </Can>
                         </div>
                       </TableCell>
@@ -470,12 +563,12 @@ function AllProductsContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Delete Product
+              Delete Draft
             </h3>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete this product? This action cannot be
-              undone. Products that have orders can&apos;t be deleted. Set them to
-              Inactive instead.
+              Delete this draft permanently? This can&apos;t be undone. Only drafts
+              that were never ordered can be deleted; otherwise archive the
+              product instead.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
