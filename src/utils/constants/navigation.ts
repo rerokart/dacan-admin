@@ -50,6 +50,12 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    icon: "BoxIconLine",
+    name: "Brands",
+    path: ROUTES.BRANDS,
+    permission: "brands.view",
+  },
+  {
     icon: "BoxCubeIcon",
     name: "Products",
     permission: "products.view",
@@ -174,6 +180,10 @@ export const BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
     { label: "Categories", path: ROUTES.CATEGORIES },
     { label: "Add Category" },
   ],
+  [ROUTES.BRANDS]: [
+    { label: "Dashboard", path: ROUTES.DASHBOARD },
+    { label: "Brands" },
+  ],
   [ROUTES.PRODUCTS]: [
     { label: "Dashboard", path: ROUTES.DASHBOARD },
     { label: "All Products" },
@@ -248,6 +258,7 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.DASHBOARD]: "Dashboard",
   [ROUTES.CATEGORIES]: "All Categories",
   [ROUTES.CATEGORIES_ADD]: "Add Category",
+  [ROUTES.BRANDS]: "Brands",
   [ROUTES.PRODUCTS]: "All Products",
   [ROUTES.PRODUCTS_ADD]: "Add Product",
   [ROUTES.ORDERS]: "Orders",

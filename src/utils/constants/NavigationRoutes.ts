@@ -14,6 +14,7 @@ export const ROUTES = {
 
   // Categories
   CATEGORIES: "/categories",
+  BRANDS: "/brands",
   CATEGORIES_ADD: "/categories/add",
   CATEGORIES_EDIT: (id: string | number) => `/categories/${id}/edit`,
 
@@ -102,6 +103,7 @@ export const ROUTES = {
 export const AUTHENTICATED_ROUTES: string[] = [
   ROUTES.DASHBOARD,
   ROUTES.CATEGORIES,
+  ROUTES.BRANDS,
   ROUTES.CATEGORIES_ADD,
   ROUTES.PRODUCTS,
   ROUTES.PRODUCTS_ADD,
