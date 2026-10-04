@@ -17,12 +17,12 @@ _Last updated: 2026-10-04_
 - **Stage A bug sprint (merged into `main` 2026-10-04 @ `c690661`)**: POS posts to `pos/orders/offline` with cash/card/upi, receipt shows variant, amount paid and change, totals rounded to paise (B02); Inventory page and Dashboard low-stock widget wired to the real inventory list/overview and stock `adjustment` (B04, B05, B26); product delete shows the 409 "has orders" message (B08); banner move up/down reorder + link-format hint (B11); Cancel order sends a status update, "Refunded" removed, Cash/Card/UPI payment filters (B13, B16, B15); dashboard demo data replaced by `analytics/dashboard` + `analytics/sales` (B57); `pnpm build` now passes (B29, reviews rating filter typing). Needs backend `fix/stage-a`. Detail: `docs/BUGS.md`, `docs/SEQUENCE.md`.
 
 ## In Progress
-- **Categories C1 on `feature/categories-c1`** (off `main` c690661, head `4ab0c02`, unmerged), awaiting user QA (`.claude/qa-report/2026-10-04-multi-categories-c1-user-checklist.md`):
+- **Categories C1, merged into `main` 2026-10-04 @ `e4d0315`**, awaiting user QA. Follow-ups: B58-B78 in `docs/BUGS.md` (`.claude/qa-report/2026-10-04-multi-categories-c1-user-checklist.md`):
   - **Shared form:** `src/components/categories/CategoryForm.tsx` (code, status, parent up to level 2, App/Web/POS, featured, icon/thumbnail/banner with a 2 MB limit; edits send only changed fields).
   - **Category list:** code, in-stock/total, status badge, "Hidden by parent", channel chips, featured star, show-archived toggle, archive dialog (moves products), restore, delete only when empty with the corrected copy (B31).
   - **Product dropdowns:** full category paths via `src/utils/categoryOptions.ts`.
   - **Checks:** tsc 0, lint 10 errors / 15 warnings (below baseline), build OK.
-  - **Depends on:** backend `feature/categories-c1` and its migration.
+  - **Depends on:** the backend C1 code and its migration (`create_phase8_categories.sql`).
 - Stage A is merged and awaiting user QA (checklist: `.claude/qa-report/2026-10-04-multi-stage-a-user-checklist.md`)
 
 ## Next Up
