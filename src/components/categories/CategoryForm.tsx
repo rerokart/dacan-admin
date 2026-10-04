@@ -112,7 +112,6 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
   const startState = useMemo(() => toFormState(initial), [initial]);
   const [form, setForm] = useState<FormState>(startState);
   const [autoSlug, setAutoSlug] = useState(mode === "create");
-  const [autoCode, setAutoCode] = useState(mode === "create");
   const [files, setFiles] = useState<Partial<Record<ImageKind, File>>>({});
   const [previews, setPreviews] = useState<Partial<Record<ImageKind, string>>>({});
 
@@ -138,10 +137,9 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
         ...prev,
         name,
         ...(autoSlug ? { slug: generateSlug(name) } : {}),
-        ...(autoCode ? { code: generateCode(name) } : {}),
       }));
     },
-    [autoSlug, autoCode]
+    [autoSlug]
   );
 
   const handleFile = (key: ImageKind, file?: File) => {
@@ -244,11 +242,10 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
               value={form.code}
               disabled={codeLocked}
               error={!!codeError}
-              onChange={(e) => {
-                setAutoCode(false);
-                set("code", e.target.value.toUpperCase());
-              }}
-              placeholder="HW-LOCK"
+              onChange={(e) => set("code", e.target.value.toUpperCase())}
+              // Suggestion only: an empty code is generated (and de-duplicated,
+              // e.g. HINGES-2) by the server.
+              placeholder={generateCode(form.name) || "HW-LOCK"}
             />
             <p className={`mt-1 text-xs ${codeError ? "text-error-500" : "text-gray-500"}`}>
               {codeLocked
