@@ -52,7 +52,7 @@ export const useCreateProduct = () => {
     mutationFn: (data: CreateProductRequest) => productService.createProduct(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      toast.success("Product created successfully!");
+      toast.success("Product created. Add options and images below.");
     },
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to create product");

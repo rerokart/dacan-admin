@@ -83,10 +83,15 @@ defaultAxios.interceptors.response.use(
     const message = response?.data?.error || response?.data?.message || response?.data || 'Something went wrong';
     const rejectedError = new Error(typeof message === 'string' ? message : 'Something went wrong') as Error & {
       status?: number;
+      problems?: string[];
     };
     // Attach the HTTP status so callers that need to branch on it (e.g. a
     // 410 expired/used invitation link) don't have to parse the message.
     rejectedError.status = response?.status;
+    // A product publish failure (400) lists what blocks it in `problems`.
+    if (Array.isArray(response?.data?.problems)) {
+      rejectedError.problems = response.data.problems;
+    }
     return Promise.reject(rejectedError);
   }
 );

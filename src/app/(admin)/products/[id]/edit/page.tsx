@@ -1,39 +1,20 @@
 "use client";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React, { useState, useCallback, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Label from "@/components/form/Label";
-import Input from "@/components/form/input/InputField";
-import TextArea from "@/components/form/input/TextArea";
-import Select from "@/components/form/Select";
-import { useCategories } from "@/hooks/useCategories";
-import { flattenCategoryOptions } from "@/utils/categoryOptions";
-import { useProduct, useUpdateProduct, useUploadProductImage, useAddProductImage, useDeleteProductImage, useProductVariants, useDeleteVariant } from "@/hooks/useProducts";
+import React, { useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { useProduct, useUploadProductImage, useAddProductImage, useDeleteProductImage, useProductVariants, useDeleteVariant } from "@/hooks/useProducts";
 import { VariantModal } from "@/components/products/VariantModal";
+import ProductForm from "@/components/products/ProductForm";
 import type { ProductVariant } from "@/services/product.service";
 import Badge from "@/components/ui/badge/Badge";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
 
 function EditProductPageContent() {
-  const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
 
-  const [formData, setFormData] = useState({
-    name: "",
-    short_description: "",
-    description: "",
-    category_id: "",
-    base_price: "",
-    original_price: "",
-    stock_quantity: "",
-    low_stock_threshold: "10",
-    is_active: true,
-    is_featured: false,
-    has_variants: false,
-  });
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [variantModalOpen, setVariantModalOpen] = useState(false);
@@ -41,35 +22,11 @@ function EditProductPageContent() {
   const [deleteVariantId, setDeleteVariantId] = useState<string | null>(null);
 
   const { data: product, isLoading: loadingProduct } = useProduct(productId);
-  const { data: categories, isLoading: loadingCategories } = useCategories();
-  const { mutate: updateProduct, isPending } = useUpdateProduct();
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadProductImage();
   const { mutateAsync: addProductImage } = useAddProductImage();
   const { mutate: deleteImage } = useDeleteProductImage();
   const { data: variants, isLoading: loadingVariants } = useProductVariants(productId);
   const { mutate: deleteVariant, isPending: isDeletingVariant } = useDeleteVariant();
-
-  // Initialize form with existing data
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name,
-        short_description: product.short_description,
-        description: product.description,
-        category_id: product.category_id,
-        base_price: String(product.base_price),
-        original_price: product.original_price ? String(product.original_price) : "",
-        stock_quantity: String(product.stock_quantity),
-        low_stock_threshold: String(product.low_stock_threshold),
-        is_active: product.is_active,
-        is_featured: product.is_featured || false,
-        has_variants: product.has_variants,
-      });
-    }
-  }, [product]);
-
-  // Category options: full path, archived left out
-  const categoryOptions = flattenCategoryOptions(categories);
 
   const handleNewImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -115,58 +72,28 @@ function EditProductPageContent() {
     }
   }, [deleteVariant, productId, deleteVariantId]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const data = {
-      name: formData.name,
-      short_description: formData.short_description,
-      description: formData.description,
-      category_id: formData.category_id,
-      base_price: parseFloat(formData.base_price) || 0,
-      original_price: formData.original_price ? parseFloat(formData.original_price) : undefined,
-      stock_quantity: parseInt(formData.stock_quantity) || 0,
-      low_stock_threshold: parseInt(formData.low_stock_threshold) || 10,
-      is_active: formData.is_active,
-      is_featured: formData.is_featured,
-      has_variants: formData.has_variants,
-    };
-
-    updateProduct(
-      { id: productId, data },
-      {
-        onSuccess: async () => {
-          // Upload new images if any
-          if (newImageFiles.length > 0) {
-            try {
-              const existingImagesCount = product?.images?.length || 0;
-              // Upload each image and add to product
-              for (let i = 0; i < newImageFiles.length; i++) {
-                const file = newImageFiles[i];
-                const formDataFile = new FormData();
-                formDataFile.append("image", file);
-
-                // Upload image to get URL
-                const { image_url } = await uploadImage(formDataFile);
-
-                // Add image URL to product
-                await addProductImage({
-                  productId,
-                  data: {
-                    image_url,
-                    is_primary: existingImagesCount === 0 && i === 0, // First image is primary only if no existing images
-                    display_order: existingImagesCount + i,
-                  },
-                });
-              }
-            } catch {
-              // Continue even if image upload fails
-            }
-          }
-          router.push("/products");
-        },
+  // Interim image upload (Task 15 replaces this section with the image manager).
+  const handleUploadImages = async () => {
+    const existingImagesCount = product?.images?.length || 0;
+    try {
+      for (let i = 0; i < newImageFiles.length; i++) {
+        const formDataFile = new FormData();
+        formDataFile.append("image", newImageFiles[i]);
+        const uploaded = await uploadImage(formDataFile);
+        await addProductImage({
+          productId,
+          data: {
+            ...uploaded,
+            is_primary: existingImagesCount === 0 && i === 0, // First image is primary only if no existing images
+            display_order: existingImagesCount + i,
+          },
+        });
       }
-    );
+      setNewImageFiles([]);
+      setNewImagePreviews([]);
+    } catch {
+      // Error toast shown by the hook; keep the remaining files selected
+    }
   };
 
   if (loadingProduct) {
@@ -199,272 +126,126 @@ function EditProductPageContent() {
           <h3 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
             Product Information
           </h3>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Product Name */}
-              <div className="lg:col-span-2">
-                <Label htmlFor="name">Product Name *</Label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
+          {/* Stays on this page after saving so warnings stay visible */}
+          <ProductForm key={product.id} mode="edit" initial={product} onDone={() => undefined} />
+        </div>
 
-              {/* Short Description */}
-              <div className="lg:col-span-2">
-                <Label htmlFor="short_description">Short Description *</Label>
-                <Input
-                  type="text"
-                  id="short_description"
-                  name="short_description"
-                  value={formData.short_description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, short_description: e.target.value }))}
-                  placeholder="Brief description for listings"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="lg:col-span-2">
-                <Label htmlFor="description">Full Description *</Label>
-                <TextArea
-                  placeholder="Enter detailed product description"
-                  rows={4}
-                  value={formData.description}
-                  onChange={(val) => setFormData((prev) => ({ ...prev, description: val }))}
-                />
-              </div>
-
-              {/* Category */}
+        {/* Product Images */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Product Images
+          </h3>
+          <div className="space-y-4">
+            {/* Existing Images */}
+            {product.images && product.images.length > 0 && (
               <div>
-                <Label htmlFor="category">Category *</Label>
-                {loadingCategories ? (
-                  <div className="h-11 rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center dark:border-gray-700 dark:bg-gray-800">
-                    <span className="text-sm text-gray-500">Loading categories...</span>
-                  </div>
-                ) : (
-                  <Select
-                    options={categoryOptions}
-                    placeholder="Select Category"
-                    defaultValue={formData.category_id}
-                    onChange={(val) => setFormData((prev) => ({ ...prev, category_id: val }))}
-                  />
-                )}
-              </div>
-
-              {/* Status */}
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  options={[
-                    { value: "true", label: "Active" },
-                    { value: "false", label: "Inactive" },
-                  ]}
-                  defaultValue={String(formData.is_active)}
-                  onChange={(val) => setFormData((prev) => ({ ...prev, is_active: val === "true" }))}
-                />
-              </div>
-
-              {/* Featured Product */}
-              <div>
-                <Label htmlFor="is_featured">Featured</Label>
-                <div className="mt-2 flex items-center gap-3">
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_featured}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, is_featured: e.target.checked }))}
-                      className="peer sr-only"
-                    />
-                    <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
-                  </label>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {formData.is_featured ? "Featured" : "Not Featured"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Base Price */}
-              <div>
-                <Label htmlFor="base_price">Price (₹) *</Label>
-                <Input
-                  type="number"
-                  id="base_price"
-                  name="base_price"
-                  value={formData.base_price}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, base_price: e.target.value }))}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              {/* Original Price */}
-              <div>
-                <Label htmlFor="original_price">Original Price (₹)</Label>
-                <Input
-                  type="number"
-                  id="original_price"
-                  name="original_price"
-                  value={formData.original_price}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, original_price: e.target.value }))}
-                  placeholder="0.00 (for showing discount)"
-                />
-              </div>
-
-              {/* Stock Quantity */}
-              <div>
-                <Label htmlFor="stock_quantity">Stock Quantity</Label>
-                <Input
-                  type="number"
-                  id="stock_quantity"
-                  name="stock_quantity"
-                  value={formData.stock_quantity}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, stock_quantity: e.target.value }))}
-                  placeholder="0"
-                />
-              </div>
-
-              {/* Low Stock Threshold */}
-              <div>
-                <Label htmlFor="low_stock_threshold">Low Stock Threshold</Label>
-                <Input
-                  type="number"
-                  id="low_stock_threshold"
-                  name="low_stock_threshold"
-                  value={formData.low_stock_threshold}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, low_stock_threshold: e.target.value }))}
-                  placeholder="10"
-                />
-              </div>
-
-              {/* Product Images */}
-              <div className="lg:col-span-2">
-                <Label htmlFor="images">Product Images</Label>
-                <div className="space-y-4">
-                  {/* Existing Images */}
-                  {product.images && product.images.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-2">Current Images</p>
-                      <div className="flex flex-wrap gap-4">
-                        {product.images.map((image) => (
-                          <div key={image.id} className="relative h-24 w-24 rounded-lg overflow-hidden">
-                            <img
-                              src={image.image_url}
-                              alt="Product"
-                              className="h-full w-full object-cover"
-                            />
-                            {image.is_primary && (
-                              <span className="absolute bottom-1 left-1 bg-brand-500 text-white text-xs px-1 rounded">
-                                Primary
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteExistingImage(image.id)}
-                              className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* New Image Previews */}
-                  {newImagePreviews.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-2">New Images to Upload</p>
-                      <div className="flex flex-wrap gap-4">
-                        {newImagePreviews.map((preview, index) => (
-                          <div key={index} className="relative h-24 w-24 rounded-lg overflow-hidden">
-                            <img
-                              src={preview}
-                              alt={`Preview ${index + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeNewImage(index)}
-                              className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Upload Area */}
-                  <label
-                    htmlFor="images"
-                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700"
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg
-                        className="w-10 h-10 mb-3 text-gray-500 dark:text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                <p className="text-sm text-gray-500 mb-2">Current Images</p>
+                <div className="flex flex-wrap gap-4">
+                  {product.images.map((image) => (
+                    <div key={image.id} className="relative h-24 w-24 rounded-lg overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={image.thumb_url || image.image_url}
+                        alt={image.alt_text || "Product"}
+                        className="h-full w-full object-cover"
+                      />
+                      {image.is_primary && (
+                        <span className="absolute bottom-1 left-1 bg-brand-500 text-white text-xs px-1 rounded">
+                          Primary
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExistingImage(image.id)}
+                        className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG or WEBP (MAX. 2MB)
-                      </p>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <input
-                      id="images"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      multiple
-                      onChange={handleNewImageChange}
-                    />
-                  </label>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isPending || isUploading || !formData.name || !formData.category_id || !formData.base_price}
-                className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
-              >
-                {isUploading ? "Uploading..." : isPending ? "Updating..." : "Update Product"}
-              </button>
-            </div>
-          </form>
+            {/* New Image Previews */}
+            {newImagePreviews.length > 0 && (
+              <div>
+                <p className="text-sm text-gray-500 mb-2">New Images to Upload</p>
+                <div className="flex flex-wrap gap-4">
+                  {newImagePreviews.map((preview, index) => (
+                    <div key={index} className="relative h-24 w-24 rounded-lg overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
+                        className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUploadImages}
+                  disabled={isUploading}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                >
+                  {isUploading ? "Uploading..." : `Upload ${newImageFiles.length} image(s)`}
+                </button>
+              </div>
+            )}
+
+            {/* Upload Area */}
+            <label
+              htmlFor="images"
+              className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg
+                  className="w-10 h-10 mb-3 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  PNG, JPG, WEBP or GIF (MAX. 2MB, at least 300 x 300 px)
+                </p>
+              </div>
+              <input
+                id="images"
+                type="file"
+                className="hidden"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                multiple
+                onChange={handleNewImageChange}
+              />
+            </label>
+          </div>
         </div>
 
         {/* Product Variants Section */}
-        {(formData.has_variants || (variants && variants.length > 0)) && (
+        {/* Interim: Task 15 replaces this with the options editor and variant grid */}
+        {(
           <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
