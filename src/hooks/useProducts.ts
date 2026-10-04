@@ -126,6 +126,8 @@ export const useAddVariant = () => {
       data: CreateVariantRequest;
     }) => productService.addVariant(productId, data),
     onSuccess: (_, variables) => {
+      // Price and stock mirrors on the list come from the variants.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.variants(variables.productId),
       });
@@ -156,6 +158,8 @@ export const useUpdateVariant = () => {
       data: Partial<CreateVariantRequest>;
     }) => productService.updateVariant(productId, variantId, data),
     onSuccess: (_, variables) => {
+      // Price and stock mirrors on the list come from the variants.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.variants(variables.productId),
       });
@@ -184,6 +188,8 @@ export const useDeleteVariant = () => {
       variantId: string | number;
     }) => productService.deleteVariant(productId, variantId),
     onSuccess: (_, variables) => {
+      // Price and stock mirrors on the list come from the variants.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.variants(variables.productId),
       });
@@ -237,6 +243,8 @@ export const useDeleteProductImage = () => {
       imageId: string | number;
     }) => productService.deleteImage(productId, imageId),
     onSuccess: (_, variables) => {
+      // The list shows the primary image, so refresh it too.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
@@ -274,6 +282,8 @@ export const useAddProductImage = () => {
       data: AddImageRequest;
     }) => productService.addProductImage(productId, data),
     onSuccess: (_, variables) => {
+      // The list shows the primary image, so refresh it too.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
@@ -387,6 +397,8 @@ export const useUpdateProductImage = () => {
       data: UpdateImageRequest;
     }) => productService.updateImage(productId, imageId, data),
     onSuccess: (_, variables) => {
+      // The list shows the primary image, so refresh it too.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
@@ -411,6 +423,8 @@ export const useReorderProductImages = () => {
       imageIds: string[];
     }) => productService.reorderImages(productId, imageIds),
     onSuccess: (_, variables) => {
+      // The list shows the primary image, so refresh it too.
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });

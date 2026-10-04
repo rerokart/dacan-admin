@@ -271,7 +271,7 @@ type FieldErrors = Partial<Record<string, { tab: TabKey; message: string }>>;
 const isWholeNumber = (value: string, min: number) =>
   value.trim() === "" || (Number.isInteger(Number(value)) && Number(value) >= min);
 
-const validate = (state: FormState, pricing: boolean): FieldErrors => {
+const validate = (state: FormState, pricing: boolean, isCreate: boolean): FieldErrors => {
   const errors: FieldErrors = {};
   const add = (field: string, tab: TabKey, message: string) => {
     if (!errors[field]) errors[field] = { tab, message };
@@ -279,7 +279,10 @@ const validate = (state: FormState, pricing: boolean): FieldErrors => {
 
   if (!state.name.trim()) add("name", "basics", "Name is required");
   if (!state.category_id) add("category_id", "basics", "Choose a category");
-  if (state.sku.trim() && !SKU_PATTERN.test(state.sku.trim().toUpperCase())) {
+  // Create may leave the SKU blank (auto PRD-000123); an existing product always keeps one.
+  if (!isCreate && !state.sku.trim()) {
+    add("sku", "basics", "SKU can't be empty");
+  } else if (state.sku.trim() && !SKU_PATTERN.test(state.sku.trim().toUpperCase())) {
     add("sku", "basics", "3-50 characters: A-Z, 0-9 and hyphens");
   }
 
@@ -352,6 +355,11 @@ const smallButton =
   "rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 dark:text-gray-400 dark:hover:bg-gray-800";
 const addButton =
   "mt-2 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-brand-600 ring-1 ring-inset ring-brand-200 hover:bg-brand-50 disabled:opacity-40 dark:text-brand-400 dark:ring-brand-800 dark:hover:bg-brand-900/20";
+
+/** Enter inside a single-line editor input must not submit the surrounding form. */
+const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") e.preventDefault();
+};
 
 function FieldError({ error }: { error?: { message: string } }) {
   if (!error) return null;
@@ -432,6 +440,7 @@ function ListEditor({
                 maxLength={maxLength}
                 placeholder={placeholder}
                 onChange={(e) => update(index, e.target.value)}
+                onKeyDown={preventEnterSubmit}
                 className={`${inputClass} pr-16`}
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
@@ -593,6 +602,7 @@ function SpecsEditor({
                     maxLength={c.max}
                     placeholder={c.placeholder}
                     onChange={(e) => update(index, c.key, e.target.value)}
+                    onKeyDown={preventEnterSubmit}
                     className={inputClass}
                   />
                 ))}
@@ -692,7 +702,7 @@ export default function ProductForm({ mode, initial, onDone }: ProductFormProps)
   const skuLocked = !isCreate && !!defaultVariantOf(baseline)?.sku_locked;
   const categoryOptions = useMemo(() => flattenCategoryOptions(categories), [categories]);
 
-  const errors = useMemo(() => validate(form, hasPricing), [form, hasPricing]);
+  const errors = useMemo(() => validate(form, hasPricing, isCreate), [form, hasPricing, isCreate]);
   const shownErrors: FieldErrors = showErrors ? errors : {};
   const errorsByTab = useMemo(() => {
     const tabs = new Set<TabKey>();

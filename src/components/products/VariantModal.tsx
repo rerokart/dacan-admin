@@ -1,217 +1,376 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select";
 import { useAddVariant, useUpdateVariant } from "@/hooks/useProducts";
-import type { ProductVariant, CreateVariantRequest } from "@/services/product.service";
+import { BARCODE_PATTERN, SKU_PATTERN, isValidGtin } from "@/utils/productRules";
+import type {
+  CreateVariantRequest,
+  ProductOption,
+  ProductVariant,
+} from "@/services/product.service";
 
 interface VariantModalProps {
-  isOpen: boolean;
+  /** Mount only while open, with a key per variant, so the form starts fresh. */
   onClose: () => void;
   productId: string;
-  variant?: ProductVariant | null;
+  productSku: string;
+  options: ProductOption[];
+  /** Option value ids of every existing variant (sorted, comma joined) */
+  takenCombinations: Set<string>;
+  /** null = add a new combination */
+  variant: ProductVariant | null;
 }
 
-const initialFormState: CreateVariantRequest = {
-  variant_type: "",
-  variant_name: "",
-  sku: "",
-  price: 0,
-  original_price: undefined,
-  stock_quantity: 0,
-  display_order: 0,
-  is_active: true,
+const MEASURES = [
+  { key: "weight_g", label: "Weight (g)" },
+  { key: "package_length_mm", label: "Package length (mm)" },
+  { key: "package_width_mm", label: "Package width (mm)" },
+  { key: "package_height_mm", label: "Package height (mm)" },
+  { key: "package_weight_g", label: "Package weight (g)" },
+] as const;
+type MeasureKey = (typeof MEASURES)[number]["key"];
+
+interface FormState {
+  values: Record<string, string>; // option id -> value id
+  sku: string;
+  barcode: string;
+  gtin: string;
+  price: string;
+  original_price: string;
+  pack_size: string;
+  stock_quantity: string;
+  is_active: boolean;
+  measures: Record<MeasureKey, string>;
+}
+
+const numText = (n?: number | null) => (n === null || n === undefined ? "" : String(n));
+const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
+const text = (s: string): string | null => (s.trim() === "" ? null : s.trim().toUpperCase());
+const isWhole = (s: string, min: number) =>
+  s.trim() === "" || (Number.isInteger(Number(s)) && Number(s) >= min);
+
+export const combinationKey = (valueIds: string[]) => [...valueIds].sort().join(",");
+
+const toFormState = (variant: ProductVariant | null): FormState => ({
+  values: Object.fromEntries((variant?.option_values ?? []).map((v) => [v.option_id, v.value_id])),
+  sku: variant?.sku ?? "",
+  barcode: variant?.barcode ?? "",
+  gtin: variant?.gtin ?? "",
+  price: numText(variant?.price),
+  original_price: numText(variant?.original_price),
+  pack_size: numText(variant?.pack_size ?? 1),
+  stock_quantity: "",
+  is_active: variant?.is_active ?? true,
+  measures: Object.fromEntries(MEASURES.map((m) => [m.key, numText(variant?.[m.key])])) as Record<MeasureKey, string>,
+});
+
+type Errors = Partial<Record<string, string>>;
+
+const validate = (state: FormState, options: ProductOption[], isEdit: boolean, taken: Set<string>): Errors => {
+  const errors: Errors = {};
+  if (!isEdit) {
+    const chosen = options.map((o) => state.values[o.id]).filter(Boolean);
+    if (chosen.length !== options.length) errors.values = "Choose one value for each option";
+    else if (taken.has(combinationKey(chosen))) errors.values = "This combination already exists";
+  }
+  const sku = state.sku.trim().toUpperCase();
+  if (isEdit && !sku) errors.sku = "SKU can't be empty";
+  else if (sku && !SKU_PATTERN.test(sku)) errors.sku = "3-50 characters: A-Z, 0-9 and hyphens";
+  if (state.barcode.trim() && !BARCODE_PATTERN.test(state.barcode.trim().toUpperCase())) {
+    errors.barcode = "4-48 characters: A-Z, 0-9 and hyphens";
+  }
+  if (state.gtin.trim() && !isValidGtin(state.gtin.trim())) {
+    errors.gtin = "8, 12, 13 or 14 digits with a valid check digit";
+  }
+  if (state.price.trim() === "" || Number.isNaN(Number(state.price)) || Number(state.price) < 0) {
+    errors.price = "Enter a price of 0 or more";
+  }
+  if (state.original_price.trim() !== "" && (Number.isNaN(Number(state.original_price)) || Number(state.original_price) < 0)) {
+    errors.original_price = "Enter a price of 0 or more";
+  }
+  if (!isWhole(state.pack_size, 1)) errors.pack_size = "Whole number, 1 or more";
+  if (!isEdit && !isWhole(state.stock_quantity, 0)) errors.stock_quantity = "Whole number, 0 or more";
+  for (const m of MEASURES) {
+    if (!isWhole(state.measures[m.key], 0)) errors[m.key] = "Whole number, 0 or more";
+  }
+  return errors;
 };
 
+const toRequest = (state: FormState, options: ProductOption[], isEdit: boolean): CreateVariantRequest => {
+  const data: CreateVariantRequest = {
+    price: Number(state.price),
+    original_price: num(state.original_price),
+    barcode: text(state.barcode),
+    gtin: state.gtin.trim() || null,
+    pack_size: num(state.pack_size) ?? 1,
+    is_active: state.is_active,
+  };
+  for (const m of MEASURES) data[m.key] = num(state.measures[m.key]);
+  const sku = state.sku.trim().toUpperCase();
+  if (sku) data.sku = sku;
+  if (!isEdit) {
+    data.option_value_ids = options.map((o) => state.values[o.id]);
+    data.stock_quantity = num(state.stock_quantity) ?? 0;
+  }
+  return data;
+};
+
+const sameValue = (a: unknown, b: unknown) => (a ?? null) === (b ?? null);
+
+function FieldError({ message }: { message?: string }) {
+  return message ? <p className="mt-1 text-xs text-error-500">{message}</p> : null;
+}
+
+const selectClass =
+  "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
+
 export const VariantModal: React.FC<VariantModalProps> = ({
-  isOpen,
   onClose,
   productId,
+  productSku,
+  options,
+  takenCombinations,
   variant,
 }) => {
-  const [formData, setFormData] = useState<CreateVariantRequest>(initialFormState);
+  const isEdit = !!variant;
+  const [form, setForm] = useState<FormState>(() => toFormState(variant));
+  const [showErrors, setShowErrors] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const { mutate: addVariant, isPending: isAdding } = useAddVariant();
   const { mutate: updateVariant, isPending: isUpdating } = useUpdateVariant();
-
-  const isEditMode = !!variant;
   const isPending = isAdding || isUpdating;
+  const skuLocked = !!variant?.sku_locked;
 
-  useEffect(() => {
-    if (variant) {
-      setFormData({
-        variant_type: variant.variant_type,
-        variant_name: variant.variant_name,
-        sku: variant.sku || "",
-        price: variant.price,
-        original_price: variant.original_price,
-        stock_quantity: variant.stock_quantity,
-        display_order: variant.display_order,
-        is_active: variant.is_active,
-      });
-    } else {
-      setFormData(initialFormState);
-    }
-  }, [variant, isOpen]);
+  const errors = validate(form, options, isEdit, takenCombinations);
+  const shown: Errors = showErrors ? errors : {};
+
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setServerError(null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowErrors(true);
+    if (Object.keys(errors).length) return;
 
-    const data: CreateVariantRequest = {
-      ...formData,
-      price: Number(formData.price) || 0,
-      original_price: formData.original_price ? Number(formData.original_price) : undefined,
-      stock_quantity: Number(formData.stock_quantity) || 0,
-      display_order: Number(formData.display_order) || 0,
-    };
+    const data = toRequest(form, options, isEdit);
+    const done = { onSuccess: onClose, onError: (error: Error) => setServerError(error.message) };
 
-    if (isEditMode && variant) {
-      updateVariant(
-        { productId, variantId: variant.id, data },
-        {
-          onSuccess: () => {
-            onClose();
-            setFormData(initialFormState);
-          },
-        }
-      );
+    if (isEdit && variant) {
+      // Send only what changed; option values and stock never change here.
+      const before = toRequest(toFormState(variant), options, true);
+      const changed = Object.fromEntries(
+        Object.entries(data).filter(([key, value]) => !sameValue(value, before[key as keyof CreateVariantRequest]))
+      ) as Partial<CreateVariantRequest>;
+      if (Object.keys(changed).length === 0) {
+        onClose();
+        return;
+      }
+      updateVariant({ productId, variantId: variant.id, data: changed }, done);
     } else {
-      addVariant(
-        { productId, data },
-        {
-          onSuccess: () => {
-            onClose();
-            setFormData(initialFormState);
-          },
-        }
-      );
+      addVariant({ productId, data }, done);
     }
   };
 
-  const statusOptions = [
-    { value: "true", label: "Active" },
-    { value: "false", label: "Inactive" },
-  ];
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg p-6 sm:p-8">
+    <Modal isOpen onClose={onClose} className="max-w-2xl p-6 sm:p-8">
       <h3 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
-        {isEditMode ? "Edit Variant" : "Add Variant"}
+        {isEdit ? "Edit variant" : "Add variant"}
       </h3>
 
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
+          {/* Option values: chosen on add, fixed afterwards */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {options.map((option) => (
+              <div key={option.id}>
+                <Label htmlFor={`value-${option.id}`}>{option.name}</Label>
+                {isEdit ? (
+                  <Input
+                    id={`value-${option.id}`}
+                    value={variant?.option_values?.find((v) => v.option_id === option.id)?.value ?? "-"}
+                    disabled
+                  />
+                ) : (
+                  <select
+                    id={`value-${option.id}`}
+                    value={form.values[option.id] ?? ""}
+                    onChange={(e) => set("values", { ...form.values, [option.id]: e.target.value })}
+                    className={selectClass}
+                  >
+                    <option value="">Choose…</option>
+                    {option.values.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.value}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            ))}
+          </div>
+          {isEdit ? (
+            <p className="text-xs text-gray-500">
+              Option values can&apos;t be changed. Delete this variant and add the combination again.
+            </p>
+          ) : (
+            <FieldError message={shown.values} />
+          )}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <Label htmlFor="variant_type">Variant Type *</Label>
+              <Label htmlFor="variant-sku">SKU</Label>
               <Input
-                type="text"
-                id="variant_type"
-                value={formData.variant_type ?? ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, variant_type: e.target.value }))}
-                placeholder="e.g., Size, Color, Weight"
-                required
+                id="variant-sku"
+                value={form.sku}
+                disabled={skuLocked}
+                error={!!shown.sku}
+                onChange={(e) => set("sku", e.target.value.toUpperCase())}
+                placeholder={isEdit ? "" : `Auto: ${productSku}-NN`}
               />
+              <p className={`mt-1 text-xs ${shown.sku ? "text-error-500" : "text-gray-500"}`}>
+                {shown.sku ??
+                  (skuLocked
+                    ? "Used by orders or stock history, so it can't be changed"
+                    : isEdit
+                      ? "A-Z, 0-9 and hyphens"
+                      : "Leave empty to generate one")}
+              </p>
             </div>
             <div>
-              <Label htmlFor="variant_name">Variant Name *</Label>
+              <Label htmlFor="variant-barcode">Barcode</Label>
               <Input
-                type="text"
-                id="variant_name"
-                value={formData.variant_name ?? ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, variant_name: e.target.value }))}
-                placeholder="e.g., Small, Red, 500g"
-                required
+                id="variant-barcode"
+                value={form.barcode}
+                error={!!shown.barcode}
+                onChange={(e) => set("barcode", e.target.value.toUpperCase())}
               />
+              <FieldError message={shown.barcode} />
+            </div>
+            <div>
+              <Label htmlFor="variant-gtin">GTIN</Label>
+              <Input
+                id="variant-gtin"
+                value={form.gtin}
+                error={!!shown.gtin}
+                inputMode="numeric"
+                onChange={(e) => set("gtin", e.target.value)}
+              />
+              <FieldError message={shown.gtin} />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="sku">SKU</Label>
-            <Input
-              type="text"
-              id="sku"
-              value={formData.sku || ""}
-              onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
-              placeholder="Auto-generated if empty"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <Label htmlFor="price">Price (₹) *</Label>
+              <Label htmlFor="variant-price">Price (₹) *</Label>
               <Input
                 type="number"
-                id="price"
-                value={formData.price || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, price: Number(e.target.value) }))}
+                id="variant-price"
+                value={form.price}
+                error={!!shown.price}
+                onChange={(e) => set("price", e.target.value)}
                 placeholder="0.00"
-                required
               />
+              <FieldError message={shown.price} />
             </div>
             <div>
-              <Label htmlFor="original_price">Original Price (₹)</Label>
+              <Label htmlFor="variant-original-price">Original price (₹)</Label>
               <Input
                 type="number"
-                id="original_price"
-                value={formData.original_price || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, original_price: e.target.value ? Number(e.target.value) : undefined }))}
+                id="variant-original-price"
+                value={form.original_price}
+                error={!!shown.original_price}
+                onChange={(e) => set("original_price", e.target.value)}
                 placeholder="For discount display"
               />
+              <FieldError message={shown.original_price} />
+            </div>
+            <div>
+              <Label htmlFor="variant-stock">{isEdit ? "Stock" : "Initial stock"}</Label>
+              {isEdit ? (
+                <>
+                  <Input id="variant-stock" value={numText(variant?.stock_quantity)} disabled />
+                  <p className="mt-1 text-xs text-gray-500">Change stock from Inventory</p>
+                </>
+              ) : (
+                <>
+                  <Input
+                    type="number"
+                    id="variant-stock"
+                    value={form.stock_quantity}
+                    error={!!shown.stock_quantity}
+                    onChange={(e) => set("stock_quantity", e.target.value)}
+                    placeholder="0"
+                  />
+                  <FieldError message={shown.stock_quantity} />
+                </>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <Label htmlFor="stock_quantity">Stock Quantity *</Label>
+              <Label htmlFor="variant-pack-size">Pack size</Label>
               <Input
                 type="number"
-                id="stock_quantity"
-                value={formData.stock_quantity || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, stock_quantity: Number(e.target.value) }))}
-                placeholder="0"
-                required
+                id="variant-pack-size"
+                value={form.pack_size}
+                error={!!shown.pack_size}
+                onChange={(e) => set("pack_size", e.target.value)}
               />
+              <FieldError message={shown.pack_size} />
             </div>
-            <div>
-              <Label htmlFor="is_active">Status</Label>
-              <Select
-                options={statusOptions}
-                defaultValue={String(formData.is_active)}
-                onChange={(val) => setFormData((prev) => ({ ...prev, is_active: val === "true" }))}
-              />
-            </div>
+            {MEASURES.map((m) => (
+              <div key={m.key}>
+                <Label htmlFor={`variant-${m.key}`}>{m.label}</Label>
+                <Input
+                  type="number"
+                  id={`variant-${m.key}`}
+                  value={form.measures[m.key]}
+                  error={!!shown[m.key]}
+                  onChange={(e) => set("measures", { ...form.measures, [m.key]: e.target.value })}
+                />
+                <FieldError message={shown[m.key]} />
+              </div>
+            ))}
           </div>
 
-          <div>
-            <Label htmlFor="display_order">Display Order</Label>
-            <Input
-              type="number"
-              id="display_order"
-              value={formData.display_order || ""}
-              onChange={(e) => setFormData((prev) => ({ ...prev, display_order: Number(e.target.value) }))}
-              placeholder="0"
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={form.is_active}
+              onChange={(e) => set("is_active", e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-brand-500"
             />
-          </div>
+            Active (sold to customers)
+          </label>
         </div>
+
+        {serverError && (
+          <p role="alert" className="mt-4 rounded-lg bg-error-50 px-3 py-2 text-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
+            {serverError}
+          </p>
+        )}
 
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-4 py-2.5 text-sm bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isPending || !formData.variant_type || !formData.variant_name}
-            className="inline-flex items-center justify-center font-medium gap-2 rounded-lg transition px-4 py-2.5 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
+            disabled={isPending}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : isEditMode ? "Update Variant" : "Add Variant"}
+            {isPending ? "Saving..." : isEdit ? "Update variant" : "Add variant"}
           </button>
         </div>
       </form>
