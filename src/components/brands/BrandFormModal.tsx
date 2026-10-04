@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
@@ -24,12 +25,19 @@ interface BrandFormModalProps {
 }
 
 export default function BrandFormModal({ isOpen, onClose, brand, onSaved }: BrandFormModalProps) {
+  // Portal to <body>: BrandPicker sits inside the product <form>, and forms can't nest.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   // Remount the body per open/brand so state resets without effects.
-  if (!isOpen) return null;
-  return (
+  if (!isOpen || !mounted) return null;
+  return createPortal(
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg p-6 sm:p-8 m-4">
       <BrandFormBody key={brand?.id ?? "new"} brand={brand} onClose={onClose} onSaved={onSaved} />
-    </Modal>
+    </Modal>,
+    document.body
   );
 }
 
@@ -138,16 +146,19 @@ function BrandFormBody({
 
       <div>
         <Label htmlFor="brand-description">Description</Label>
+        <div id="brand-description" role="group" aria-label="Description">
         <TextArea
           placeholder="Optional"
           rows={3}
           value={description}
           onChange={(val) => setDescription(val)}
         />
+        </div>
       </div>
 
       <div>
         <Label htmlFor="brand-status">Status</Label>
+        <div id="brand-status" role="group" aria-label="Status">
         <Select
           options={[
             { value: "active", label: "Active" },
@@ -156,6 +167,7 @@ function BrandFormBody({
           defaultValue={status}
           onChange={(val) => setStatus(val as BrandStatus)}
         />
+        </div>
       </div>
 
       <div>

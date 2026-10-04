@@ -43,6 +43,11 @@ function BrandsPageContent() {
 
   const brands = data?.data ?? [];
   const pagination = data?.pagination;
+  // After deleting the last row of the final page, step back a page (adjust during render).
+  if (pagination && page > 1 && page > pagination.total_pages) {
+    setPage(Math.max(1, pagination.total_pages));
+  }
+
 
   const openCreate = () => {
     setEditing(null);
