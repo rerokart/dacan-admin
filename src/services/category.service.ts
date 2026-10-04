@@ -2,17 +2,49 @@ import { defaultAxios } from "@/utils/axios/default.axios";
 import { API_ROUTES } from "@/utils/axios/apiEndPoint";
 
 // Types
+export type CategoryStatus = "active" | "draft" | "inactive" | "archived";
+export type WritableCategoryStatus = Exclude<CategoryStatus, "archived">;
+
+export interface CategoryPathItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface Category {
   id: string;
   name: string;
   slug: string;
+  code: string;
   description?: string;
-  image_url?: string;
-  parent_id?: string;
+  parent_id?: string | null;
   parent_name?: string;
   display_order: number;
-  is_active: boolean;
+  status: CategoryStatus;
+  show_on_app: boolean;
+  show_on_web: boolean;
+  show_in_pos: boolean;
+  is_featured: boolean;
+  featured_order: number;
+  icon_url?: string | null;
+  thumbnail_url?: string | null;
+  banner_url?: string | null;
+  archived_at?: string | null;
+  archived_by?: string | null;
+  /** Computed by the API */
+  depth: number;
+  hidden_by_parent?: boolean;
+  /** In-stock products, including subcategories */
   product_count?: number;
+  /** Active products, including subcategories */
+  total_product_count?: number;
+  /** Products directly in this category, any status (detail only) */
+  direct_product_count?: number;
+  path?: CategoryPathItem[];
+  /** @deprecated use status */
+  is_active: boolean;
+  /** @deprecated display fallback: thumbnail → icon → old image */
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
   children?: Category[];
@@ -21,16 +53,29 @@ export interface Category {
 export interface CreateCategoryRequest {
   name: string;
   slug?: string;
-  description?: string;
-  image_url?: string;
-  parent_id?: string;
+  code?: string;
+  description?: string | null;
+  parent_id?: string | null;
   display_order?: number;
-  is_active?: boolean;
+  status?: WritableCategoryStatus;
+  show_on_app?: boolean;
+  show_on_web?: boolean;
+  show_in_pos?: boolean;
+  is_featured?: boolean;
+  featured_order?: number;
+  icon_url?: string | null;
+  thumbnail_url?: string | null;
+  banner_url?: string | null;
+}
+
+export interface ArchiveCategoryResponse {
+  category: Category;
+  moved_products: number;
 }
 
 export interface CategoryFilters {
   search?: string;
-  is_active?: boolean;
+  include_archived?: boolean;
   parent_id?: string;
   page?: number;
   limit?: number;
@@ -90,6 +135,20 @@ export const categoryService = {
 
   deleteCategory: async (id: string | number): Promise<void> => {
     return defaultAxios.delete(API_ROUTES.CATEGORIES.DELETE(id));
+  },
+
+  archiveCategory: async (
+    id: string | number,
+    moveProductsTo?: string
+  ): Promise<ArchiveCategoryResponse> => {
+    return defaultAxios.post(
+      API_ROUTES.CATEGORIES.ARCHIVE(id),
+      moveProductsTo ? { move_products_to: moveProductsTo } : {}
+    );
+  },
+
+  restoreCategory: async (id: string | number): Promise<{ category: Category }> => {
+    return defaultAxios.post(API_ROUTES.CATEGORIES.RESTORE(id), {});
   },
 
   getCategoryProducts: async (

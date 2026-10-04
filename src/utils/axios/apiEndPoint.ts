@@ -52,6 +52,8 @@ export const API_ROUTES = {
     UPDATE: (id: string | number) => `categories/${id}`,
     DELETE: (id: string | number) => `categories/${id}`,
     PRODUCTS: (id: string | number) => `categories/${id}/products`,
+    ARCHIVE: (id: string | number) => `categories/${id}/archive`,
+    RESTORE: (id: string | number) => `categories/${id}/restore`,
   },
 
   // Products
