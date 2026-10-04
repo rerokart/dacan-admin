@@ -94,7 +94,10 @@ export const useCancelOrder = () => {
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: string | number; reason?: string }) =>
-      orderService.cancelOrder(id, reason),
+      orderService.updateOrderStatus(id, {
+        status: "cancelled",
+        notes: reason,
+      }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({
@@ -127,29 +130,6 @@ export const useDownloadInvoice = () => {
     },
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to download invoice");
-    },
-  });
-};
-
-// Create Offline Order (POS)
-export const useCreateOfflineOrder = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: (data: {
-      items: { product_id: string; variant_id?: string; quantity: number }[];
-      customer_id?: string;
-      payment_method: string;
-      amount_paid?: number;
-      notes?: string;
-    }) => orderService.createOfflineOrder(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
-      toast.success("Order created successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(error?.message || "Failed to create order");
     },
   });
 };

@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
+import Can from "@/components/auth/Can";
 import { useRecentOrders } from "@/hooks/useDashboard";
 import { ROUTES } from "@/utils/constants/NavigationRoutes";
 import { formatCurrency } from "@/utils/helpers/helperfn";
@@ -19,11 +20,14 @@ const getStatusColor = (status: string) => {
       return "success";
     case "shipped":
       return "info";
-    case "processing":
+    case "out_for_delivery":
+      return "info";
+    case "confirmed":
       return "warning";
-    case "pending":
+    case "placed":
       return "light";
     case "cancelled":
+    case "rejected":
       return "error";
     default:
       return "light";
@@ -40,11 +44,14 @@ const formatDate = (dateString: string) => {
 };
 
 const formatStatus = (status: string) => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  return status
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 };
 
-export default function RecentOrders() {
-  const { data: orders, isLoading } = useRecentOrders();
+function RecentOrdersContent() {
+  const { data: orders, isLoading, isError, error } = useRecentOrders();
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
@@ -69,6 +76,12 @@ export default function RecentOrders() {
         {isLoading ? (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             Loading...
+          </div>
+        ) : isError ? (
+          <div className="py-8 text-center text-red-500">
+            {error instanceof Error && error.message
+              ? error.message
+              : "Failed to load recent orders."}
           </div>
         ) : (
           <Table>
@@ -137,12 +150,20 @@ export default function RecentOrders() {
           </Table>
         )}
 
-        {!isLoading && (!orders || orders.length === 0) && (
+        {!isLoading && !isError && (!orders || orders.length === 0) && (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             No recent orders
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function RecentOrders() {
+  return (
+    <Can permission="analytics.view">
+      <RecentOrdersContent />
+    </Can>
   );
 }

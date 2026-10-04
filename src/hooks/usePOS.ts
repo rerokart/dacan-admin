@@ -121,7 +121,7 @@ export const usePOSCart = () => {
           price: variant?.price || product.price,
           quantity: 1,
           stock_quantity: variant?.stock_quantity || product.stock_quantity,
-          image_url: product.image_url,
+          image: product.image,
         };
 
         return [...prev, newItem];

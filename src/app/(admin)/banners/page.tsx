@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
-import { useBanners, useDeleteBanner } from "@/hooks/useBanners";
+import { useBanners, useDeleteBanner, useReorderBanners } from "@/hooks/useBanners";
 import type { BannerFilters } from "@/services/banner.service";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
@@ -54,7 +54,12 @@ function BannersPageContent() {
   const { data: bannersData, isLoading, error } = useBanners(filters);
   const { mutate: deleteBanner, isPending: isDeleting } = useDeleteBanner();
 
-  const banners = bannersData?.data || [];
+  const { mutate: reorderBanners, isPending: isReordering } = useReorderBanners();
+
+  // Sort by display_order (stable, so ties keep the server's order).
+  const banners = [...(bannersData?.data || [])].sort(
+    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+  );
   const totalPages = bannersData?.total_pages || 1;
 
   const handleFilterChange = (key: keyof BannerFilters, value: string | undefined) => {
@@ -63,6 +68,25 @@ function BannersPageContent() {
       [key]: value === "" ? undefined : value === "true",
       page: 1,
     }));
+  };
+
+  // Swap a banner with its neighbour (-1 = up, +1 = down) in the displayed list.
+  // The whole visible page is renumbered sequentially (pageOffset + index) and
+  // sent in one call, so ties and third-row collisions cannot occur.
+  const handleMove = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (!banners[index] || !banners[target]) return;
+
+    const reordered = [...banners];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+
+    const pageOffset = ((filters.page ?? 1) - 1) * (filters.limit ?? 10);
+    reorderBanners({
+      banners: reordered.map((b, i) => ({
+        id: String(b.id),
+        display_order: pageOffset + i,
+      })),
+    });
   };
 
   const handleDelete = () => {
@@ -180,7 +204,7 @@ function BannersPageContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {banners.map((banner) => {
+                  {banners.map((banner, index) => {
                     const status = getBannerStatus(banner);
                     return (
                       <TableRow
@@ -225,6 +249,34 @@ function BannersPageContent() {
                         </TableCell>
                         <TableCell className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Can permission="banners.edit">
+                              {index > 0 && (
+                                <button
+                                  onClick={() => handleMove(index, -1)}
+                                  disabled={isReordering}
+                                  title="Move up"
+                                  aria-label="Move up"
+                                  className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </button>
+                              )}
+                              {index < banners.length - 1 && (
+                                <button
+                                  onClick={() => handleMove(index, 1)}
+                                  disabled={isReordering}
+                                  title="Move down"
+                                  aria-label="Move down"
+                                  className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              )}
+                            </Can>
                             <Can permission="banners.edit">
                               <Link
                                 href={`/banners/${banner.id}/edit`}

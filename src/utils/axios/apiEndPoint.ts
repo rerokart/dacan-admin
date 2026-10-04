@@ -82,10 +82,8 @@ export const API_ROUTES = {
     UPDATE: (id: string | number) => `orders/${id}`,
     DELETE: (id: string | number) => `orders/${id}`,
     UPDATE_STATUS: (id: string | number) => `orders/${id}/status`,
-    CANCEL: (id: string | number) => `orders/${id}/cancel`,
     UPDATE_PAYMENT: (id: string | number) => `orders/${id}/payment`,
     INVOICE: (id: string | number) => `orders/${id}/invoice`,
-    OFFLINE: "orders/offline",
   },
 
   // Users
@@ -99,10 +97,11 @@ export const API_ROUTES = {
 
   // Dashboard
   DASHBOARD: {
-    STATS: "dashboard/stats",
-    RECENT_ORDERS: "dashboard/recent-orders",
-    SALES_CHART: "dashboard/sales-chart",
-    ORDERS_BY_STATUS: "dashboard/orders-by-status",
+    // STATS / RECENT_ORDERS / ORDERS_BY_STATUS are all served by one call.
+    STATS: "analytics/dashboard",
+    RECENT_ORDERS: "analytics/dashboard",
+    SALES_CHART: "analytics/sales",
+    ORDERS_BY_STATUS: "analytics/dashboard",
     LOW_STOCK: "dashboard/low-stock",
   },
 
@@ -118,8 +117,8 @@ export const API_ROUTES = {
 
   // Inventory
   INVENTORY: {
-    OVERVIEW: "inventory",
-    STOCK_LEVELS: "inventory/stock",
+    OVERVIEW: "inventory/overview",
+    STOCK_LEVELS: "inventory",
     UPDATE_STOCK: "inventory/update",
     HISTORY: "inventory/history",
   },
@@ -147,6 +146,7 @@ export const API_ROUTES = {
     PRODUCTS: "pos/products",
     CUSTOMERS: "pos/customers",
     CREATE_CUSTOMER: "pos/customers",
+    CREATE_ORDER: "pos/orders/offline",
   },
 
   // Banners

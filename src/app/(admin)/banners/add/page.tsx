@@ -159,13 +159,16 @@ function AddBannerPageContent() {
               <div>
                 <Label htmlFor="link_url">Link URL</Label>
                 <Input
-                  type="url"
+                  type="text"
                   id="link_url"
                   name="link_url"
                   value={formData.link_url}
                   onChange={(e) => setFormData((prev) => ({ ...prev, link_url: e.target.value }))}
                   placeholder="https://example.com/sale"
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Tappable in the app: an https:// web link, /product/&lt;product ID&gt; or /category/&lt;category ID&gt;.
+                </p>
               </div>
 
               {/* Description */}

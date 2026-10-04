@@ -59,7 +59,7 @@ export interface Order {
   delivery_charge: number;
   tax_amount: number;
   total_amount: number;
-  payment_method: "cod" | "online";
+  payment_method: "cod" | "online" | "cash" | "card" | "upi";
   payment_status: "pending" | "paid" | "failed" | "refunded";
   order_status:
     | "placed"
@@ -149,26 +149,11 @@ export const orderService = {
     return response.order;
   },
 
-  cancelOrder: async (id: string | number, reason?: string): Promise<Order> => {
-    const response: { order: Order; status: number } = await defaultAxios.post(API_ROUTES.ORDERS.CANCEL(id), { reason });
-    return response.order;
-  },
-
   getOrderInvoice: async (id: string | number): Promise<Blob> => {
     const response = await defaultAxios.get(API_ROUTES.ORDERS.INVOICE(id), {
       responseType: "blob",
     });
     return response as unknown as Blob;
-  },
-
-  createOfflineOrder: async (data: {
-    items: { product_id: string; variant_id?: string; quantity: number }[];
-    customer_id?: string;
-    payment_method: string;
-    amount_paid?: number;
-    notes?: string;
-  }): Promise<Order> => {
-    return defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
   },
 };
 
@@ -185,8 +170,19 @@ export const PAYMENT_STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
   { value: "paid", label: "Paid" },
   { value: "failed", label: "Failed" },
-  { value: "refunded", label: "Refunded" },
 ];
+
+// Display labels for every payment method the backend can store
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cod: "COD",
+  online: "Online",
+  cash: "Cash",
+  card: "Card",
+  upi: "UPI",
+};
+
+export const getPaymentMethodLabel = (method?: string | null): string =>
+  method ? PAYMENT_METHOD_LABELS[method] ?? method : "—";
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
   placed: "warning",

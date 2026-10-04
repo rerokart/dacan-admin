@@ -64,8 +64,8 @@ function InventoryPageContent() {
   const { data: stockData, isLoading: stockLoading, error } = useStockLevels(filters);
   const { mutate: updateStock, isPending: isUpdating } = useUpdateStock();
 
-  const stockItems = stockData?.data || [];
-  const totalPages = stockData?.total_pages || 1;
+  const stockItems = stockData?.inventory || [];
+  const totalPages = stockData?.pagination?.total_pages || 1;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +85,7 @@ function InventoryPageContent() {
       const data: UpdateStockRequest = {
         product_id: updateModal.product_id,
         variant_id: updateModal.variant_id,
-        quantity_change: stockChange,
+        adjustment: stockChange,
         reason: stockReason,
       };
       updateStock(data, {
@@ -100,23 +100,23 @@ function InventoryPageContent() {
 
   const statCards = [
     {
-      label: "Total Products",
-      value: overview?.totalProducts || 0,
+      label: "Total Items",
+      value: overview?.total_items || 0,
       color: "text-gray-900",
     },
     {
       label: "In Stock",
-      value: overview?.inStock || 0,
+      value: overview?.in_stock || 0,
       color: "text-green-600",
     },
     {
       label: "Low Stock",
-      value: overview?.lowStock || 0,
+      value: overview?.low_stock || 0,
       color: "text-yellow-600",
     },
     {
       label: "Out of Stock",
-      value: overview?.outOfStock || 0,
+      value: overview?.out_of_stock || 0,
       color: "text-red-600",
     },
   ];
@@ -141,11 +141,11 @@ function InventoryPageContent() {
         </div>
 
         {/* Inventory Value Card */}
-        {overview?.totalValue !== undefined && (
+        {overview?.total_value !== undefined && (
           <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <p className="text-sm text-gray-500">Total Inventory Value</p>
+            <p className="text-sm text-gray-500">Stock value at selling price</p>
             <p className="text-3xl font-semibold text-gray-900 dark:text-white mt-1">
-              ₹{overview.totalValue.toLocaleString()}
+              ₹{overview.total_value.toLocaleString("en-IN")}
             </p>
           </div>
         )}
@@ -260,17 +260,17 @@ function InventoryPageContent() {
                 <TableBody>
                   {stockItems.map((item) => (
                     <TableRow
-                      key={item.id}
+                      key={`${item.type}-${item.id}`}
                       className="border-b border-gray-100 dark:border-gray-800"
                     >
                       <TableCell className="px-6 py-4">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {item.product_name}
+                            {item.name}
                           </p>
-                          {item.variant_name && (
+                          {item.variant_info && (
                             <p className="text-sm text-gray-500">
-                              {item.variant_name}
+                              {item.variant_info}
                             </p>
                           )}
                         </div>
@@ -281,21 +281,21 @@ function InventoryPageContent() {
                       <TableCell className="px-6 py-4 text-center">
                         <span
                           className={`font-semibold ${
-                            item.current_stock === 0
+                            item.stock_status === "out_of_stock"
                               ? "text-red-600"
-                              : item.current_stock <= item.low_stock_threshold
+                              : item.stock_status === "low_stock"
                               ? "text-yellow-600"
                               : "text-gray-900 dark:text-white"
                           }`}
                         >
-                          {item.current_stock}
+                          {item.stock_quantity}
                         </span>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center text-gray-600 dark:text-gray-400">
                         {item.low_stock_threshold}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
-                        {getStockStatusBadge(item.status)}
+                        {getStockStatusBadge(item.stock_status)}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right">
                         <Can permission="inventory.edit">
@@ -303,11 +303,11 @@ function InventoryPageContent() {
                             onClick={() =>
                               setUpdateModal({
                                 product_id: item.product_id,
-                                variant_id: item.variant_id,
-                                product_name: `${item.product_name}${
-                                  item.variant_name ? ` - ${item.variant_name}` : ""
+                                variant_id: item.variant_id ?? undefined,
+                                product_name: `${item.name}${
+                                  item.variant_info ? ` - ${item.variant_info}` : ""
                                 }`,
-                                current_stock: item.current_stock,
+                                current_stock: item.stock_quantity,
                               })
                             }
                             className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"

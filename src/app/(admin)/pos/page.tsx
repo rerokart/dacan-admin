@@ -99,7 +99,8 @@ function POSPageContent() {
         })),
         customer_id: selectedCustomer?.id,
         payment_method: paymentMethod,
-        amount_paid: paymentMethod === "cash" ? amountPaid : totals.total,
+        // Card/UPI: omit amount_paid so the server defaults it to its own total.
+        ...(paymentMethod === "cash" ? { amount_paid: amountPaid } : {}),
       },
       {
         onSuccess: (order) => {
@@ -108,7 +109,7 @@ function POSPageContent() {
         },
       }
     );
-  }, [cart, selectedCustomer, paymentMethod, amountPaid, totals.total, createOrder]);
+  }, [cart, selectedCustomer, paymentMethod, amountPaid, createOrder]);
 
   const handleNewSale = useCallback(() => {
     clearCart();
@@ -175,9 +176,9 @@ function POSPageContent() {
                   disabled={product.stock_quantity === 0}
                   className="relative flex flex-col rounded-xl border border-gray-200 bg-white p-3 text-left transition-all hover:border-brand-500 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                 >
-                  {product.image_url ? (
+                  {product.image ? (
                     <img
-                      src={product.image_url}
+                      src={product.image}
                       alt={product.name}
                       className="h-24 w-full rounded-lg object-cover mb-2"
                     />
@@ -515,7 +516,7 @@ function POSPageContent() {
               {completedOrder.items.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm py-1">
                   <div>
-                    <span className="text-gray-900 dark:text-white">{item.name}</span>
+                    <span className="text-gray-900 dark:text-white">{item.product_name}</span>
                     {item.variant_name && (
                       <span className="text-gray-500"> ({item.variant_name})</span>
                     )}
@@ -594,9 +595,9 @@ interface CartItemProps {
 function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
   return (
     <div className="flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-      {item.image_url ? (
+      {item.image ? (
         <img
-          src={item.image_url}
+          src={item.image}
           alt={item.name}
           className="h-12 w-12 rounded-lg object-cover"
         />
