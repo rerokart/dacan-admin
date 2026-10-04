@@ -6,6 +6,9 @@ import {
   type Product,
   type ProductFilters,
   type CreateProductRequest,
+  type UpdateProductRequest,
+  type SaveOptionsRequest,
+  type UpdateImageRequest,
   type ProductVariant,
   type CreateVariantRequest,
   type AddImageRequest,
@@ -68,7 +71,7 @@ export const useUpdateProduct = () => {
       data,
     }: {
       id: string | number;
-      data: Partial<CreateProductRequest>;
+      data: UpdateProductRequest;
     }) => productService.updateProduct(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
@@ -277,6 +280,143 @@ export const useAddProductImage = () => {
     },
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to add image to product");
+    },
+  });
+};
+
+const invalidateProduct = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  id: string | number
+) => {
+  queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+  queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
+  queryClient.invalidateQueries({ queryKey: productKeys.variants(id) });
+};
+
+// Archive Product
+export const useArchiveProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string | number) => productService.archiveProduct(id),
+    onSuccess: (_, id) => {
+      invalidateProduct(queryClient, id);
+      toast.success("Product archived");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to archive product");
+    },
+  });
+};
+
+// Restore Product (comes back as Inactive)
+export const useRestoreProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string | number) => productService.restoreProduct(id),
+    onSuccess: (_, id) => {
+      invalidateProduct(queryClient, id);
+      toast.success("Product restored as Inactive");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to restore product");
+    },
+  });
+};
+
+// Save the option set
+export const useSaveOptions = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      productId,
+      data,
+    }: {
+      productId: string | number;
+      data: SaveOptionsRequest;
+    }) => productService.saveOptions(productId, data),
+    onSuccess: (_, variables) => {
+      invalidateProduct(queryClient, variables.productId);
+      toast.success("Options saved");
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to save options");
+    },
+  });
+};
+
+// Generate missing combinations
+export const useGenerateVariants = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (productId: string | number) => productService.generateVariants(productId),
+    onSuccess: (variants, productId) => {
+      invalidateProduct(queryClient, productId);
+      toast.success(
+        variants.length
+          ? `${variants.length} variant(s) created`
+          : "No missing combinations"
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to generate variants");
+    },
+  });
+};
+
+// Update one image (primary, alt text, type, variant, replace file)
+export const useUpdateProductImage = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      productId,
+      imageId,
+      data,
+    }: {
+      productId: string | number;
+      imageId: string | number;
+      data: UpdateImageRequest;
+    }) => productService.updateImage(productId, imageId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: productKeys.detail(variables.productId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to update image");
+    },
+  });
+};
+
+// Reorder images
+export const useReorderProductImages = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      productId,
+      imageIds,
+    }: {
+      productId: string | number;
+      imageIds: string[];
+    }) => productService.reorderImages(productId, imageIds),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: productKeys.detail(variables.productId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || "Failed to reorder images");
     },
   });
 };

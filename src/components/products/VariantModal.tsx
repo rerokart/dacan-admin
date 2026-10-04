@@ -110,7 +110,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
               <Input
                 type="text"
                 id="variant_type"
-                value={formData.variant_type}
+                value={formData.variant_type ?? ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, variant_type: e.target.value }))}
                 placeholder="e.g., Size, Color, Weight"
                 required
@@ -121,7 +121,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
               <Input
                 type="text"
                 id="variant_name"
-                value={formData.variant_name}
+                value={formData.variant_name ?? ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, variant_name: e.target.value }))}
                 placeholder="e.g., Small, Red, 500g"
                 required

@@ -74,6 +74,21 @@ export const API_ROUTES = {
     IMAGE: (productId: string | number, imageId: string | number) =>
       `products/${productId}/images/${imageId}`,
     REVIEWS: (id: string | number) => `products/${id}/reviews`,
+    ARCHIVE: (id: string | number) => `products/${id}/archive`,
+    RESTORE: (id: string | number) => `products/${id}/restore`,
+    OPTIONS: (id: string | number) => `products/${id}/options`,
+    GENERATE_VARIANTS: (id: string | number) => `products/${id}/variants/generate`,
+    IMAGES_REORDER: (id: string | number) => `products/${id}/images/reorder`,
+  },
+
+  // Brands
+  BRANDS: {
+    LIST: "brands",
+    CREATE: "brands",
+    GET: (id: string | number) => `brands/${id}`,
+    UPDATE: (id: string | number) => `brands/${id}`,
+    DELETE: (id: string | number) => `brands/${id}`,
+    UPLOAD_LOGO: "brands/upload-logo",
   },
 
   // Orders
