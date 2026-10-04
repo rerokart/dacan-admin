@@ -148,6 +148,8 @@ export interface Product {
   default_variant_id?: string | null;
   specifications?: ProductSpecification[];
   price_range?: { min: number; max: number } | null;
+  /** Admin list rows: number of non-default variants */
+  variant_count?: number;
   /** Admin detail only */
   has_orders?: boolean;
   /** Create / update responses only */

@@ -91,8 +91,8 @@ function AllProductsContent() {
   const { data: categories } = useCategories();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const { mutate: updateProduct } = useUpdateProduct();
-  const { mutate: archiveProduct } = useArchiveProduct();
-  const { mutate: restoreProduct } = useRestoreProduct();
+  const { mutate: archiveProduct, isPending: isArchiving } = useArchiveProduct();
+  const { mutate: restoreProduct, isPending: isRestoring } = useRestoreProduct();
   const { data: brandsData } = useBrands({ limit: 100 });
 
   const products = productsData?.data || [];
@@ -423,8 +423,8 @@ function AllProductsContent() {
                             </span>
                             {product.has_variants && (
                               <span className="ml-2 text-xs text-gray-500">
-                                {product.variants?.length
-                                  ? `(${product.variants.length} variants)`
+                                {(product.variant_count ?? product.variants?.length)
+                                  ? `(${product.variant_count ?? product.variants?.length} variants)`
                                   : "(has variants)"}
                               </span>
                             )}
@@ -494,14 +494,16 @@ function AllProductsContent() {
                             {product.status === "archived" ? (
                               <button
                                 onClick={() => restoreProduct(product.id)}
-                                className="rounded-lg px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-gray-800"
+                                disabled={isRestoring}
+                                className="rounded-lg px-2 py-1 text-xs font-medium disabled:opacity-50 text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-gray-800"
                               >
                                 Restore
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleArchive(product.id, product.name)}
-                                className="rounded-lg px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
+                                disabled={isArchiving}
+                                className="rounded-lg px-2 py-1 text-xs font-medium disabled:opacity-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
                               >
                                 Archive
                               </button>
