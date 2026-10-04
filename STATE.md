@@ -1,6 +1,6 @@
 # dacan-admin — State
 
-_Last updated: 2026-10-04_
+_Last updated: 2026-10-05_
 
 ## Done
 - Next.js 16 + React 19 initialized from admin-dashboard template
@@ -17,6 +17,14 @@ _Last updated: 2026-10-04_
 - **Stage A bug sprint (merged into `main` 2026-10-04 @ `c690661`)**: POS posts to `pos/orders/offline` with cash/card/upi, receipt shows variant, amount paid and change, totals rounded to paise (B02); Inventory page and Dashboard low-stock widget wired to the real inventory list/overview and stock `adjustment` (B04, B05, B26); product delete shows the 409 "has orders" message (B08); banner move up/down reorder + link-format hint (B11); Cancel order sends a status update, "Refunded" removed, Cash/Card/UPI payment filters (B13, B16, B15); dashboard demo data replaced by `analytics/dashboard` + `analytics/sales` (B57); `pnpm build` now passes (B29, reviews rating filter typing). Needs backend `fix/stage-a`. Detail: `docs/BUGS.md`, `docs/SEQUENCE.md`.
 
 ## In Progress
+- **Products C2, built on `feature/products-c2` @ `8645065` (off `main` 1e22036). NOT merged, NOT pushed; awaiting user review and QA** (`.claude/qa-report/2026-10-05-multi-products-c2-user-checklist.md`). Needs the backend `feature/products-c2` and its Phase 9 migration. Follow-ups: B94–B98 in `docs/BUGS.md` (step C2.5).
+  - **Data layer:** product/brand types and services, `useBrands`, new product hooks (archive, restore, options, generate, image PATCH/reorder), `src/utils/productRules.ts`, `src/utils/formHelpers.ts` (`preventEnterSubmit`), `src/hooks/catalogInvalidation.ts` (stock changes refresh products, inventory and the low-stock widget together).
+  - **Brands:** `src/app/(admin)/brands/page.tsx`, `BrandFormModal` (portaled), `BrandPicker` (search, "(inactive)", add new); top-level "Brands" nav item gated `brands.view`.
+  - **Product form:** shared `src/components/products/ProductForm.tsx` for add and edit (Basics, Pricing & stock, Identity, Content, Specifications, Purchase limits); new products default to Draft; edit sends only changed fields; publish problems and duplicate warnings shown.
+  - **Edit page:** `OptionsEditor`, `VariantGrid` (SKU lock, generate missing combinations), rewritten `VariantModal`, `ImageManager` (drag reorder, primary, alt text, type, variant link, replace, 2 MB / 8-image checks).
+  - **List:** status and brand filters, brand column, status badge, variant count, price range, Archive / Restore, Delete only for drafts.
+  - **Consumers checked:** POS, inventory, low-stock widget, wishlists, order detail need no change.
+  - **Checks:** tsc 0; lint **8 errors / 12 warnings** (below the 10 / 15 baseline); `pnpm build` OK. No browser run.
 - **Categories C1, merged into `main` 2026-10-04 @ `e4d0315`**, awaiting user QA. Follow-ups: B58-B78 in `docs/BUGS.md` (`.claude/qa-report/2026-10-04-multi-categories-c1-user-checklist.md`):
   - **Shared form:** `src/components/categories/CategoryForm.tsx` (code, status, parent up to level 2, App/Web/POS, featured, icon/thumbnail/banner with a 2 MB limit; edits send only changed fields).
   - **Category list:** code, in-stock/total, status badge, "Hidden by parent", channel chips, featured star, show-archived toggle, archive dialog (moves products), restore, delete only when empty with the corrected copy (B31).
@@ -26,6 +34,7 @@ _Last updated: 2026-10-04_
 - Stage A is merged and awaiting user QA (checklist: `.claude/qa-report/2026-10-04-multi-stage-a-user-checklist.md`)
 
 ## Next Up
+- **C2:** user review and QA of `feature/products-c2` (with the backend branch), then merge into `main` and deploy after the backend. Then the C2.5 follow-up sweep.
 - Apply the backend migration `create_phase7_stage_a.sql` first (see `docs/MIGRATION.md`, "Phase 7"), then deploy backend, then this build, together with `feature/admin-rbac` work; existing admin sessions will be logged out once (expected — no `admin_sessions` row for pre-release tokens).
 - Manual QA by the user, then a gstack `qa` pass → `.claude/qa-report/` (not run as part of this task).
 - Template-derived components still need auditing — remove or replace demo/placeholder data (unrelated to RBAC).
