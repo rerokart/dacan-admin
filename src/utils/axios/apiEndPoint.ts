@@ -85,7 +85,6 @@ export const API_ROUTES = {
     CANCEL: (id: string | number) => `orders/${id}/cancel`,
     UPDATE_PAYMENT: (id: string | number) => `orders/${id}/payment`,
     INVOICE: (id: string | number) => `orders/${id}/invoice`,
-    OFFLINE: "orders/offline",
   },
 
   // Users
@@ -147,6 +146,7 @@ export const API_ROUTES = {
     PRODUCTS: "pos/products",
     CUSTOMERS: "pos/customers",
     CREATE_CUSTOMER: "pos/customers",
+    CREATE_ORDER: "pos/orders/offline",
   },
 
   // Banners

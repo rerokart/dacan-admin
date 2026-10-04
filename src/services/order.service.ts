@@ -160,16 +160,6 @@ export const orderService = {
     });
     return response as unknown as Blob;
   },
-
-  createOfflineOrder: async (data: {
-    items: { product_id: string; variant_id?: string; quantity: number }[];
-    customer_id?: string;
-    payment_method: string;
-    amount_paid?: number;
-    notes?: string;
-  }): Promise<Order> => {
-    return defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
-  },
 };
 
 export const ORDER_STATUS_OPTIONS = [

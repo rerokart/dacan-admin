@@ -9,7 +9,7 @@ export interface POSProduct {
   price: number;
   original_price?: number;
   stock_quantity: number;
-  image_url?: string;
+  image?: string | null;
   has_variants: boolean;
   variants?: {
     id: string;
@@ -38,7 +38,7 @@ export interface POSCartItem {
   price: number;
   quantity: number;
   stock_quantity: number;
-  image_url?: string;
+  image?: string | null;
 }
 
 export interface CreateOfflineOrderRequest {
@@ -49,6 +49,7 @@ export interface CreateOfflineOrderRequest {
   }[];
   customer_id?: string;
   payment_method: "cash" | "card" | "upi";
+  payment_status?: "pending" | "paid" | "failed";
   amount_paid?: number;
   notes?: string;
 }
@@ -57,8 +58,9 @@ export interface OfflineOrderResponse {
   id: string;
   order_number: string;
   items: {
-    name: string;
-    variant_name?: string;
+    product_id: string;
+    product_name: string;
+    variant_name?: string | null;
     quantity: number;
     unit_price: number;
     subtotal: number;
@@ -67,6 +69,8 @@ export interface OfflineOrderResponse {
   tax_amount: number;
   total_amount: number;
   payment_method: string;
+  payment_status?: string;
+  order_status?: string;
   amount_paid: number;
   change_amount: number;
   created_at: string;
@@ -122,7 +126,7 @@ export const posService = {
   createOfflineOrder: async (
     data: CreateOfflineOrderRequest
   ): Promise<OfflineOrderResponse> => {
-    const response: OrderApiResponse = await defaultAxios.post(API_ROUTES.ORDERS.OFFLINE, data);
+    const response: OrderApiResponse = await defaultAxios.post(API_ROUTES.POS.CREATE_ORDER, data);
     return response.order;
   },
 };
