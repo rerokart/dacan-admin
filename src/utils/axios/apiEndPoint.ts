@@ -98,10 +98,11 @@ export const API_ROUTES = {
 
   // Dashboard
   DASHBOARD: {
-    STATS: "dashboard/stats",
-    RECENT_ORDERS: "dashboard/recent-orders",
-    SALES_CHART: "dashboard/sales-chart",
-    ORDERS_BY_STATUS: "dashboard/orders-by-status",
+    // STATS / RECENT_ORDERS / ORDERS_BY_STATUS are all served by one call.
+    STATS: "analytics/dashboard",
+    RECENT_ORDERS: "analytics/dashboard",
+    SALES_CHART: "analytics/sales",
+    ORDERS_BY_STATUS: "analytics/dashboard",
     LOW_STOCK: "dashboard/low-stock",
   },
 

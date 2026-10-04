@@ -9,34 +9,35 @@ import {
   DollarLineIcon,
   BoxCubeIcon,
 } from "@/icons";
+import Can from "@/components/auth/Can";
 import { useDashboardStats } from "@/hooks/useDashboard";
 
-export const EcommerceMetrics = () => {
-  const { data: stats, isLoading } = useDashboardStats();
+function EcommerceMetricsContent() {
+  const { data: stats, isLoading, isError, error } = useDashboardStats();
 
   const metrics = [
     {
       title: "Total Orders",
-      value: stats?.totalOrders?.toLocaleString() || "0",
-      change: stats?.ordersChange || 0,
+      value: stats ? stats.totalOrders.toLocaleString() : "—",
+      change: stats?.ordersChange,
       icon: <BoxIconLine className="text-gray-800 dark:text-white/90" />,
     },
     {
       title: "Total Revenue",
-      value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`,
-      change: stats?.revenueChange || 0,
+      value: stats ? `₹${stats.totalRevenue.toLocaleString()}` : "—",
+      change: stats?.revenueChange,
       icon: <DollarLineIcon className="text-gray-800 size-6 dark:text-white/90" />,
     },
     {
       title: "Total Users",
-      value: stats?.totalUsers?.toLocaleString() || "0",
-      change: stats?.usersChange || 0,
+      value: stats ? stats.totalUsers.toLocaleString() : "—",
+      change: stats?.usersChange,
       icon: <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />,
     },
     {
       title: "Total Products",
-      value: stats?.totalProducts?.toLocaleString() || "0",
-      change: stats?.productsChange || 0,
+      value: stats ? stats.totalProducts.toLocaleString() : "—",
+      change: stats?.productsChange,
       icon: <BoxCubeIcon className="text-gray-800 size-6 dark:text-white/90" />,
     },
   ];
@@ -56,6 +57,16 @@ export const EcommerceMetrics = () => {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-red-500 dark:border-gray-800 dark:bg-white/[0.03]">
+        {error instanceof Error && error.message
+          ? error.message
+          : "Failed to load dashboard stats."}
       </div>
     );
   }
@@ -80,17 +91,25 @@ export const EcommerceMetrics = () => {
                 {metric.value}
               </h4>
             </div>
-            <Badge color={metric.change >= 0 ? "success" : "error"}>
-              {metric.change >= 0 ? (
-                <ArrowUpIcon />
-              ) : (
-                <ArrowDownIcon className="text-error-500" />
-              )}
-              {Math.abs(metric.change).toFixed(1)}%
-            </Badge>
+            {metric.change !== undefined && (
+              <Badge color={metric.change >= 0 ? "success" : "error"}>
+                {metric.change >= 0 ? (
+                  <ArrowUpIcon />
+                ) : (
+                  <ArrowDownIcon className="text-error-500" />
+                )}
+                {Math.abs(metric.change).toFixed(1)}%
+              </Badge>
+            )}
           </div>
         </div>
       ))}
     </div>
   );
-};
+}
+
+export const EcommerceMetrics = () => (
+  <Can permission="analytics.view">
+    <EcommerceMetricsContent />
+  </Can>
+);

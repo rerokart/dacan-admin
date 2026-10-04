@@ -5,13 +5,16 @@ import { MoreDotIcon } from "@/icons";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
+import Can from "@/components/auth/Can";
+import { useSalesChart } from "@/hooks/useDashboard";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export default function MonthlySalesChart() {
+function MonthlySalesChartContent() {
+  const { data: sales, isLoading, isError, error } = useSalesChart();
   const options: ApexOptions = {
     colors: ["#465fff"],
     chart: {
@@ -39,20 +42,7 @@ export default function MonthlySalesChart() {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: (sales ?? []).map((s) => s.month),
       axisBorder: {
         show: false,
       },
@@ -87,14 +77,14 @@ export default function MonthlySalesChart() {
         show: false,
       },
       y: {
-        formatter: (val: number) => `${val}`,
+        formatter: (val: number) => `₹${val.toLocaleString()}`,
       },
     },
   };
   const series = [
     {
       name: "Sales",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+      data: (sales ?? []).map((s) => s.sales),
     },
   ];
   const [isOpen, setIsOpen] = useState(false);
@@ -139,6 +129,21 @@ export default function MonthlySalesChart() {
         </div>
       </div>
 
+      {isLoading ? (
+        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+          Loading...
+        </div>
+      ) : isError ? (
+        <div className="py-12 text-center text-red-500">
+          {error instanceof Error && error.message
+            ? error.message
+            : "Failed to load sales data."}
+        </div>
+      ) : !sales || sales.length === 0 ? (
+        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+          No sales in the last 12 months
+        </div>
+      ) : (
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
           <ReactApexChart
@@ -149,6 +154,15 @@ export default function MonthlySalesChart() {
           />
         </div>
       </div>
+      )}
     </div>
+  );
+}
+
+export default function MonthlySalesChart() {
+  return (
+    <Can permission="analytics.view">
+      <MonthlySalesChartContent />
+    </Can>
   );
 }
