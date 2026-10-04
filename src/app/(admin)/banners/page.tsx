@@ -71,30 +71,21 @@ function BannersPageContent() {
   };
 
   // Swap a banner with its neighbour (-1 = up, +1 = down) in the displayed list.
+  // The whole visible page is renumbered sequentially (pageOffset + index) and
+  // sent in one call, so ties and third-row collisions cannot occur.
   const handleMove = (index: number, direction: -1 | 1) => {
-    const current = banners[index];
-    const neighbour = banners[index + direction];
-    if (!current || !neighbour) return;
+    const target = index + direction;
+    if (!banners[index] || !banners[target]) return;
 
-    let currentOrder = neighbour.display_order;
-    let neighbourOrder = current.display_order;
-    if (currentOrder === neighbourOrder) {
-      // Equal values: swapping does nothing, so force a distinct order.
-      const base = current.display_order ?? 0;
-      if (direction === -1) {
-        currentOrder = base;
-        neighbourOrder = base + 1;
-      } else {
-        neighbourOrder = base;
-        currentOrder = base + 1;
-      }
-    }
+    const reordered = [...banners];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
 
+    const pageOffset = ((filters.page ?? 1) - 1) * (filters.limit ?? 10);
     reorderBanners({
-      banners: [
-        { id: String(current.id), display_order: currentOrder },
-        { id: String(neighbour.id), display_order: neighbourOrder },
-      ],
+      banners: reordered.map((b, i) => ({
+        id: String(b.id),
+        display_order: pageOffset + i,
+      })),
     });
   };
 
