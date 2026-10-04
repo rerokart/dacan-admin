@@ -489,7 +489,8 @@ function AllProductsContent() {
             </h3>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               Are you sure you want to delete this product? This action cannot be
-              undone.
+              undone. Products that have orders can&apos;t be deleted. Set them to
+              Inactive instead.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
