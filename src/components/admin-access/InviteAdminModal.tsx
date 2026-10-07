@@ -80,7 +80,7 @@ export default function InviteAdminModal({ isOpen, onClose }: InviteAdminModalPr
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="name@decanindia.com"
+                placeholder="name@rerokart.com"
                 {...register("email")}
                 error={!!errors.email}
                 hint={errors.email?.message}
