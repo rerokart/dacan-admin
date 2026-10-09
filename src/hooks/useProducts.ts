@@ -69,11 +69,9 @@ export const useUpdateProduct = () => {
       id: string | number;
       data: UpdateProductRequest;
     }) => productService.updateProduct(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.detail(variables.id),
-      });
+    onSuccess: () => {
+      // Price, SKU and low-stock threshold also show in inventory and the dashboard.
+      invalidateCatalog(queryClient);
       toast.success("Product updated successfully!");
     },
     onError: (error: Error) => {
@@ -90,7 +88,7 @@ export const useDeleteProduct = () => {
   return useMutation({
     mutationFn: (id: string | number) => productService.deleteProduct(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      invalidateCatalog(queryClient);
       toast.success("Product deleted successfully!");
     },
     onError: (error: Error) => {
@@ -121,7 +119,7 @@ export const useAddVariant = ({ silentError = false }: ProductMutationOptions = 
       productId: string | number;
       data: CreateVariantRequest;
     }) => productService.addVariant(productId, data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       invalidateCatalog(queryClient);
       toast.success("Variant added successfully!");
     },
@@ -146,7 +144,7 @@ export const useUpdateVariant = ({ silentError = false }: ProductMutationOptions
       variantId: string | number;
       data: Partial<CreateVariantRequest>;
     }) => productService.updateVariant(productId, variantId, data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       invalidateCatalog(queryClient);
       toast.success("Variant updated successfully!");
     },
@@ -169,7 +167,7 @@ export const useDeleteVariant = () => {
       productId: string | number;
       variantId: string | number;
     }) => productService.deleteVariant(productId, variantId),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       invalidateCatalog(queryClient);
       toast.success("Variant deleted successfully!");
     },
@@ -269,12 +267,6 @@ export const useAddProductImage = ({ silentError = false }: ProductMutationOptio
   });
 };
 
-const invalidateProduct = (
-  queryClient: ReturnType<typeof useQueryClient>,
-  id: string | number
-) => {
-  invalidateCatalog(queryClient);
-};
 
 // Archive Product
 export const useArchiveProduct = () => {
@@ -283,8 +275,8 @@ export const useArchiveProduct = () => {
 
   return useMutation({
     mutationFn: (id: string | number) => productService.archiveProduct(id),
-    onSuccess: (_, id) => {
-      invalidateProduct(queryClient, id);
+    onSuccess: () => {
+      invalidateCatalog(queryClient);
       toast.success("Product archived");
     },
     onError: (error: Error) => {
@@ -300,8 +292,8 @@ export const useRestoreProduct = () => {
 
   return useMutation({
     mutationFn: (id: string | number) => productService.restoreProduct(id),
-    onSuccess: (_, id) => {
-      invalidateProduct(queryClient, id);
+    onSuccess: () => {
+      invalidateCatalog(queryClient);
       toast.success("Product restored as Inactive");
     },
     onError: (error: Error) => {
@@ -323,8 +315,8 @@ export const useSaveOptions = ({ silentError = false }: ProductMutationOptions =
       productId: string | number;
       data: SaveOptionsRequest;
     }) => productService.saveOptions(productId, data),
-    onSuccess: (_, variables) => {
-      invalidateProduct(queryClient, variables.productId);
+    onSuccess: () => {
+      invalidateCatalog(queryClient);
       toast.success("Options saved");
     },
     onError: (error: Error) => {
@@ -340,8 +332,8 @@ export const useGenerateVariants = () => {
 
   return useMutation({
     mutationFn: (productId: string | number) => productService.generateVariants(productId),
-    onSuccess: (variants, productId) => {
-      invalidateProduct(queryClient, productId);
+    onSuccess: (variants) => {
+      invalidateCatalog(queryClient);
       toast.success(
         variants.length
           ? `${variants.length} variant(s) created`
