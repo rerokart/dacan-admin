@@ -12,6 +12,8 @@ export interface Brand {
   status: BrandStatus;
   /** Non-archived products using the brand */
   product_count?: number;
+  /** Products using the brand, archived ones included (blocks delete) */
+  product_count_all?: number;
   created_at?: string;
   updated_at?: string;
 }

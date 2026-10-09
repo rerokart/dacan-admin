@@ -121,6 +121,7 @@ function BrandsPageContent() {
               <TableBody>
                 {brands.map((brand) => {
                   const count = brand.product_count ?? 0;
+                  const countAll = brand.product_count_all ?? count;
                   return (
                     <TableRow key={brand.id} className="border-b border-gray-100 dark:border-gray-800">
                       <TableCell className="px-6 py-4">
@@ -157,11 +158,11 @@ function BrandsPageContent() {
                           <Can permission="brands.delete">
                             <button
                               onClick={() => setDeleteTarget(brand)}
-                              disabled={count > 0}
+                              disabled={countAll > 0}
                               aria-label="Delete"
                               title={
-                                count > 0
-                                  ? `${count} ${count === 1 ? "product uses" : "products use"} this brand. Set it to Inactive instead`
+                                countAll > 0
+                                  ? `Used by ${countAll} ${countAll === 1 ? "product" : "products"} (including archived)`
                                   : "Delete"
                               }
                               className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"

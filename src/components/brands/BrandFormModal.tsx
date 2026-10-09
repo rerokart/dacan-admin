@@ -146,28 +146,26 @@ function BrandFormBody({
 
       <div>
         <Label htmlFor="brand-description">Description</Label>
-        <div id="brand-description" role="group" aria-label="Description">
         <TextArea
+          id="brand-description"
           placeholder="Optional"
           rows={3}
           value={description}
           onChange={(val) => setDescription(val)}
         />
-        </div>
       </div>
 
       <div>
         <Label htmlFor="brand-status">Status</Label>
-        <div id="brand-status" role="group" aria-label="Status">
         <Select
+          id="brand-status"
           options={[
             { value: "active", label: "Active" },
             { value: "inactive", label: "Inactive (can't be picked for new products)" },
           ]}
-          defaultValue={status}
+          value={status}
           onChange={(val) => setStatus(val as BrandStatus)}
         />
-        </div>
       </div>
 
       <div>

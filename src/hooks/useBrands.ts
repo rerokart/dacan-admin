@@ -10,18 +10,19 @@ import {
 import { brandKeys, productKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
 
-export const useBrands = (filters?: BrandFilters) => {
+export const useBrands = (filters?: BrandFilters, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: brandKeys.list(filters),
     queryFn: () => brandService.getBrands(filters),
+    enabled: options?.enabled ?? true,
   });
 };
 
-export const useBrand = (id: string | number) => {
+export const useBrand = (id: string | number, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: brandKeys.detail(id),
     queryFn: () => brandService.getBrandById(id),
-    enabled: !!id,
+    enabled: !!id && (options?.enabled ?? true),
   });
 };
 

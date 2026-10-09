@@ -20,7 +20,7 @@ import {
   useArchiveProduct,
   useRestoreProduct,
 } from "@/hooks/useProducts";
-import { useBrands } from "@/hooks/useBrands";
+import BrandPicker from "@/components/brands/BrandPicker";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useCategories } from "@/hooks/useCategories";
 import { flattenCategoryOptions } from "@/utils/categoryOptions";
@@ -93,7 +93,6 @@ function AllProductsContent() {
   const { mutate: updateProduct } = useUpdateProduct();
   const { mutate: archiveProduct, isPending: isArchiving } = useArchiveProduct();
   const { mutate: restoreProduct, isPending: isRestoring } = useRestoreProduct();
-  const { data: brandsData } = useBrands({ limit: 100 });
 
   const products = productsData?.data || [];
   const totalPages = productsData?.pagination?.total_pages || 1;
@@ -102,19 +101,6 @@ function AllProductsContent() {
   const categoryOptions = useMemo(
     () => [{ value: "", label: "All Categories" }, ...flattenCategoryOptions(categories)],
     [categories]
-  );
-
-  const brands = useMemo(() => brandsData?.data || [], [brandsData]);
-  const brandNames = useMemo(
-    () => new Map(brands.map((b) => [b.id, b.name])),
-    [brands]
-  );
-  const brandOptions = useMemo(
-    () => [
-      { value: "", label: "All Brands" },
-      ...brands.map((b) => ({ value: b.id, label: b.name })),
-    ],
-    [brands]
   );
 
   // Empty value = every status except archived (the server default)
@@ -257,11 +243,13 @@ function AllProductsContent() {
 
               {/* Brand Filter */}
               <div className="min-w-[160px]">
-                <Select
-                  options={brandOptions}
-                  value={filters.brand_id || ""}
-                  onChange={(val) => handleFilterChange("brand_id", val)}
-                />
+                <Can permission="brands.view">
+                  <BrandPicker
+                    mode="filter"
+                    value={filters.brand_id || null}
+                    onChange={(id) => handleFilterChange("brand_id", id ?? "")}
+                  />
+                </Can>
               </div>
 
               {/* Featured Filter */}
@@ -438,9 +426,7 @@ function AllProductsContent() {
                         {product.category?.name || product.category_name || "-"}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-gray-600 dark:text-gray-400">
-                        {product.brand?.name ||
-                          (product.brand_id ? brandNames.get(product.brand_id) : undefined) ||
-                          "-"}
+                        {product.brand?.name || "-"}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-right font-medium text-gray-800 dark:text-white/90">
                         {product.price_range && product.price_range.max !== product.price_range.min ? (
