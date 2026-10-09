@@ -51,7 +51,66 @@ export interface CreateOfflineOrderRequest {
   payment_method: "cash" | "card" | "upi";
   payment_status?: "pending" | "paid" | "failed";
   amount_paid?: number;
+  coupon_code?: string;
   notes?: string;
+}
+
+/** Body of POST pos/quote: the same items (and coupon / customer) as the sale. */
+export interface POSQuoteRequest {
+  items: { product_id: string; variant_id?: string; quantity: number }[];
+  coupon_code?: string;
+  customer_id?: string;
+}
+
+/** Priced totals from the pricing engine (money in rupees, rates in percent). */
+export interface POSQuoteSummary {
+  subtotal: number;
+  discount_amount: number;
+  delivery_charge: number;
+  tax_amount: number;
+  total_amount: number;
+  free_delivery_threshold: number | null;
+  /** The one rate when every line shares it, else null */
+  gst_rate: number | null;
+  coupon_code: string | null;
+  coupon_error: string | null;
+  coupon_note: string | null;
+  prices_include_gst: boolean;
+  taxable_amount: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  delivery_tax_amount: number;
+  round_off: number;
+  you_saved: number;
+}
+
+/** A priced line, or an `error`-only line when the item could not be resolved. */
+export interface POSQuoteLine {
+  index: number;
+  error: string | null;
+  product_id?: string;
+  variant_id?: string;
+  product_name?: string;
+  stock_quantity?: number;
+  quantity?: number;
+  unit_price?: number;
+  gst_rate?: number;
+  hsn_code?: string | null;
+  gross?: number;
+  discount?: number;
+  net?: number;
+  taxable?: number;
+  tax?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  total?: number;
+}
+
+export interface POSQuote {
+  summary: POSQuoteSummary;
+  lines: POSQuoteLine[];
 }
 
 export interface OfflineOrderResponse {
@@ -64,8 +123,22 @@ export interface OfflineOrderResponse {
     quantity: number;
     unit_price: number;
     subtotal: number;
+    discount_amount?: number;
+    hsn_code?: string | null;
+    gst_rate?: number | null;
+    taxable_value?: number;
+    tax_amount?: number;
+    line_total?: number;
   }[];
   subtotal: number;
+  discount_amount?: number;
+  coupon_code?: string | null;
+  taxable_amount?: number;
+  cgst_amount?: number;
+  sgst_amount?: number;
+  round_off?: number;
+  prices_include_gst?: boolean | null;
+  store_gstin?: string | null;
   tax_amount: number;
   total_amount: number;
   payment_method: string;
@@ -91,6 +164,8 @@ interface CustomerApiResponse {
   status: number;
   customer: POSCustomer;
 }
+
+type QuoteApiResponse = POSQuote & { status: number };
 
 interface OrderApiResponse {
   status: number;
@@ -123,29 +198,18 @@ export const posService = {
     return response.customer;
   },
 
+  /** Prices a cart on the server. Writes nothing. */
+  quoteOrder: async (data: POSQuoteRequest): Promise<POSQuote> => {
+    const response: QuoteApiResponse = await defaultAxios.post(API_ROUTES.POS.QUOTE, data);
+    return { summary: response.summary, lines: response.lines || [] };
+  },
+
   createOfflineOrder: async (
     data: CreateOfflineOrderRequest
   ): Promise<OfflineOrderResponse> => {
     const response: OrderApiResponse = await defaultAxios.post(API_ROUTES.POS.CREATE_ORDER, data);
     return response.order;
   },
-};
-
-// Cart utilities
-export const calculateCartTotals = (items: POSCartItem[]) => {
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const taxRate = 0.18; // 18% GST
-  // Round to paise exactly like the server (round(subtotal * GST, 2)) so the
-  // displayed total matches what the backend charges.
-  const tax = Math.round(subtotal * taxRate * 100) / 100;
-  const total = Math.round((subtotal + tax) * 100) / 100;
-
-  return {
-    subtotal,
-    tax,
-    total,
-    itemCount: items.reduce((acc, item) => acc + item.quantity, 0),
-  };
 };
 
 export const formatReceiptDate = (date: Date = new Date()): string => {

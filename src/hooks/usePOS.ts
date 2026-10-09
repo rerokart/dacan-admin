@@ -8,7 +8,7 @@ import {
   type POSCustomer,
   type POSCartItem,
   type CreateOfflineOrderRequest,
-  calculateCartTotals,
+  type POSQuoteRequest,
 } from "@/services/pos.service";
 import { useToast } from "@/components/ui/toast";
 import { orderKeys } from "./useOrders";
@@ -18,6 +18,7 @@ export const posKeys = {
   all: ["pos"] as const,
   products: (query: string) => [...posKeys.all, "products", query] as const,
   customers: (phone: string) => [...posKeys.all, "customers", phone] as const,
+  quote: (request: POSQuoteRequest) => [...posKeys.all, "quote", request] as const,
 };
 
 // Search Products for POS
@@ -53,6 +54,16 @@ export const useCreatePOSCustomer = () => {
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to create customer");
     },
+  });
+};
+
+// Server-priced totals for a cart (GST, coupon, round-off). Off for an empty cart.
+export const usePOSQuote = (request: POSQuoteRequest, enabled = true) => {
+  return useQuery({
+    queryKey: posKeys.quote(request),
+    queryFn: () => posService.quoteOrder(request),
+    enabled: enabled && request.items.length > 0,
+    placeholderData: (previous) => previous,
   });
 };
 
@@ -168,7 +179,27 @@ export const usePOSCart = () => {
     setSelectedCustomer(null);
   }, []);
 
-  const totals = calculateCartTotals(cart);
+  // Totals come from the server quote, never from a local GST calculation.
+  // Until the quote arrives the subtotal is the sum of the line prices and
+  // total equals it; Task 12 rebuilds the POS totals on the full summary.
+  const quoteRequest: POSQuoteRequest = {
+    items: cart.map((item) => ({
+      product_id: item.product_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+    })),
+    customer_id: selectedCustomer?.id,
+  };
+  const { data: quote, isFetching: isQuoting } = usePOSQuote(quoteRequest);
+  const listSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const totals = {
+    subtotal: quote?.summary.subtotal ?? listSubtotal,
+    tax: quote?.summary.tax_amount ?? 0,
+    total: quote?.summary.total_amount ?? listSubtotal,
+    itemCount: cart.reduce((acc, item) => acc + item.quantity, 0),
+    quote,
+    isQuoting,
+  };
 
   return {
     cart,

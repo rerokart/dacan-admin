@@ -50,6 +50,14 @@ export interface ProductVariant {
   sku: string;
   price: number;
   original_price?: number | null;
+  /** Lowest price a discount may take the variant to; null = no floor */
+  min_selling_price?: number | null;
+  /** Only with products.view_cost */
+  cost_price?: number | null;
+  /** Only with products.view_cost; null when cost is not set */
+  margin_amount?: number | null;
+  margin_percent?: number | null;
+  markup_percent?: number | null;
   stock_quantity: number;
   display_order: number;
   is_active: boolean;
@@ -109,6 +117,8 @@ export interface Product {
   manufacturer?: string | null;
   country_of_origin?: string | null;
   hsn_code?: string | null;
+  /** GST percentage (18, not 0.18) */
+  gst_rate?: number;
   unit_of_measure?: string;
   tags?: string[];
   highlights?: string[];
@@ -197,13 +207,22 @@ export interface VariantDetailFields {
   package_weight_g?: number | null;
 }
 
+/** Price fields a product or variant write may carry (C3). */
+export interface PriceFields {
+  /** Needs products.view_cost to read it back */
+  cost_price?: number | null;
+  min_selling_price?: number | null;
+  /** 3-500 characters; required when a price, MRP, minimum, cost or GST rate changes on an existing product or variant */
+  price_change_reason?: string;
+}
+
 /** Create-time option set: values listed per option, in option order. */
 export interface CreateProductOptionInput {
   name: string;
   values: string[];
 }
 
-export interface CreateProductVariantInput extends VariantDetailFields {
+export interface CreateProductVariantInput extends VariantDetailFields, PriceFields {
   /** One value per option, in option order */
   values: string[];
   price: number;
@@ -213,7 +232,7 @@ export interface CreateProductVariantInput extends VariantDetailFields {
   is_active?: boolean;
 }
 
-export interface CreateProductRequest extends VariantDetailFields {
+export interface CreateProductRequest extends VariantDetailFields, PriceFields {
   name: string;
   sku?: string;
   short_description?: string;
@@ -227,6 +246,8 @@ export interface CreateProductRequest extends VariantDetailFields {
   manufacturer?: string | null;
   country_of_origin?: string | null;
   hsn_code?: string | null;
+  /** Must be an active rate from the GST rate list; omitted on create = HSN rate or store default */
+  gst_rate?: number;
   unit_of_measure?: string;
   tags?: string[];
   highlights?: string[];
@@ -265,7 +286,7 @@ export type UpdateProductRequest = Partial<
 /** Product returned by create / update / archive / restore / options */
 export type ProductResponse = Product;
 
-export interface CreateVariantRequest extends VariantDetailFields {
+export interface CreateVariantRequest extends VariantDetailFields, PriceFields {
   /** One value id per option (add); ignored on update */
   option_value_ids?: string[];
   /** @deprecated legacy single-axis fields; the old variant modal still sends them until Tasks 14-16 */
@@ -279,6 +300,32 @@ export interface CreateVariantRequest extends VariantDetailFields {
   display_order?: number;
   is_active?: boolean;
 }
+
+export type PriceHistoryField =
+  | "price"
+  | "mrp"
+  | "min_selling_price"
+  | "cost_price"
+  | "gst_rate";
+
+export interface PriceHistoryEntry {
+  id: string;
+  product_id: string;
+  /** null for the product's own rows (gst_rate) */
+  variant_id: string | null;
+  /** null for product rows, a default variant or a deleted variant */
+  variant_name: string | null;
+  field: PriceHistoryField;
+  old_value: number | null;
+  new_value: number | null;
+  reason: string;
+  actor: "admin" | "system";
+  changed_by: string | null;
+  changed_by_name: string | null;
+  created_at: string;
+}
+
+export type PriceHistoryResponse = PaginatedResponse<PriceHistoryEntry>;
 
 export interface SaveOptionsRequest {
   options: {
@@ -378,6 +425,17 @@ export const productService = {
       {}
     );
     return response.variants || [];
+  },
+
+  /** Newest first. Cost rows come only with products.view_cost. */
+  getPriceHistory: async (
+    id: string | number,
+    page = 1,
+    limit = 20
+  ): Promise<PriceHistoryResponse> => {
+    return defaultAxios.get(
+      `${API_ROUTES.PRODUCTS.PRICE_HISTORY(id)}?page=${page}&limit=${limit}`
+    );
   },
 
   deleteProduct: async (id: string | number): Promise<void> => {

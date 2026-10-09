@@ -18,6 +18,18 @@ export interface OrderItem {
   quantity: number;
   unit_price: number;
   subtotal: number;
+  /** C3 tax breakup: absent or null on legacy orders */
+  hsn_code?: string | null;
+  /** Percentage (18, not 0.18) */
+  gst_rate?: number | null;
+  mrp?: number | null;
+  discount_amount?: number | null;
+  taxable_value?: number | null;
+  cgst_amount?: number | null;
+  sgst_amount?: number | null;
+  igst_amount?: number | null;
+  tax_amount?: number | null;
+  line_total?: number | null;
 }
 
 export interface OrderAddress {
@@ -59,6 +71,16 @@ export interface Order {
   delivery_charge: number;
   tax_amount: number;
   total_amount: number;
+  /** C3 tax breakup: absent or null on legacy orders (null prices_include_gst marks one) */
+  prices_include_gst?: boolean | null;
+  taxable_amount?: number | null;
+  cgst_amount?: number | null;
+  sgst_amount?: number | null;
+  igst_amount?: number | null;
+  delivery_tax_amount?: number | null;
+  round_off?: number | null;
+  store_gstin?: string | null;
+  store_state?: string | null;
   payment_method: "cod" | "online" | "cash" | "card" | "upi";
   payment_status: "pending" | "paid" | "failed" | "refunded";
   order_status:
