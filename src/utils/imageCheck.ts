@@ -21,14 +21,18 @@ const readImageSize = (file: File) =>
 /**
  * Client check before an image upload (type, 2 MB, at least 300 × 300 px,
  * at most 50 megapixels). Returns the problem, or null. The server re-checks.
+ * `minSide: 0` skips the minimum (category images have none on the server).
  */
-export async function imageFileProblem(file: File): Promise<string | null> {
+export async function imageFileProblem(
+  file: File,
+  { minSide = MIN_IMAGE_SIDE }: { minSide?: number } = {}
+): Promise<string | null> {
   if (!ACCEPTED_TYPES.includes(file.type)) return "Use a PNG, JPEG, WebP or GIF image";
   if (file.size > MAX_IMAGE_BYTES) return "Image must be 2 MB or smaller";
   const size = await readImageSize(file);
   if (!size) return "This image can't be read. Use a PNG, JPEG, WebP or GIF image";
-  if (size.width < MIN_IMAGE_SIDE || size.height < MIN_IMAGE_SIDE) {
-    return `Image must be at least ${MIN_IMAGE_SIDE} × ${MIN_IMAGE_SIDE} px`;
+  if (size.width < minSide || size.height < minSide) {
+    return `Image must be at least ${minSide} × ${minSide} px`;
   }
   if (size.width * size.height > MAX_IMAGE_PIXELS) {
     return `Image must be at most ${MAX_IMAGE_PIXELS / 1_000_000} megapixels`;

@@ -178,7 +178,8 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
 
   const handleFile = async (key: ImageKind, file?: File) => {
     if (!file) return;
-    const problem = await imageFileProblem(file);
+    // Category icons can be small: no minimum size, only the 50 MP ceiling.
+    const problem = await imageFileProblem(file, { minSide: 0 });
     if (problem) {
       toast.error(problem);
       return;
@@ -453,7 +454,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
                     />
                   </label>
                 )}
-                <p className="mt-1 text-xs text-gray-500">{slot.hint} Max 2 MB, at least 300 × 300 px.</p>
+                <p className="mt-1 text-xs text-gray-500">{slot.hint} Max 2 MB.</p>
               </div>
             );
           })}
