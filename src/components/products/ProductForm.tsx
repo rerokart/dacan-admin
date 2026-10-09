@@ -17,7 +17,7 @@ import {
   sameValue,
   toFormState,
   toPayload,
-  withPricingFrom,
+  followServer,
 } from "./product-form/formState";
 import { type FieldErrors, validate } from "./product-form/validate";
 import Notice from "./product-form/fields/Notice";
@@ -50,7 +50,8 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
 
   // The edit page keeps this form mounted across refetches (keyed on the product id only).
   // Follow two server changes while rendering, without an effect:
-  // - options added or all removed (new default variant): reset only the pricing fields;
+  // - options added or all removed (new default variant): reset the pricing fields, and let
+  //   untouched fields follow the server (removing all options can change the product SKU);
   // - archived or restored: nothing could be edited meanwhile, so start from the saved product.
   const [synced, setSynced] = useState({
     defaultVariantId: initial?.default_variant_id ?? null,
@@ -66,9 +67,13 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
       setShowErrors(false);
       setProblems([]);
     } else if (defaultVariantId !== synced.defaultVariantId) {
+      const oldSaved = toFormState(baseline);
+      const fresh = toFormState(initial);
       setSynced({ defaultVariantId, archived });
       setBaseline(initial);
-      setForm((prev) => withPricingFrom(prev, toFormState(initial)));
+      setForm((prev) => followServer(prev, oldSaved, fresh));
+      setWarnings([]);
+      setProblems([]);
     }
   }
 

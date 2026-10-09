@@ -170,11 +170,19 @@ export const PRICING_KEYS = [
   ...MEASURES.map((m) => m.key),
 ] as const satisfies readonly (keyof FormState)[];
 
-/** `state` with its pricing fields taken from `fresh`. */
-export const withPricingFrom = (state: FormState, fresh: FormState): FormState => {
-  const next = { ...state };
-  for (const key of PRICING_KEYS) next[key] = fresh[key];
-  return next;
+/**
+ * After the server moved the product on (e.g. options added or all removed):
+ * pricing fields always take the fresh value; any other field follows the server
+ * while still untouched (equal to the old saved value), and keeps the admin's edit otherwise.
+ * Example: removing every option can change the product SKU.
+ */
+export const followServer = (state: FormState, oldSaved: FormState, fresh: FormState): FormState => {
+  const pricing: readonly string[] = PRICING_KEYS;
+  const next = { ...state } as Record<keyof FormState, unknown>;
+  for (const key of Object.keys(fresh) as (keyof FormState)[]) {
+    if (pricing.includes(key) || sameValue(state[key], oldSaved[key])) next[key] = fresh[key];
+  }
+  return next as FormState;
 };
 
 const list = (items: string[]): string[] => items.map((i) => i.trim()).filter(Boolean);
