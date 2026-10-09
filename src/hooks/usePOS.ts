@@ -190,7 +190,14 @@ export const usePOSCart = () => {
     })),
     customer_id: selectedCustomer?.id,
   };
-  const { data: quote, isFetching: isQuoting } = usePOSQuote(quoteRequest);
+  const {
+    data: quoteData,
+    isFetching: isQuoting,
+    isError: quoteError,
+  } = usePOSQuote(quoteRequest);
+  // The query keeps the previous quote while a changed cart reloads; an empty
+  // cart must never show the last cart's totals.
+  const quote = cart.length > 0 ? quoteData : undefined;
   const listSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const totals = {
     subtotal: quote?.summary.subtotal ?? listSubtotal,
@@ -198,7 +205,8 @@ export const usePOSCart = () => {
     total: quote?.summary.total_amount ?? listSubtotal,
     itemCount: cart.reduce((acc, item) => acc + item.quantity, 0),
     quote,
-    isQuoting,
+    isQuoting: cart.length > 0 && isQuoting,
+    quoteError: cart.length > 0 && quoteError,
   };
 
   return {
