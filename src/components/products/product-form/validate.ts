@@ -1,0 +1,104 @@
+import {
+  BARCODE_PATTERN,
+  COUNTRY_MAX,
+  COUNTRY_MIN,
+  HSN_PATTERN,
+  SKU_PATTERN,
+  WARRANTY_MONTHS_MAX,
+  WARRANTY_MONTHS_MIN,
+  checkQuantityRules,
+  isValidGtin,
+} from "@/utils/productRules";
+import { MEASURES, num } from "@/utils/productFormat";
+import type { FormState, TabKey } from "./formState";
+
+// ---------------------------------------------------------------------------
+// Client checks (the server re-checks everything)
+// ---------------------------------------------------------------------------
+
+export type FieldErrors = Partial<Record<string, { tab: TabKey; message: string }>>;
+
+const isWholeNumber = (value: string, min: number) =>
+  value.trim() === "" || (Number.isInteger(Number(value)) && Number(value) >= min);
+
+export const validate = (
+  state: FormState,
+  pricing: boolean,
+  isCreate: boolean,
+  baselineSku = ""
+): FieldErrors => {
+  const errors: FieldErrors = {};
+  const add = (field: string, tab: TabKey, message: string) => {
+    if (!errors[field]) errors[field] = { tab, message };
+  };
+
+  if (!state.name.trim()) add("name", "basics", "Name is required");
+  if (!state.category_id) add("category_id", "basics", "Choose a category");
+  // Create may leave the SKU blank (auto PRD-000123); an existing product always keeps one.
+  // The format is only checked when the SKU changed, so a legacy SKU never blocks other edits.
+  const skuNow = state.sku.trim().toUpperCase();
+  const skuBefore = baselineSku.trim().toUpperCase();
+  if (!isCreate && !skuNow && skuBefore) {
+    add("sku", "basics", "SKU can't be empty");
+  } else if (skuNow && skuNow !== skuBefore && !SKU_PATTERN.test(skuNow)) {
+    add("sku", "basics", "3-50 characters: A-Z, 0-9 and hyphens");
+  }
+
+  if (pricing) {
+    for (const key of ["price", "original_price"] as const) {
+      const v = state[key];
+      if (v.trim() !== "" && (Number.isNaN(Number(v)) || Number(v) < 0)) {
+        add(key, "pricing", "Enter a price of 0 or more");
+      }
+    }
+    if (state.barcode.trim() && !BARCODE_PATTERN.test(state.barcode.trim())) {
+      add("barcode", "pricing", "4-48 characters: A-Z, 0-9 and hyphens");
+    }
+    if (state.gtin.trim() && !isValidGtin(state.gtin.trim())) {
+      add("gtin", "pricing", "8, 12, 13 or 14 digits with a valid check digit");
+    }
+    if (!isWholeNumber(state.pack_size, 1)) add("pack_size", "pricing", "Whole number, 1 or more");
+    if (!isWholeNumber(state.stock_quantity, 0)) add("stock_quantity", "pricing", "Whole number, 0 or more");
+    for (const m of MEASURES) {
+      if (!isWholeNumber(state[m.key], 0)) add(m.key, "pricing", "Whole number, 0 or more");
+    }
+  }
+  if (!isWholeNumber(state.low_stock_threshold, 0)) {
+    add("low_stock_threshold", "pricing", "Whole number, 0 or more");
+  }
+
+  if (state.hsn_code.trim() && !HSN_PATTERN.test(state.hsn_code.trim())) {
+    add("hsn_code", "identity", "4, 6 or 8 digits");
+  }
+  const country = state.country_of_origin.trim();
+  if (country && (country.length < COUNTRY_MIN || country.length > COUNTRY_MAX)) {
+    add("country_of_origin", "identity", `${COUNTRY_MIN}-${COUNTRY_MAX} characters`);
+  }
+
+  if (state.warranty_available) {
+    const months = Number(state.warranty_months);
+    if (
+      state.warranty_months.trim() === "" ||
+      !Number.isInteger(months) ||
+      months < WARRANTY_MONTHS_MIN ||
+      months > WARRANTY_MONTHS_MAX
+    ) {
+      add("warranty_months", "content", `Warranty months: ${WARRANTY_MONTHS_MIN}-${WARRANTY_MONTHS_MAX}`);
+    }
+  }
+
+  state.specifications.forEach((s, i) => {
+    if (!s.name.trim() && s.value.trim()) add(`spec-${i}`, "specs", `Row ${i + 1} needs a name`);
+    if (s.name.trim() && !s.value.trim()) add(`spec-${i}`, "specs", `"${s.name.trim()}" needs a value`);
+  });
+
+  const qtyMessage =
+    !isWholeNumber(state.min_order_qty, 1) ||
+    !isWholeNumber(state.order_qty_step, 1) ||
+    !isWholeNumber(state.max_order_qty, 1)
+      ? "Quantities must be whole numbers, 1 or more"
+      : checkQuantityRules(num(state.min_order_qty), num(state.max_order_qty), num(state.order_qty_step));
+  if (qtyMessage) add("quantity", "limits", qtyMessage);
+
+  return errors;
+};
