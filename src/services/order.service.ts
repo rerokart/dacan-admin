@@ -68,6 +68,8 @@ export interface Order {
   discount_amount: number;
   coupon_id?: string;
   coupon_code?: string;
+  /** The order detail route sends the coupon as an object, not coupon_code */
+  coupon?: { code: string; description?: string | null } | null;
   delivery_charge: number;
   tax_amount: number;
   total_amount: number;

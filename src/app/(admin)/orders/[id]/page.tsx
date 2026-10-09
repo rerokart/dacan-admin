@@ -240,7 +240,7 @@ function OrderDetailPageContent() {
                   {(order.discount_amount ?? 0) > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">
-                        Discount {order.coupon_code && `(${order.coupon_code})`}
+                        Discount {(order.coupon?.code ?? order.coupon_code) && `(${order.coupon?.code ?? order.coupon_code})`}
                       </span>
                       <span className="text-green-600">
                         -{formatCurrency(order.discount_amount)}
