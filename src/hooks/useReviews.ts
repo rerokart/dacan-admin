@@ -6,7 +6,7 @@ import {
   type ReviewFilters,
 } from "@/services/review.service";
 import { useToast } from "@/components/ui/toast";
-import { productKeys } from "./useProducts";
+import { productKeys } from "./queryKeys";
 
 // Query keys
 export const reviewKeys = {

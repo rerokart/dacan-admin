@@ -7,19 +7,8 @@ import {
   type UpdateStockRequest,
 } from "@/services/inventory.service";
 import { invalidateCatalog } from "./catalogInvalidation";
+import { inventoryKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
-
-// Query keys
-export const inventoryKeys = {
-  all: ["inventory"] as const,
-  overview: () => [...inventoryKeys.all, "overview"] as const,
-  stockLevels: () => [...inventoryKeys.all, "stock"] as const,
-  stockLevel: (filters?: StockFilters) =>
-    [...inventoryKeys.stockLevels(), filters] as const,
-  history: () => [...inventoryKeys.all, "history"] as const,
-  productHistory: (productId?: string, variantId?: string) =>
-    [...inventoryKeys.history(), productId, variantId] as const,
-};
 
 // Get Inventory Overview
 export const useInventoryOverview = () => {

@@ -1,6 +1,5 @@
 "use client";
 
-import { preventEnterSubmit } from "@/utils/formHelpers";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,6 +13,7 @@ import { useToast } from "@/components/ui/toast";
 import { useCategories } from "@/hooks/useCategories";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { flattenCategoryOptions } from "@/utils/categoryOptions";
+import { preventEnterSubmit } from "@/utils/formHelpers";
 import {
   BARCODE_PATTERN,
   COUNTRY_MAX,

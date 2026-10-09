@@ -14,18 +14,8 @@ import {
   type AddImageRequest,
 } from "@/services/product.service";
 import { invalidateCatalog } from "./catalogInvalidation";
+import { productKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
-
-// Query keys
-export const productKeys = {
-  all: ["products"] as const,
-  lists: () => [...productKeys.all, "list"] as const,
-  list: (filters?: ProductFilters) => [...productKeys.lists(), filters] as const,
-  details: () => [...productKeys.all, "detail"] as const,
-  detail: (id: string | number) => [...productKeys.details(), id] as const,
-  variants: (productId: string | number) =>
-    [...productKeys.all, "variants", productId] as const,
-};
 
 // Get Products
 export const useProducts = (filters?: ProductFilters) => {
@@ -128,14 +118,6 @@ export const useAddVariant = () => {
     }) => productService.addVariant(productId, data),
     onSuccess: (_, variables) => {
       invalidateCatalog(queryClient);
-      // Price and stock mirrors on the list come from the variants.
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.variants(variables.productId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.detail(variables.productId),
-      });
       toast.success("Variant added successfully!");
     },
     onError: (error: Error) => {
@@ -161,14 +143,6 @@ export const useUpdateVariant = () => {
     }) => productService.updateVariant(productId, variantId, data),
     onSuccess: (_, variables) => {
       invalidateCatalog(queryClient);
-      // Price and stock mirrors on the list come from the variants.
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.variants(variables.productId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.detail(variables.productId),
-      });
       toast.success("Variant updated successfully!");
     },
     onError: (error: Error) => {
@@ -192,14 +166,6 @@ export const useDeleteVariant = () => {
     }) => productService.deleteVariant(productId, variantId),
     onSuccess: (_, variables) => {
       invalidateCatalog(queryClient);
-      // Price and stock mirrors on the list come from the variants.
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.variants(variables.productId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.detail(variables.productId),
-      });
       toast.success("Variant deleted successfully!");
     },
     onError: (error: Error) => {
@@ -303,9 +269,6 @@ const invalidateProduct = (
   id: string | number
 ) => {
   invalidateCatalog(queryClient);
-  queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-  queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
-  queryClient.invalidateQueries({ queryKey: productKeys.variants(id) });
 };
 
 // Archive Product

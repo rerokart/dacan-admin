@@ -7,16 +7,8 @@ import {
   type CreateBrandRequest,
   type UpdateBrandRequest,
 } from "@/services/brand.service";
-import { productKeys } from "@/hooks/useProducts";
+import { brandKeys, productKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
-
-export const brandKeys = {
-  all: ["brands"] as const,
-  lists: () => [...brandKeys.all, "list"] as const,
-  list: (filters?: BrandFilters) => [...brandKeys.lists(), filters] as const,
-  details: () => [...brandKeys.all, "detail"] as const,
-  detail: (id: string | number) => [...brandKeys.details(), id] as const,
-};
 
 export const useBrands = (filters?: BrandFilters) => {
   return useQuery({
@@ -75,8 +67,9 @@ export const useDeleteBrand = () => {
 
   return useMutation({
     mutationFn: (id: string | number) => brandService.deleteBrand(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: brandKeys.lists() });
+      queryClient.removeQueries({ queryKey: brandKeys.detail(id) });
       toast.success("Brand deleted successfully!");
     },
     onError: (error: Error) => {

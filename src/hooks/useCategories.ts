@@ -7,16 +7,9 @@ import {
   type CategoryFilters,
   type CreateCategoryRequest,
 } from "@/services/category.service";
+import { invalidateCatalog } from "./catalogInvalidation";
+import { categoryKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
-
-// Query keys
-export const categoryKeys = {
-  all: ["categories"] as const,
-  lists: () => [...categoryKeys.all, "list"] as const,
-  list: (filters?: CategoryFilters) => [...categoryKeys.lists(), filters] as const,
-  details: () => [...categoryKeys.all, "detail"] as const,
-  detail: (id: string | number) => [...categoryKeys.details(), id] as const,
-};
 
 // Get Categories
 export const useCategories = (filters?: CategoryFilters) => {
@@ -71,6 +64,8 @@ export const useUpdateCategory = () => {
       queryClient.invalidateQueries({
         queryKey: categoryKeys.detail(variables.id),
       });
+      // Product rows show the category name/status.
+      invalidateCatalog(queryClient);
       toast.success("Category updated successfully!");
     },
     onError: (error: Error) => {
@@ -107,6 +102,8 @@ export const useArchiveCategory = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(variables.id) });
+      // Archiving can move products to another category.
+      invalidateCatalog(queryClient);
       toast.success("Category archived");
     },
     onError: (error: Error) => {
@@ -125,6 +122,7 @@ export const useRestoreCategory = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
+      invalidateCatalog(queryClient);
       toast.success("Category restored as Inactive");
     },
     onError: (error: Error) => {

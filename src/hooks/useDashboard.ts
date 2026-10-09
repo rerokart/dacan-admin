@@ -7,14 +7,7 @@ import {
   type RecentOrder,
   type DashboardResponse,
 } from "@/services/dashboard.service";
-
-// Query keys
-export const dashboardKeys = {
-  all: ["dashboard"] as const,
-  overview: () => [...dashboardKeys.all, "overview"] as const,
-  salesChart: () => [...dashboardKeys.all, "salesChart"] as const,
-  lowStock: () => [...dashboardKeys.all, "lowStock"] as const,
-};
+import { dashboardKeys } from "./queryKeys";
 
 // Hooks
 // stats, recent orders and orders-by-status share one query (analytics/dashboard).
