@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import BrandLogo from "@/components/common/BrandLogo";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { usePermissions } from "../context/AuthContext";
@@ -341,13 +341,7 @@ const AppSidebar: React.FC = () => {
       >
         {showLabels && (
           <Link href="/">
-            <Image
-              className="object-contain"
-              src="/logo.jpeg"
-              alt="Rerokart"
-              width={150}
-              height={40}
-            />
+            <BrandLogo width={150} priority />
           </Link>
         )}
         <button

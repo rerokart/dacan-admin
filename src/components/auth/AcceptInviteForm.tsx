@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import BrandLogo from "@/components/common/BrandLogo";
 import { useRouter, useSearchParams } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -91,11 +92,14 @@ function AcceptInviteFormInner() {
   };
 
   const heading = (
-    <div className="mb-5 sm:mb-8">
-      <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-        Accept Invitation
-      </h1>
-    </div>
+    <>
+      <BrandLogo width={180} className="mb-8" priority />
+      <div className="mb-5 sm:mb-8">
+        <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+          Accept Invitation
+        </h1>
+      </div>
+    </>
   );
 
   // No token in the URL at all.

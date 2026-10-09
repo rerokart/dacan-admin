@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
 import './globals.css';
 import "flatpickr/dist/flatpickr.css";
@@ -6,6 +7,11 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/components/ui/toast';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { QueryProvider } from '@/providers/QueryProvider';
+
+export const metadata: Metadata = {
+  title: 'Rerokart Admin',
+  description: 'Rerokart admin panel',
+};
 
 const outfit = Outfit({
   subsets: ["latin"],
