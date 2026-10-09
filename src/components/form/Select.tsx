@@ -12,6 +12,7 @@ interface SelectProps {
   className?: string;
   defaultValue?: string;
   value?: string;
+  id?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -21,19 +22,22 @@ const Select: React.FC<SelectProps> = ({
   className = "",
   defaultValue = "",
   value,
+  id,
 }) => {
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState<string>(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  const selectedValue = isControlled ? value : internalValue;
+  // Uncontrolled callers that pass a changing defaultValue (e.g. data that
+  // loads later) still follow it; adjusted during render, not in an effect.
+  const [lastDefault, setLastDefault] = useState(defaultValue);
+  if (!isControlled && lastDefault !== defaultValue) {
+    setLastDefault(defaultValue);
+    setInternalValue(defaultValue);
+  }
 
-  useEffect(() => {
-    if (!isControlled) {
-      setInternalValue(defaultValue);
-    }
-  }, [defaultValue, isControlled]);
+  const selectedValue = isControlled ? value : internalValue;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,6 +75,7 @@ const Select: React.FC<SelectProps> = ({
     <div ref={selectRef} className={`relative ${className}`}>
       <button
         type="button"
+        id={id}
         onClick={() => setIsOpen(!isOpen)}
         className={`h-11 w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-theme-xs focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 ${
           selectedValue

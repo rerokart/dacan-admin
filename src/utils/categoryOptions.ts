@@ -59,15 +59,38 @@ export const flattenCategoryOptions = (
 };
 
 /**
- * Parent choices for the category form: levels 1 and 2 only (a child of a
- * level-2 category is level 3, the deepest allowed), never the category
- * itself or its own subcategories, never archived.
+ * Levels in a category's own subtree: 1 for a leaf, 2 with children, and so
+ * on. Pass a tree loaded with `include_archived`, because the server counts
+ * archived descendants too. Unknown ids count as 1.
+ */
+export const subtreeHeight = (tree: Category[] | undefined, id: string): number => {
+  const heightOf = (node: Category): number =>
+    1 + Math.max(0, ...(node.children ?? []).map(heightOf));
+  let found: Category | undefined;
+  const visit = (nodes: Category[]) => {
+    nodes.forEach((node) => {
+      if (found) return;
+      if (node.id === id) found = node;
+      else if (node.children?.length) visit(node.children);
+    });
+  };
+  visit(tree ?? []);
+  return found ? heightOf(found) : 1;
+};
+
+/**
+ * Parent choices for the category form. The tree is at most 3 levels deep, so
+ * a parent at depth d is allowed only when d + the edited category's subtree
+ * height <= 3 (a new category has height 1). Never the category itself or its
+ * own subcategories, never archived.
  */
 export const parentCategoryOptions = (
   tree: Category[] | undefined,
-  selfId?: string
+  selfId?: string,
+  selfHeight = 1
 ): CategoryOption[] => {
   const excluded = selfId ? subtreeIds(tree ?? [], selfId) : new Set<string>();
+  const maxParentDepth = 3 - selfHeight;
   const depthOf = new Map<string, number>();
   const walk = (nodes: Category[], depth: number) => {
     nodes.forEach((node) => {
@@ -80,7 +103,7 @@ export const parentCategoryOptions = (
   return [
     { value: "", label: "None (main category)" },
     ...flattenCategoryOptions(tree, { excludeIds: excluded }).filter(
-      (option) => (depthOf.get(option.value) ?? 1) <= 2
+      (option) => (depthOf.get(option.value) ?? 1) <= maxParentDepth
     ),
   ];
 };

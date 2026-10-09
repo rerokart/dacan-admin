@@ -241,7 +241,7 @@ function AllProductsContent() {
               <div className="min-w-[180px]">
                 <Select
                   options={categoryOptions}
-                  defaultValue={filters.category_id || ""}
+                  value={filters.category_id || ""}
                   onChange={(val) => handleFilterChange("category_id", val)}
                 />
               </div>
@@ -250,7 +250,7 @@ function AllProductsContent() {
               <div className="min-w-[140px]">
                 <Select
                   options={statusOptions}
-                  defaultValue={filters.status || ""}
+                  value={filters.status || ""}
                   onChange={(val) => handleFilterChange("status", val)}
                 />
               </div>
@@ -259,7 +259,7 @@ function AllProductsContent() {
               <div className="min-w-[160px]">
                 <Select
                   options={brandOptions}
-                  defaultValue={filters.brand_id || ""}
+                  value={filters.brand_id || ""}
                   onChange={(val) => handleFilterChange("brand_id", val)}
                 />
               </div>
@@ -268,7 +268,7 @@ function AllProductsContent() {
               <div className="min-w-[140px]">
                 <Select
                   options={featuredOptions}
-                  defaultValue={filters.is_featured === undefined ? "" : String(filters.is_featured)}
+                  value={filters.is_featured === undefined ? "" : String(filters.is_featured)}
                   onChange={(val) => handleFilterChange("is_featured", val)}
                 />
               </div>
@@ -277,7 +277,7 @@ function AllProductsContent() {
               <div className="min-w-[140px]">
                 <Select
                   options={stockOptions}
-                  defaultValue={filters.in_stock === undefined ? "" : String(filters.in_stock)}
+                  value={filters.in_stock === undefined ? "" : String(filters.in_stock)}
                   onChange={(val) => handleFilterChange("in_stock", val)}
                 />
               </div>
@@ -286,7 +286,7 @@ function AllProductsContent() {
               <div className="min-w-[180px]">
                 <Select
                   options={sortOptions}
-                  defaultValue={filters.sort || ""}
+                  value={filters.sort || ""}
                   onChange={(val) => handleFilterChange("sort", val)}
                 />
               </div>

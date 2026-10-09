@@ -14,7 +14,7 @@ import {
   useUploadCategoryImage,
 } from "@/hooks/useCategories";
 import { useToast } from "@/components/ui/toast";
-import { parentCategoryOptions } from "@/utils/categoryOptions";
+import { parentCategoryOptions, subtreeHeight } from "@/utils/categoryOptions";
 import type {
   Category,
   CreateCategoryRequest,
@@ -116,16 +116,50 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
   const [previews, setPreviews] = useState<Partial<Record<ImageKind, string>>>({});
 
   const { data: categories } = useCategories();
+  // Edit mode only: the server counts archived descendants when it checks the
+  // 3-level limit, so the height has to come from the tree that includes them.
+  const { data: fullTree } = useCategories(
+    mode === "edit" ? { include_archived: true } : undefined
+  );
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadCategoryImage();
 
   const isArchived = initial?.status === "archived";
   const codeLocked = mode === "edit" && (initial?.direct_product_count ?? 0) > 0;
-  const parentOptions = useMemo(
-    () => parentCategoryOptions(categories, initial?.id),
-    [categories, initial?.id]
+  const selfHeight = useMemo(
+    () => (mode === "edit" && initial ? subtreeHeight(fullTree, initial.id) : 1),
+    [mode, initial, fullTree]
   );
+  const parentOptions = useMemo(
+    () => parentCategoryOptions(categories, initial?.id, selfHeight),
+    [categories, initial?.id, selfHeight]
+  );
+  const [statusNote, setStatusNote] = useState<string | null>(null);
+
+  const parentStatusOf = (parentId: string): Category["status"] | undefined => {
+    let found: Category["status"] | undefined;
+    const visit = (nodes: Category[]) =>
+      nodes.forEach((node) => {
+        if (node.id === parentId) found = node.status;
+        else if (node.children?.length) visit(node.children);
+      });
+    visit(categories ?? []);
+    return found;
+  };
+
+  // A category can't be Active under a parent that isn't Active.
+  const handleParentChange = (parentId: string) => {
+    const parentStatus = parentId ? parentStatusOf(parentId) : undefined;
+    if (parentStatus && parentStatus !== "active" && form.status === "active") {
+      setStatusNote(
+        `Parent is ${parentStatus === "draft" ? "Draft" : "Inactive"}, so this starts as Draft`
+      );
+      setForm((prev) => ({ ...prev, parent_id: parentId, status: "draft" }));
+      return;
+    }
+    set("parent_id", parentId);
+  };
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -161,9 +195,11 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
   };
 
   const codeError =
-    form.code && !(CODE_PATTERN.test(form.code) && form.code.length >= 2 && form.code.length <= 20)
-      ? "2-20 characters: A-Z, 0-9 and single hyphens (e.g. HW-LOCK)"
-      : undefined;
+    mode === "edit" && !codeLocked && !form.code
+      ? "Code can't be empty"
+      : form.code && !(CODE_PATTERN.test(form.code) && form.code.length >= 2 && form.code.length <= 20)
+        ? "2-20 characters: A-Z, 0-9 and single hyphens (e.g. HW-LOCK)"
+        : undefined;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -198,6 +234,11 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
     if (isArchived) {
       delete changed.status;
       delete changed.parent_id;
+      delete changed.show_on_app;
+      delete changed.show_on_web;
+      delete changed.show_in_pos;
+      delete changed.is_featured;
+      delete changed.featured_order;
     }
     if (Object.keys(changed).length === 0) {
       onDone();
@@ -212,7 +253,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
     <form onSubmit={handleSubmit} className="space-y-8">
       {isArchived && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
-          This category is archived. Restore it from the category list to change its status or parent.
+          This category is archived. Restore it to change its status, parent, channels or featured.
         </div>
       )}
 
@@ -250,7 +291,10 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
             <p className={`mt-1 text-xs ${codeError ? "text-error-500" : "text-gray-500"}`}>
               {codeLocked
                 ? "Can't change once products use this category"
-                : codeError ?? "Unique short code, e.g. HW-LOCK. Leave empty to generate from the name."}
+                : codeError ??
+                  (mode === "create"
+                    ? "Unique short code, e.g. HW-LOCK. Leave empty to generate from the name."
+                    : "Unique short code, e.g. HW-LOCK.")}
             </p>
           </div>
 
@@ -273,6 +317,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
           <div className="lg:col-span-2">
             <Label htmlFor="description">Description</Label>
             <TextArea
+              id="description"
               placeholder="Enter category description"
               rows={4}
               value={form.description}
@@ -292,10 +337,10 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
               <Input type="text" id="parent" value={initial?.path?.slice(0, -1).map((p) => p.name).join(" › ") || "None (main category)"} disabled />
             ) : (
               <Select
-                key={`parent-${parentOptions.length}`}
+                id="parent"
                 options={parentOptions}
-                defaultValue={form.parent_id}
-                onChange={(val) => set("parent_id", val)}
+                value={form.parent_id}
+                onChange={handleParentChange}
               />
             )}
             <p className="mt-1 text-xs text-gray-500">
@@ -328,15 +373,20 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
               <Input type="text" id="status" value="Archived" disabled />
             ) : (
               <Select
+                id="status"
                 options={[
                   { value: "active", label: "Active (visible to customers)" },
                   { value: "draft", label: "Draft (being prepared)" },
                   { value: "inactive", label: "Inactive (temporarily hidden)" },
                 ]}
-                defaultValue={form.status}
-                onChange={(val) => set("status", val as WritableCategoryStatus)}
+                value={form.status}
+                onChange={(val) => {
+                  setStatusNote(null);
+                  set("status", val as WritableCategoryStatus);
+                }}
               />
             )}
+            {statusNote && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{statusNote}</p>}
           </div>
         </div>
       </section>
@@ -345,10 +395,10 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
       <section>
         <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Visibility</h4>
         <div className="flex flex-wrap gap-6">
-          <Checkbox id="show_on_app" label="Show on App" checked={form.show_on_app} onChange={(v) => set("show_on_app", v)} />
-          <Checkbox id="show_on_web" label="Show on Website" checked={form.show_on_web} onChange={(v) => set("show_on_web", v)} />
-          <Checkbox id="show_in_pos" label="Show in Store (POS)" checked={form.show_in_pos} onChange={(v) => set("show_in_pos", v)} />
-          <Checkbox id="is_featured" label="Featured category" checked={form.is_featured} onChange={(v) => set("is_featured", v)} />
+          <Checkbox id="show_on_app" label="Show on App" checked={form.show_on_app} onChange={(v) => set("show_on_app", v)} disabled={isArchived} />
+          <Checkbox id="show_on_web" label="Show on Website" checked={form.show_on_web} onChange={(v) => set("show_on_web", v)} disabled={isArchived} />
+          <Checkbox id="show_in_pos" label="Show in Store (POS)" checked={form.show_in_pos} onChange={(v) => set("show_in_pos", v)} disabled={isArchived} />
+          <Checkbox id="is_featured" label="Featured category" checked={form.is_featured} onChange={(v) => set("is_featured", v)} disabled={isArchived} />
         </div>
         {form.is_featured && (
           <div className="mt-4 max-w-xs">
@@ -357,6 +407,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
               type="number"
               id="featured_order"
               min="0"
+              disabled={isArchived}
               value={String(form.featured_order)}
               onChange={(e) => set("featured_order", Math.max(0, parseInt(e.target.value) || 0))}
             />

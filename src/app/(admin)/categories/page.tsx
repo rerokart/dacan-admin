@@ -18,12 +18,12 @@ import {
   useArchiveCategory,
   useCategories,
   useCategory,
-  useDeleteCategory,
   useRestoreCategory,
 } from "@/hooks/useCategories";
 import type { Category, CategoryStatus } from "@/services/category.service";
 import { flattenCategoryOptions, subtreeIds } from "@/utils/categoryOptions";
 import PermissionGuard from "@/components/auth/PermissionGuard";
+import DeleteCategoryDialog from "@/components/categories/DeleteCategoryDialog";
 import Can from "@/components/auth/Can";
 
 const STATUS_BADGE: Record<CategoryStatus, { label: string; color: "success" | "light" | "warning" | "error" }> = {
@@ -97,9 +97,10 @@ function ArchiveDialog({
               Move {productCount} {productCount === 1 ? "product" : "products"} to:
             </Label>
             <Select
+              id="move-target"
               options={targetOptions}
               placeholder="Select a category"
-              defaultValue=""
+              value={target}
               onChange={setTarget}
             />
           </div>
@@ -149,7 +150,6 @@ function CategoriesPageContent() {
   });
   // Unfiltered tree for "move products to" choices.
   const { data: fullTree } = useCategories();
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
   const { mutate: restoreCategory, isPending: isRestoring } = useRestoreCategory();
 
   const roots = useMemo(() => (categories ?? []).filter((cat) => !cat.parent_id), [categories]);
@@ -169,7 +169,6 @@ function CategoriesPageContent() {
     const image = category.icon_url || category.thumbnail_url || category.image_url;
     const badge = STATUS_BADGE[category.status] ?? STATUS_BADGE.active;
     const isArchived = category.status === "archived";
-    const canDelete = !hasChildren && (category.total_product_count ?? 0) === 0;
 
     return (
       <React.Fragment key={category.id}>
@@ -265,17 +264,15 @@ function CategoriesPageContent() {
                     </svg>
                   </button>
                 )}
-                {canDelete && (
-                  <button
-                    onClick={() => setDeleteTarget(category)}
-                    className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                    title="Delete"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  onClick={() => setDeleteTarget(category)}
+                  className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  title="Delete"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </Can>
             </div>
           </TableCell>
@@ -403,24 +400,7 @@ function CategoriesPageContent() {
       )}
 
       {deleteTarget && (
-        <Modal title="Delete Category">
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Delete &quot;{deleteTarget.name}&quot; permanently? Only empty categories can be deleted. To
-            hide a category, archive it instead.
-          </p>
-          <div className="mt-6 flex justify-end gap-3">
-            <button onClick={() => setDeleteTarget(null)} className={cancelBtn}>
-              Cancel
-            </button>
-            <button
-              onClick={() => deleteCategory(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
-              disabled={isDeleting}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        </Modal>
+        <DeleteCategoryDialog category={deleteTarget} onClose={() => setDeleteTarget(null)} />
       )}
     </div>
   );
