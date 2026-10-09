@@ -114,3 +114,20 @@ export function gstOnPrice(
   }
   return toUnits(divRound(p * r, BigInt(10000)));
 }
+
+/**
+ * What the customer pays for a price, rounded half-up to paise: the price itself
+ * when prices include GST, else the price plus the GST added on top (summed in
+ * paise). null when the price is missing. Display only.
+ */
+export function priceWithGst(
+  price: Num,
+  gstRate: Num,
+  pricesIncludeGst: boolean
+): number | null {
+  const p = hundredths(price);
+  if (p === null) return null;
+  if (pricesIncludeGst) return toUnits(p);
+  const r = hundredths(gstRate) ?? BigInt(0);
+  return toUnits(p + divRound(p * r, BigInt(10000)));
+}

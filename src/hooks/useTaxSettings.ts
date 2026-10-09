@@ -11,6 +11,7 @@ import {
   type UpdateHsnCodeRequest,
 } from "@/services/taxSettings.service";
 import { taxKeys, productKeys } from "./queryKeys";
+import { posKeys } from "./usePOS";
 import { useToast } from "@/components/ui/toast";
 
 type Enabled = { enabled?: boolean };
@@ -58,12 +59,15 @@ const useRefreshTax = () => {
 
 export const useUpdateTaxSettings = () => {
   const refresh = useRefreshTax();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   return useMutation({
     mutationFn: (data: UpdateTaxSettingsRequest) => taxSettingsService.updateSettings(data),
     onSuccess: () => {
       // Product margins depend on the "prices include GST" setting
       refresh(true);
+      // So do POS totals: re-price any open POS quote
+      queryClient.invalidateQueries({ queryKey: [...posKeys.all, "quote"] });
       toast.success("Tax settings saved");
     },
     onError: (error: Error) => toast.error(error?.message || "Failed to save tax settings"),

@@ -6,7 +6,7 @@ import Select from "@/components/form/Select";
 import Can from "@/components/auth/Can";
 import { usePermissions } from "@/context/AuthContext";
 import { useGstRates, useTaxSettings } from "@/hooks/useTaxSettings";
-import { gstOnPrice } from "@/utils/margin";
+import { gstOnPrice, priceWithGst } from "@/utils/margin";
 import { MEASURES, numText, percent, rupees } from "@/utils/productFormat";
 import type { Product, ProductVariant } from "@/services/product.service";
 import FieldError from "../fields/FieldError";
@@ -84,7 +84,11 @@ export default function PricingTab({
               <FieldError error={errors.price} />
               {gst !== null && (
                 <p className="mt-1 text-xs tabular-nums text-gray-500 dark:text-gray-400">
-                  Customer pays {rupees(Number(form.price))}, {includeGst ? "including" : "plus"} GST {rupees(gst)}
+                  {includeGst
+                    ? `Customer pays ${rupees(Number(form.price))}, including GST ${rupees(gst)}`
+                    : `Customer pays ${rupees(priceWithGst(form.price, effectiveRate, false) ?? 0)} (${rupees(
+                        Number(form.price)
+                      )} plus GST ${rupees(gst)})`}
                 </p>
               )}
             </div>

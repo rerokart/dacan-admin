@@ -33,7 +33,7 @@ const when = (iso: string) => {
 const variantText = (row: PriceHistoryEntry) => {
   if (row.variant_name) return row.variant_name;
   // The product's own rows (GST rate) apply to every variant.
-  return row.variant_id === null ? "All" : "-";
+  return row.variant_id === null ? "All" : "Default";
 };
 
 /** Price changes of one product, newest first, paged by the server. */

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
@@ -69,8 +69,21 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
   const [gstTouched, setGstTouched] = useState(false);
   const [filledFor, setFilledFor] = useState<string | null>(null);
   const [rateHint, setRateHint] = useState<string | null>(null);
-  const lookupCode = hsnEdited && !gstTouched && !readOnly ? form.hsn_code : "";
+  const liveLookup = hsnEdited && !gstTouched && !readOnly ? form.hsn_code : "";
+  // Look up only once the code has stayed the same for 300 ms (no fill on every keystroke).
+  const [settledCode, setSettledCode] = useState("");
+  useEffect(() => {
+    if (!liveLookup || settledCode === liveLookup) return;
+    const timer = setTimeout(() => setSettledCode(liveLookup), 300);
+    return () => clearTimeout(timer);
+  }, [liveLookup, settledCode]);
+  const lookupCode = liveLookup && settledCode === liveLookup ? liveLookup : "";
   const { data: hsnMatch, isSuccess: lookupDone } = useHsnLookup(lookupCode, { enabled: canReadTax });
+  // The hint belongs to the code it was filled for: drop it once the HSN code changes.
+  if (filledFor !== null && form.hsn_code !== filledFor) {
+    setFilledFor(null);
+    setRateHint(null);
+  }
   // Applied while rendering (no effect), once per looked-up code.
   if (lookupCode && lookupDone && filledFor !== lookupCode) {
     setFilledFor(lookupCode);
