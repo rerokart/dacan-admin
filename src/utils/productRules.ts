@@ -94,3 +94,45 @@ export function checkQuantityRules(
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Prices (C3): mirrors product_rules.price_problems on the server
+// ---------------------------------------------------------------------------
+
+export const PRICE_REASON_MIN = 3;
+export const PRICE_REASON_MAX = 500;
+
+/** Fields whose change on an existing product or variant needs a price_change_reason. */
+export const PRICE_CHANGE_FIELDS = ["price", "original_price", "min_selling_price", "cost_price", "gst_rate"] as const;
+
+/** "₹1,234.50", the way the server writes amounts in its messages. */
+const serverRupees = (value: number) =>
+  `₹${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export interface PriceProblem {
+  field: "price" | "min_selling_price";
+  message: string;
+}
+
+/**
+ * Selling price / MRP / minimum price rules, in the server's order:
+ * price > MRP, minimum > MRP, price < minimum. A missing value skips the
+ * rules that need it.
+ */
+export const priceProblems = (
+  price: number | null,
+  mrp: number | null,
+  min: number | null
+): PriceProblem[] => {
+  const problems: PriceProblem[] = [];
+  if (price !== null && mrp !== null && price > mrp) {
+    problems.push({ field: "price", message: "Selling price can't be more than the MRP" });
+  }
+  if (min !== null && mrp !== null && min > mrp) {
+    problems.push({ field: "min_selling_price", message: "Minimum price can't be more than the MRP" });
+  }
+  if (price !== null && min !== null && price < min) {
+    problems.push({ field: "price", message: `Selling price can't be below the minimum price (${serverRupees(min)})` });
+  }
+  return problems;
+};

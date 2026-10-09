@@ -94,3 +94,23 @@ export function marginFields(
     markup_percent: markupPercent,
   };
 }
+
+/**
+ * GST on a price, rounded half-up to paise: the GST inside the price when
+ * prices include GST, else the GST added on top. null when the price is missing.
+ * Display only (the product form's helper line).
+ */
+export function gstOnPrice(
+  price: Num,
+  gstRate: Num,
+  pricesIncludeGst: boolean
+): number | null {
+  const p = hundredths(price);
+  if (p === null) return null;
+  const r = hundredths(gstRate) ?? BigInt(0);
+  if (pricesIncludeGst) {
+    const before = divRound(p * BigInt(10000), BigInt(10000) + r);
+    return toUnits(p - before);
+  }
+  return toUnits(divRound(p * r, BigInt(10000)));
+}

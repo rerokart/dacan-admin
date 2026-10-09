@@ -18,3 +18,10 @@ export const num = (value: string): number | null => (value.trim() === "" ? null
 
 /** Trimmed text, or null when empty. */
 export const toText = (value: string): string | null => value.trim() || null;
+
+/** "₹1,23,456.50"; a negative amount reads "-₹12.00". */
+export const rupees = (value: number): string =>
+  `${value < 0 ? "-" : ""}₹${Math.abs(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** "18%", "0.25%" */
+export const percent = (value: number): string => `${Number(value)}%`;

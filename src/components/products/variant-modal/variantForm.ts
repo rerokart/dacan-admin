@@ -1,4 +1,4 @@
-import { BARCODE_PATTERN, SKU_PATTERN, isValidGtin } from "@/utils/productRules";
+import { BARCODE_PATTERN, SKU_PATTERN, isValidGtin, priceProblems } from "@/utils/productRules";
 import { MEASURES, type MeasureKey, num, numText } from "@/utils/productFormat";
 import type { CreateVariantRequest, ProductOption, ProductVariant } from "@/services/product.service";
 
@@ -10,7 +10,11 @@ export interface FormState {
   barcode: string;
   gtin: string;
   price: string;
+  /** MRP */
   original_price: string;
+  min_selling_price: string;
+  /** Only sent for admins with products.view_cost */
+  cost_price: string;
   pack_size: string;
   stock_quantity: string;
   is_active: boolean;
@@ -31,6 +35,8 @@ export const toFormState = (variant: ProductVariant | null): FormState => ({
   gtin: variant?.gtin ?? "",
   price: numText(variant?.price),
   original_price: numText(variant?.original_price),
+  min_selling_price: numText(variant?.min_selling_price),
+  cost_price: numText(variant?.cost_price),
   pack_size: numText(variant?.pack_size ?? 1),
   stock_quantity: "",
   is_active: variant?.is_active ?? true,
@@ -44,7 +50,9 @@ export const validate = (
   options: ProductOption[],
   isEdit: boolean,
   taken: Set<string>,
-  baselineSku = ""
+  baselineSku = "",
+  /** The saved variant's form state (edit) */
+  saved?: FormState
 ): Errors => {
   const errors: Errors = {};
   if (!isEdit) {
@@ -66,8 +74,21 @@ export const validate = (
   if (state.price.trim() === "" || Number.isNaN(Number(state.price)) || Number(state.price) < 0) {
     errors.price = "Enter a price of 0 or more";
   }
-  if (state.original_price.trim() !== "" && (Number.isNaN(Number(state.original_price)) || Number(state.original_price) < 0)) {
-    errors.original_price = "Enter a price of 0 or more";
+  for (const key of ["original_price", "min_selling_price", "cost_price"] as const) {
+    if (state[key].trim() !== "" && (Number.isNaN(Number(state[key])) || Number(state[key]) < 0)) {
+      errors[key] = "Enter a price of 0 or more";
+    }
+  }
+  // Price rules (as on the server): on edit only when one of the three changed,
+  // so an older variant that breaks them can still get other edits.
+  const pricesChanged =
+    !isEdit ||
+    !saved ||
+    (["price", "original_price", "min_selling_price"] as const).some((k) => num(state[k]) !== num(saved[k]));
+  if (!errors.price && !errors.original_price && !errors.min_selling_price && pricesChanged) {
+    for (const p of priceProblems(num(state.price), num(state.original_price), num(state.min_selling_price))) {
+      if (!errors[p.field]) errors[p.field] = p.message;
+    }
   }
   if (!isWhole(state.pack_size, 1)) errors.pack_size = "Whole number, 1 or more";
   if (!isEdit && !isWhole(state.stock_quantity, 0)) errors.stock_quantity = "Whole number, 0 or more";
@@ -81,16 +102,20 @@ export const toRequest = (
   state: FormState,
   options: ProductOption[],
   isEdit: boolean,
-  baselineSku = ""
+  baselineSku = "",
+  /** Without products.view_cost the cost_price key must never be sent (403). */
+  withCost = false
 ): CreateVariantRequest => {
   const data: CreateVariantRequest = {
     price: Number(state.price),
     original_price: num(state.original_price),
+    min_selling_price: num(state.min_selling_price),
     barcode: text(state.barcode),
     gtin: state.gtin.trim() || null,
     pack_size: num(state.pack_size) ?? 1,
     is_active: state.is_active,
   };
+  if (withCost) data.cost_price = num(state.cost_price);
   for (const m of MEASURES) data[m.key] = num(state.measures[m.key]);
   const sku = state.sku.trim().toUpperCase();
   if (sku && !(isEdit && sku === (baselineSku ?? "").trim().toUpperCase())) data.sku = sku;

@@ -37,7 +37,13 @@ export type FormState = {
   is_featured: boolean;
   // Pricing & stock (default variant)
   price: string;
+  /** MRP */
   original_price: string;
+  min_selling_price: string;
+  /** Only sent for admins with products.view_cost */
+  cost_price: string;
+  /** Product level; "" on create = the server picks the HSN rate or the store default */
+  gst_rate: string;
   stock_quantity: string;
   low_stock_threshold: string;
   barcode: string;
@@ -90,6 +96,10 @@ export const toFormState = (product?: Product): FormState => {
     is_featured: product?.is_featured ?? false,
     price: numText(variant?.price),
     original_price: numText(variant?.original_price),
+    min_selling_price: numText(variant?.min_selling_price),
+    cost_price: numText(variant?.cost_price),
+    // String(Number()) so "18.00" and 18 match the rate list's values.
+    gst_rate: product?.gst_rate == null ? "" : String(Number(product.gst_rate)),
     stock_quantity: numText(variant?.stock_quantity ?? product?.stock_quantity),
     low_stock_threshold: numText(product?.low_stock_threshold ?? 10),
     barcode: variant?.barcode ?? "",
@@ -163,6 +173,8 @@ export const tagsWithDraft = (state: FormState): string[] => {
 export const PRICING_KEYS = [
   "price",
   "original_price",
+  "min_selling_price",
+  "cost_price",
   "stock_quantity",
   "barcode",
   "gtin",
@@ -190,8 +202,10 @@ const list = (items: string[]): string[] => items.map((i) => i.trim()).filter(Bo
 /**
  * Full payload for the form. `pricing` adds the default-variant fields
  * (simple products only). Stock is never part of it: it is added on create only.
+ * `withCost`: only admins with products.view_cost may send cost_price at all
+ * (the key alone, even null, is refused with 403 otherwise).
  */
-export const toPayload = (state: FormState, pricing: boolean): UpdateProductRequest => {
+export const toPayload = (state: FormState, pricing: boolean, withCost: boolean): UpdateProductRequest => {
   const warrantyOn = state.warranty_available;
   const payload: UpdateProductRequest = {
     name: state.name.trim(),
@@ -238,10 +252,15 @@ export const toPayload = (state: FormState, pricing: boolean): UpdateProductRequ
     order_qty_step: num(state.order_qty_step) ?? 1,
   };
   if (state.sku.trim()) payload.sku = state.sku.trim().toUpperCase();
+  // Blank only on create: the server then takes the HSN rate or the store default.
+  const gstRate = num(state.gst_rate);
+  if (gstRate !== null) payload.gst_rate = gstRate;
   if (pricing) {
     // null on edit reaches the server as "Price is required"; create drops it (draft, price 0).
     payload.price = num(state.price) as number;
     payload.original_price = num(state.original_price);
+    payload.min_selling_price = num(state.min_selling_price);
+    if (withCost) payload.cost_price = num(state.cost_price);
     payload.barcode = toText(state.barcode);
     payload.gtin = toText(state.gtin);
     // pack_size may never be null
