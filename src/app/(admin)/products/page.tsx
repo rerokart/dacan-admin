@@ -27,6 +27,7 @@ import { flattenCategoryOptions } from "@/utils/categoryOptions";
 import type { ProductFilters, ProductStatus } from "@/services/product.service";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 
 const getStatusBadge = (stockQty: number, threshold: number) => {
   if (stockQty === 0) {
@@ -60,7 +61,7 @@ const PRODUCT_STATUS_BADGE: Record<
   archived: { label: "Archived", color: "error" },
 };
 
-const formatPrice = (n: number) => `₹${n.toLocaleString()}`;
+const formatPrice = (n: number) => formatCurrency(n);
 
 function AllProductsContent() {
   const [searchInput, setSearchInput] = useState("");

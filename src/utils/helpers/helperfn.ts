@@ -109,13 +109,17 @@ export const capitalizeWords = (text: string): string => {
 };
 
 // Format amount as INR currency (null-safe)
+// Whole rupees show no decimals; any other amount shows exactly two. Never rounds to rupees.
 export const formatCurrency = (amount: number | null | undefined): string => {
+  const value = Number.isFinite(amount) ? (amount as number) : 0;
+  const whole = Math.round(value * 100) % 100 === 0;
+  const digits = whole ? 0 : 2;
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount ?? 0);
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
 };
 
 // Format number with commas

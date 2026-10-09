@@ -8,6 +8,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useDeleteVariant, useGenerateVariants, useUpdateVariant } from "@/hooks/useProducts";
 import { MAX_VARIANTS } from "@/utils/productRules";
 import { percent, rupees } from "@/utils/productFormat";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 import type { Product, ProductVariant } from "@/services/product.service";
 import { VariantModal, combinationKey } from "./VariantModal";
 
@@ -19,7 +20,7 @@ interface VariantGridProps {
 }
 
 const money = (n?: number | null) =>
-  n === null || n === undefined ? "-" : `₹${Number(n).toLocaleString("en-IN")}`;
+  n === null || n === undefined ? "-" : formatCurrency(Number(n));
 
 const th = "px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400";
 const td = "px-3 py-3 text-sm text-gray-700 dark:text-gray-300";
