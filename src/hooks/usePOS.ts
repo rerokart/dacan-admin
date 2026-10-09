@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   posService,
@@ -92,6 +92,7 @@ export const usePOSCart = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(
     null
   );
+  const [couponCode, setCouponCode] = useState("");
 
   const addToCart = useCallback(
     (product: POSProduct, variantId?: string) => {
@@ -177,42 +178,73 @@ export const usePOSCart = () => {
   const clearCart = useCallback(() => {
     setCart([]);
     setSelectedCustomer(null);
+    setCouponCode("");
   }, []);
 
   // Totals come from the server quote, never from a local GST calculation.
-  // Until the quote arrives the subtotal is the sum of the line prices and
-  // total equals it; Task 12 rebuilds the POS totals on the full summary.
-  const quoteRequest: POSQuoteRequest = {
-    items: cart.map((item) => ({
-      product_id: item.product_id,
-      variant_id: item.variant_id,
-      quantity: item.quantity,
-    })),
-    customer_id: selectedCustomer?.id,
-  };
+  // The request is debounced (300 ms); until the quote for the current cart,
+  // customer and coupon has arrived, no total is shown and `canCharge` is false.
+  const liveRequest = useMemo<POSQuoteRequest>(
+    () => ({
+      items: cart.map((item) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+      })),
+      // Walk-in has an empty id: send no customer
+      customer_id: selectedCustomer?.id || undefined,
+      coupon_code: couponCode.trim() || undefined,
+    }),
+    [cart, selectedCustomer, couponCode]
+  );
+  const liveKey = JSON.stringify(liveRequest);
+  const [debounced, setDebounced] = useState<{ key: string; request: POSQuoteRequest }>(
+    { key: liveKey, request: liveRequest }
+  );
+  useEffect(() => {
+    if (debounced.key === liveKey) return;
+    const timer = setTimeout(
+      () => setDebounced({ key: liveKey, request: liveRequest }),
+      300
+    );
+    return () => clearTimeout(timer);
+  }, [liveKey, liveRequest, debounced.key]);
+
+  const hasCart = cart.length > 0;
   const {
     data: quoteData,
-    isFetching: isQuoting,
-    isError: quoteError,
-  } = usePOSQuote(quoteRequest);
-  // The query keeps the previous quote while a changed cart reloads; an empty
-  // cart must never show the last cart's totals.
-  const quote = cart.length > 0 ? quoteData : undefined;
-  const listSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    isFetching,
+    isPlaceholderData,
+    isError,
+  } = usePOSQuote(debounced.request, hasCart);
+  const isStale = hasCart && debounced.key !== liveKey;
+  // An empty cart must never show the last cart's totals; a placeholder is the
+  // previous request's quote and does not count as current.
+  const quote = hasCart && !isStale && !isPlaceholderData && !isError ? quoteData : undefined;
+  const isQuoting = hasCart && !isError && (isStale || isFetching || isPlaceholderData);
+  const lineErrors = (quote?.lines ?? []).filter((line) => line.error);
+  const couponError = quote?.summary.coupon_error ?? null;
   const totals = {
-    subtotal: quote?.summary.subtotal ?? listSubtotal,
-    tax: quote?.summary.tax_amount ?? 0,
-    total: quote?.summary.total_amount ?? listSubtotal,
+    subtotal: quote?.summary.subtotal ?? null,
+    discount: quote?.summary.discount_amount ?? 0,
+    tax: quote?.summary.tax_amount ?? null,
+    total: quote?.summary.total_amount ?? null,
     itemCount: cart.reduce((acc, item) => acc + item.quantity, 0),
     quote,
-    isQuoting: cart.length > 0 && isQuoting,
-    quoteError: cart.length > 0 && quoteError,
+    isQuoting,
+    quoteError: hasCart && isError && !isStale,
+    couponError,
+    lineErrors,
+    // Only a fresh, error-free server quote may be charged.
+    canCharge: !!quote && lineErrors.length === 0 && !couponError,
   };
 
   return {
     cart,
     selectedCustomer,
     setSelectedCustomer,
+    couponCode,
+    setCouponCode,
     addToCart,
     updateQuantity,
     removeFromCart,

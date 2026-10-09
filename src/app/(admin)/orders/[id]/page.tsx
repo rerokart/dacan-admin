@@ -96,6 +96,8 @@ function OrderDetailPageContent() {
   }
 
   const canCancel = ["placed", "confirmed", "shipped", "out_for_delivery"].includes(order.order_status);
+  // New orders carry the tax breakup; a null flag marks a legacy order (single GST row).
+  const hasBreakup = order.prices_include_gst != null;
 
   return (
     <div>
@@ -205,6 +207,14 @@ function OrderDetailPageContent() {
                       <p className="text-sm text-gray-500">
                         SKU: {item.product_snapshot?.sku}
                       </p>
+                      {hasBreakup && (
+                        <p className="text-xs text-gray-500">
+                          {item.hsn_code ? `HSN ${item.hsn_code} · ` : ""}
+                          {item.gst_rate != null ? `GST ${item.gst_rate}% · ` : ""}
+                          Taxable {formatCurrency(item.taxable_value ?? 0)} · Tax{" "}
+                          {formatCurrency(item.tax_amount ?? 0)}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900 dark:text-white">
@@ -243,12 +253,51 @@ function OrderDetailPageContent() {
                       {formatCurrency(order.delivery_charge)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">GST (18%)</span>
-                    <span className="text-gray-900 dark:text-white">
-                      {formatCurrency(order.tax_amount)}
-                    </span>
-                  </div>
+                  {hasBreakup ? (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Taxable value</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {formatCurrency(order.taxable_amount ?? 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">CGST</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {formatCurrency(order.cgst_amount ?? 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">SGST</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {formatCurrency(order.sgst_amount ?? 0)}
+                        </span>
+                      </div>
+                      {(order.igst_amount ?? 0) > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">IGST</span>
+                          <span className="text-gray-900 dark:text-white">
+                            {formatCurrency(order.igst_amount ?? 0)}
+                          </span>
+                        </div>
+                      )}
+                      {(order.round_off ?? 0) !== 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Round off</span>
+                          <span className="text-gray-900 dark:text-white">
+                            {formatCurrency(order.round_off ?? 0)}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">GST</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {formatCurrency(order.tax_amount)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
                     <span className="font-semibold text-gray-900 dark:text-white">
                       Total
@@ -257,6 +306,11 @@ function OrderDetailPageContent() {
                       {formatCurrency(order.total_amount)}
                     </span>
                   </div>
+                  {hasBreakup && (
+                    <p className="text-xs text-gray-500">
+                      {order.prices_include_gst ? "Prices include GST" : "GST added on top"}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
