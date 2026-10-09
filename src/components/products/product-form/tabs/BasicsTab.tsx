@@ -86,6 +86,7 @@ export default function BasicsTab({ form, set, errors, isCreate, isArchived, sku
           </div>
         ) : (
           <Select
+            id="category"
             options={categoryOptions}
             placeholder="Select Category"
             value={form.category_id}
@@ -98,6 +99,7 @@ export default function BasicsTab({ form, set, errors, isCreate, isArchived, sku
       <div>
         <Label htmlFor="brand">Brand</Label>
         <BrandPicker
+          id="brand"
           value={form.brand_id}
           onChange={(id) => set("brand_id", id)}
           currentBrand={baseline?.brand ? { id: baseline.brand.id, name: baseline.brand.name } : null}
@@ -110,6 +112,7 @@ export default function BasicsTab({ form, set, errors, isCreate, isArchived, sku
           <Input id="status" value="Archived" disabled />
         ) : (
           <Select
+            id="status"
             options={STATUS_OPTIONS}
             value={form.status}
             onChange={(val) => set("status", val as WritableProductStatus)}

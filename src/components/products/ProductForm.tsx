@@ -147,7 +147,6 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
         ([key, value]) => !sameValue(value, before[key as keyof UpdateProductRequest])
       )
     ) as UpdateProductRequest;
-    if (isArchived) delete changed.status;
     if (Object.keys(changed).length === 0) {
       toast.info("No changes to save");
       return;

@@ -14,6 +14,8 @@ export interface BrandPickerProps {
   disabled?: boolean;
   /** pick: active brands, "No brand", "+ Add new". filter: every brand, "All brands", no add. */
   mode?: "pick" | "filter";
+  /** id of the picker's button, for a <Label htmlFor> */
+  id?: string;
 }
 
 interface SelectedBrand {
@@ -28,6 +30,7 @@ export default function BrandPicker({
   currentBrand,
   disabled,
   mode = "pick",
+  id,
 }: BrandPickerProps) {
   const { can } = usePermissions();
   const canView = can("brands.view");
@@ -104,7 +107,7 @@ export default function BrandPicker({
   if (!canView) {
     return (
       <div>
-        <div className="flex h-11 w-full items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
+        <div id={id} className="flex h-11 w-full items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
           {value ? (currentBrand?.id === value ? currentBrand.name : "Selected brand") : emptyLabel}
         </div>
         <p className="mt-1 text-xs text-gray-500">You can&apos;t browse brands</p>
@@ -116,6 +119,7 @@ export default function BrandPicker({
     <div ref={ref} className="relative">
       <button
         type="button"
+        id={id}
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 text-left text-sm text-gray-800 focus:border-brand-500 focus:outline-none disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"

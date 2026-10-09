@@ -50,7 +50,7 @@ export default function IdentityTab({ form, set, errors }: TabProps) {
       </div>
       <div>
         <Label htmlFor="unit_of_measure">Unit of Measure</Label>
-        <Select options={UNIT_OPTIONS} value={form.unit_of_measure} onChange={(val) => set("unit_of_measure", val)} />
+        <Select id="unit_of_measure" options={UNIT_OPTIONS} value={form.unit_of_measure} onChange={(val) => set("unit_of_measure", val)} />
       </div>
       <div className="lg:col-span-2">
         <TagInput

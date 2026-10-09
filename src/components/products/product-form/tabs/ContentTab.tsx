@@ -117,6 +117,7 @@ export default function ContentTab({ form, set, errors }: TabProps) {
             <div>
               <Label htmlFor="warranty_provider">Provided by</Label>
               <Select
+                id="warranty_provider"
                 options={PROVIDER_OPTIONS}
                 value={form.warranty_provider}
                 onChange={(val) => set("warranty_provider", val)}
