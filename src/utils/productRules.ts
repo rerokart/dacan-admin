@@ -32,6 +32,7 @@ export const KEY_FEATURE_MAX_LENGTH = 200;
 export const WHATS_INCLUDED_MAX_ITEMS = 20;
 export const WHATS_INCLUDED_MAX_LENGTH = 100;
 export const TEXT_BLOCK_MAX = 5000;
+export const DESCRIPTION_MAX = 20000;
 
 export const SPECS_MAX_ROWS = 50;
 export const SPEC_NAME_MAX = 60;
@@ -49,6 +50,7 @@ export const WARRANTY_CONDITIONS_MAX = 2000;
 export const MAX_IMAGES = 8;
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const MIN_IMAGE_SIDE = 300;
+export const MAX_IMAGE_PIXELS = 50_000_000;
 export const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 export const IMAGE_ALT_MAX = 150;
 export const IMAGE_TYPES = [

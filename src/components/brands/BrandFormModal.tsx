@@ -9,7 +9,7 @@ import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import { useCreateBrand, useUpdateBrand, useUploadBrandLogo } from "@/hooks/useBrands";
 import { useToast } from "@/components/ui/toast";
-import { MAX_IMAGE_BYTES } from "@/utils/productRules";
+import { imageFileProblem } from "@/utils/imageCheck";
 import type { Brand, BrandStatus } from "@/services/brand.service";
 
 const NAME_MIN = 2;
@@ -70,10 +70,11 @@ function BrandFormBody({
       ? `Name must be ${NAME_MIN}-${NAME_MAX} characters`
       : undefined;
 
-  const handleFile = (f?: File) => {
+  const handleFile = async (f?: File) => {
     if (!f) return;
-    if (f.size > MAX_IMAGE_BYTES) {
-      toast.error("Image must be 2 MB or smaller");
+    const problem = await imageFileProblem(f);
+    if (problem) {
+      toast.error(problem);
       return;
     }
     setFile(f);
@@ -197,7 +198,7 @@ function BrandFormBody({
             />
           </label>
         )}
-        <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF or WebP. Max 2 MB.</p>
+        <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF or WebP. Max 2 MB, at least 300 × 300 px.</p>
       </div>
 
       <div className="flex justify-end gap-3 pt-2">

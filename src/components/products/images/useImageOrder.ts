@@ -16,7 +16,7 @@ const moveId = (ids: string[], from: number, to: number) => {
 /** Image order with an optimistic reorder (arrows or drag and drop). */
 export function useImageOrder(product: Product) {
   const { mutate: reorderImages } = useReorderProductImages();
-  // Order shown while a reorder is saved; ignored once the image set changes.
+  // Order shown while a reorder is saved; cleared when it settles, ignored once the image set changes.
   const [pendingOrder, setPendingOrder] = useState<string[] | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
 
@@ -33,7 +33,8 @@ export function useImageOrder(product: Product) {
     setPendingOrder(ids);
     reorderImages(
       { productId: product.id, imageIds: ids },
-      { onError: () => setPendingOrder(null) }
+      // Either way the server order is shown from now on (success refetches the product).
+      { onSuccess: () => setPendingOrder(null), onError: () => setPendingOrder(null) }
     );
   };
 

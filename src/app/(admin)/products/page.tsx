@@ -373,16 +373,19 @@ function AllProductsContent() {
                             />
                           }
                         >
+                          {/* An archived product can't be changed until it is restored */}
                           <input
                             type="checkbox"
                             checked={product.is_featured || false}
+                            disabled={product.status === "archived"}
+                            title={product.status === "archived" ? "Restore this product first" : undefined}
                             onChange={(e) => {
                               updateProduct({
                                 id: product.id,
                                 data: { is_featured: e.target.checked },
                               });
                             }}
-                            className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 cursor-pointer"
+                            className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                           />
                         </Can>
                       </TableCell>
@@ -457,24 +460,35 @@ function AllProductsContent() {
                       <TableCell className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Can permission="products.edit">
-                            <Link
-                              href={`/products/${product.id}/edit`}
-                              className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            {product.status === "archived" ? (
+                              // Opens the same page, read-only until restored
+                              <Link
+                                href={`/products/${product.id}/edit`}
+                                className="rounded-lg px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                />
-                              </svg>
-                            </Link>
+                                View
+                              </Link>
+                            ) : (
+                              <Link
+                                href={`/products/${product.id}/edit`}
+                                aria-label={`Edit ${product.name}`}
+                                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </Link>
+                            )}
                           </Can>
                           <Can permission="products.delete">
                             {product.status === "archived" ? (

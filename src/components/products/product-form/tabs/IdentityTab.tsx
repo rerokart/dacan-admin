@@ -53,7 +53,13 @@ export default function IdentityTab({ form, set, errors }: TabProps) {
         <Select options={UNIT_OPTIONS} value={form.unit_of_measure} onChange={(val) => set("unit_of_measure", val)} />
       </div>
       <div className="lg:col-span-2">
-        <TagInput tags={form.tags} onChange={(tags) => set("tags", tags)} />
+        <TagInput
+          tags={form.tags}
+          draft={form.tag_draft}
+          onChange={(tags) => set("tags", tags)}
+          onDraftChange={(draft) => set("tag_draft", draft)}
+          error={errors.tags?.message}
+        />
       </div>
     </div>
   );

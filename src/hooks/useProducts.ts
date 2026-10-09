@@ -17,6 +17,11 @@ import { invalidateCatalog } from "./catalogInvalidation";
 import { productKeys } from "./queryKeys";
 import { useToast } from "@/components/ui/toast";
 
+/** `silentError`: the caller shows the error inline, so the hook skips its toast. */
+export interface ProductMutationOptions {
+  silentError?: boolean;
+}
+
 // Get Products
 export const useProducts = (filters?: ProductFilters) => {
   return useQuery({
@@ -42,8 +47,8 @@ export const useCreateProduct = () => {
   return useMutation({
     mutationFn: (data: CreateProductRequest) => productService.createProduct(data),
     onSuccess: () => {
+      // The add page toasts, since where it goes next depends on permissions.
       invalidateCatalog(queryClient);
-      toast.success("Product created. Add options and images below.");
     },
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to create product");
@@ -104,7 +109,7 @@ export const useProductVariants = (productId: string | number) => {
 };
 
 // Add Variant
-export const useAddVariant = () => {
+export const useAddVariant = ({ silentError = false }: ProductMutationOptions = {}) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -121,13 +126,13 @@ export const useAddVariant = () => {
       toast.success("Variant added successfully!");
     },
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to add variant");
+      if (!silentError) toast.error(error?.message || "Failed to add variant");
     },
   });
 };
 
 // Update Variant
-export const useUpdateVariant = () => {
+export const useUpdateVariant = ({ silentError = false }: ProductMutationOptions = {}) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -146,7 +151,7 @@ export const useUpdateVariant = () => {
       toast.success("Variant updated successfully!");
     },
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to update variant");
+      if (!silentError) toast.error(error?.message || "Failed to update variant");
     },
   });
 };
@@ -227,19 +232,19 @@ export const useDeleteProductImage = () => {
 };
 
 // Upload Product Image (standalone - returns image_url)
-export const useUploadProductImage = () => {
+export const useUploadProductImage = ({ silentError = false }: ProductMutationOptions = {}) => {
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: (file: FormData) => productService.uploadImage(file),
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to upload image");
+      if (!silentError) toast.error(error?.message || "Failed to upload image");
     },
   });
 };
 
 // Add Image URL to Product
-export const useAddProductImage = () => {
+export const useAddProductImage = ({ silentError = false }: ProductMutationOptions = {}) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -259,7 +264,7 @@ export const useAddProductImage = () => {
       });
     },
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to add image to product");
+      if (!silentError) toast.error(error?.message || "Failed to add image to product");
     },
   });
 };
@@ -306,7 +311,7 @@ export const useRestoreProduct = () => {
 };
 
 // Save the option set
-export const useSaveOptions = () => {
+export const useSaveOptions = ({ silentError = false }: ProductMutationOptions = {}) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -323,7 +328,7 @@ export const useSaveOptions = () => {
       toast.success("Options saved");
     },
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to save options");
+      if (!silentError) toast.error(error?.message || "Failed to save options");
     },
   });
 };
@@ -350,7 +355,7 @@ export const useGenerateVariants = () => {
 };
 
 // Update one image (primary, alt text, type, variant, replace file)
-export const useUpdateProductImage = () => {
+export const useUpdateProductImage = ({ silentError = false }: ProductMutationOptions = {}) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -372,7 +377,7 @@ export const useUpdateProductImage = () => {
       });
     },
     onError: (error: Error) => {
-      toast.error(error?.message || "Failed to update image");
+      if (!silentError) toast.error(error?.message || "Failed to update image");
     },
   });
 };
@@ -390,13 +395,13 @@ export const useReorderProductImages = () => {
       productId: string | number;
       imageIds: string[];
     }) => productService.reorderImages(productId, imageIds),
-    onSuccess: (_, variables) => {
-      // The list shows the primary image, so refresh it too.
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productKeys.detail(variables.productId),
-      });
-    },
+    // Returned so the caller's onSuccess runs after the new order is loaded (no flicker
+    // back to the old order). The list shows the primary image, so refresh it too.
+    onSuccess: (_, variables) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.productId) }),
+      ]),
     onError: (error: Error) => {
       toast.error(error?.message || "Failed to reorder images");
     },

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useDeleteProductImage, useUpdateProductImage } from "@/hooks/useProducts";
-import { IMAGE_ACCEPT, MAX_IMAGES, MIN_IMAGE_SIDE } from "@/utils/productRules";
+import { IMAGE_ACCEPT, MAX_IMAGES, MAX_IMAGE_PIXELS, MIN_IMAGE_SIDE } from "@/utils/productRules";
 import type { Product, ProductImage, UpdateImageRequest } from "@/services/product.service";
 import ImageCard from "./images/ImageCard";
 import ImageUploadZone from "./images/ImageUploadZone";
@@ -12,9 +12,11 @@ import { useImageUpload } from "./images/useImageUpload";
 
 interface ImageManagerProps {
   product: Product;
+  /** Archived product: images are shown, nothing can be changed */
+  readOnly?: boolean;
 }
 
-export default function ImageManager({ product }: ImageManagerProps) {
+export default function ImageManager({ product, readOnly = false }: ImageManagerProps) {
   const { confirm } = useConfirm();
   const { mutate: updateImage } = useUpdateProductImage();
   const { mutate: deleteImage } = useDeleteProductImage();
@@ -66,10 +68,14 @@ export default function ImageManager({ product }: ImageManagerProps) {
 
   return (
     <div>
-      <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-        Up to {MAX_IMAGES} images, PNG, JPEG, WebP or GIF, at most 2 MB and at least {MIN_IMAGE_SIDE} × {MIN_IMAGE_SIDE}{" "}
-        px. Drag to reorder (or use the arrows). The starred image is shown first in lists.
-      </p>
+      {!readOnly && (
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Up to {MAX_IMAGES} images, PNG, JPEG, WebP or GIF, at most 2 MB, at least {MIN_IMAGE_SIDE} × {MIN_IMAGE_SIDE}{" "}
+          px and at most {MAX_IMAGE_PIXELS / 1_000_000} megapixels. Drag to reorder (or use the arrows). The starred
+          image is shown first in lists.
+        </p>
+      )}
+      {readOnly && images.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">No images.</p>}
 
       {images.length > 0 && (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -92,6 +98,7 @@ export default function ImageManager({ product }: ImageManagerProps) {
               altDraft={altDrafts[image.id]}
               onAltChange={(value) => setAltDrafts((prev) => ({ ...prev, [image.id]: value }))}
               onAltSave={saveAlt}
+              readOnly={readOnly}
             />
           ))}
         </ul>
@@ -105,9 +112,12 @@ export default function ImageManager({ product }: ImageManagerProps) {
         </ul>
       )}
 
-      <ImageUploadZone remaining={remaining} uploading={uploading} count={images.length} onUpload={handleUpload} />
-
-      <input ref={replaceInput} type="file" className="hidden" accept={IMAGE_ACCEPT} onChange={handleReplace} />
+      {!readOnly && (
+        <>
+          <ImageUploadZone remaining={remaining} uploading={uploading} count={images.length} onUpload={handleUpload} />
+          <input ref={replaceInput} type="file" className="hidden" accept={IMAGE_ACCEPT} onChange={handleReplace} />
+        </>
+      )}
     </div>
   );
 }

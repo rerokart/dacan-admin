@@ -4,16 +4,14 @@ import type React from "react";
 import { useRef, useState } from "react";
 import { useToast } from "@/components/ui/toast";
 import { useAddProductImage, useUpdateProductImage, useUploadProductImage } from "@/hooks/useProducts";
-import { IMAGE_ACCEPT, MAX_IMAGES, MAX_IMAGE_BYTES } from "@/utils/productRules";
+import { MAX_IMAGES } from "@/utils/productRules";
+import { imageFileProblem } from "@/utils/imageCheck";
 import type { Product, ProductImage } from "@/services/product.service";
 
-const ACCEPTED_TYPES = IMAGE_ACCEPT.split(",");
-
-/** Client check before upload; the server re-checks the real content. */
-const fileProblem = (file: File): string | null => {
-  if (!ACCEPTED_TYPES.includes(file.type)) return `${file.name}: use a PNG, JPEG, WebP or GIF image`;
-  if (file.size > MAX_IMAGE_BYTES) return `${file.name} is larger than 2 MB`;
-  return null;
+/** Client check before upload (type, size, pixel size); the server re-checks the real content. */
+const fileProblem = async (file: File): Promise<string | null> => {
+  const problem = await imageFileProblem(file);
+  return problem ? `${file.name}: ${problem}` : null;
 };
 
 const toFormData = (file: File) => {
@@ -25,9 +23,9 @@ const toFormData = (file: File) => {
 /** Adding new images and replacing one in place. `remaining` is how many more images fit. */
 export function useImageUpload(product: Product, remaining: number) {
   const { toast } = useToast();
-  const { mutateAsync: uploadImage } = useUploadProductImage();
-  const { mutateAsync: addImage } = useAddProductImage();
-  const { mutateAsync: updateImageAsync } = useUpdateProductImage();
+  const { mutateAsync: uploadImage } = useUploadProductImage({ silentError: true });
+  const { mutateAsync: addImage } = useAddProductImage({ silentError: true });
+  const { mutateAsync: updateImageAsync } = useUpdateProductImage({ silentError: true });
 
   const [uploading, setUploading] = useState(false);
   const [replacingId, setReplacingId] = useState<string | null>(null);
@@ -40,11 +38,12 @@ export function useImageUpload(product: Product, remaining: number) {
     e.target.value = ""; // the same file can be picked again
     if (!files.length) return;
 
+    setUploading(true);
     const found: string[] = [];
-    const valid = files.filter((file) => {
-      const problem = fileProblem(file);
-      if (problem) found.push(problem);
-      return !problem;
+    const checks = await Promise.all(files.map(fileProblem));
+    const valid = files.filter((file, i) => {
+      if (checks[i]) found.push(checks[i] as string);
+      return !checks[i];
     });
     if (valid.length > remaining) {
       found.push(
@@ -53,12 +52,14 @@ export function useImageUpload(product: Product, remaining: number) {
     }
     const toUpload = valid.slice(0, Math.max(remaining, 0));
 
-    setUploading(true);
+    // Only a product's very first image is typed "main"; later ones have no type until the admin picks one.
+    const hadImages = (product.images?.length ?? 0) > 0;
     let added = 0;
     for (const file of toUpload) {
       try {
         const uploaded = await uploadImage(toFormData(file));
-        await addImage({ productId: product.id, data: { ...uploaded, image_type: "main" } });
+        const data = !hadImages && added === 0 ? { ...uploaded, image_type: "main" } : uploaded;
+        await addImage({ productId: product.id, data });
         added += 1;
       } catch (error) {
         found.push(`${file.name}: ${(error as Error).message}`);
@@ -79,7 +80,7 @@ export function useImageUpload(product: Product, remaining: number) {
     e.target.value = "";
     const imageId = replaceTarget.current;
     if (!file || !imageId) return;
-    const problem = fileProblem(file);
+    const problem = await fileProblem(file);
     if (problem) {
       setProblems([problem]);
       return;

@@ -7,6 +7,7 @@ import {
   HIGHLIGHT_MAX_LENGTH,
   KEY_FEATURES_MAX_ITEMS,
   KEY_FEATURE_MAX_LENGTH,
+  DESCRIPTION_MAX,
   TEXT_BLOCK_MAX,
   WARRANTY_CONDITIONS_MAX,
   WARRANTY_MONTHS_MAX,
@@ -44,7 +45,7 @@ export default function ContentTab({ form, set, errors }: TabProps) {
           id="description"
           label="Full Description"
           value={form.description}
-          max={TEXT_BLOCK_MAX}
+          max={DESCRIPTION_MAX}
           rows={6}
           onChange={(v) => set("description", v)}
         />

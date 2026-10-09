@@ -1,13 +1,35 @@
 "use client";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import ProductForm from "@/components/products/ProductForm";
+import { usePermissions } from "@/context/AuthContext";
+import { useToast } from "@/components/ui/toast";
+import type { Product } from "@/services/product.service";
 
 function AddProductContent() {
   const router = useRouter();
+  const { can } = usePermissions();
+  const { toast } = useToast();
+  // Bumped to start a fresh form when the admin can't open the new product.
+  const [formKey, setFormKey] = useState(0);
+
+  // Go where this admin is allowed: the edit page needs both view and edit.
+  const handleCreated = (product: Product) => {
+    const canView = can("products.view");
+    if (canView && can("products.edit")) {
+      toast.success("Product created. Add options and images below.");
+      router.push(`/products/${product.id}/edit`);
+    } else if (canView) {
+      toast.success("Created. Ask an editor to add options and images");
+      router.push("/products");
+    } else {
+      toast.success("Product created");
+      setFormKey((k) => k + 1);
+    }
+  };
 
   return (
     <div>
@@ -20,7 +42,7 @@ function AddProductContent() {
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
             Options (size, colour…) and images are added on the next page, after the product is created.
           </p>
-          <ProductForm mode="create" onDone={(product) => router.push(`/products/${product.id}/edit`)} />
+          <ProductForm key={formKey} mode="create" onDone={handleCreated} />
         </div>
       </div>
     </div>

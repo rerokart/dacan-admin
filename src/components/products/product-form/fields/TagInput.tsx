@@ -2,30 +2,37 @@
 
 import { useState } from "react";
 import Label from "@/components/form/Label";
-import { MAX_TAGS, TAG_MAX, TAG_MIN } from "@/utils/productRules";
+import { MAX_TAGS, TAG_MAX } from "@/utils/productRules";
+import { normaliseTag, tagProblem } from "../formState";
 import { inputClass } from "./styles";
 
-const normaliseTag = (raw: string) => raw.trim().toLowerCase().replace(/\s+/g, " ");
+interface TagInputProps {
+  tags: string[];
+  /** The text typed but not yet added; kept in form state so Save can commit it */
+  draft: string;
+  onChange: (tags: string[]) => void;
+  onDraftChange: (draft: string) => void;
+  /** Error from the form check on Save (an invalid draft) */
+  error?: string;
+}
 
-export default function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
-  const [draft, setDraft] = useState("");
+export default function TagInput({ tags, draft, onChange, onDraftChange, error: formError }: TagInputProps) {
   const [error, setError] = useState<string | null>(null);
 
   const commit = () => {
     const tag = normaliseTag(draft);
     if (!tag) return;
-    if (tag.length < TAG_MIN || tag.length > TAG_MAX) {
-      setError(`Each tag must be ${TAG_MIN}-${TAG_MAX} characters`);
-      return;
-    }
-    if (tags.length >= MAX_TAGS) {
-      setError(`At most ${MAX_TAGS} tags`);
+    const problem = tagProblem(tags, tag);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (!tags.includes(tag)) onChange([...tags, tag]);
-    setDraft("");
+    onDraftChange("");
     setError(null);
   };
+
+  const shownError = error ?? formError;
 
   return (
     <div>
@@ -60,10 +67,10 @@ export default function TagInput({ tags, onChange }: { tags: string[]; onChange:
         type="text"
         value={draft}
         maxLength={TAG_MAX + 10}
-        disabled={tags.length >= MAX_TAGS}
+        disabled={tags.length >= MAX_TAGS && !draft}
         placeholder="Type a tag and press Enter"
         onChange={(e) => {
-          setDraft(e.target.value);
+          onDraftChange(e.target.value);
           setError(null);
         }}
         onKeyDown={(e) => {
@@ -75,8 +82,8 @@ export default function TagInput({ tags, onChange }: { tags: string[]; onChange:
         onBlur={commit}
         className={inputClass}
       />
-      <p className={`mt-1 text-xs ${error ? "text-error-500" : "text-gray-500"}`}>
-        {error ?? "Saved in lowercase. Used for search."}
+      <p className={`mt-1 text-xs ${shownError ? "text-error-500" : "text-gray-500"}`}>
+        {shownError ?? "Saved in lowercase. Used for search."}
       </p>
     </div>
   );

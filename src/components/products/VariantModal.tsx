@@ -50,8 +50,8 @@ export const VariantModal: React.FC<VariantModalProps> = ({
   const [showErrors, setShowErrors] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const { mutate: addVariant, isPending: isAdding } = useAddVariant();
-  const { mutate: updateVariant, isPending: isUpdating } = useUpdateVariant();
+  const { mutate: addVariant, isPending: isAdding } = useAddVariant({ silentError: true });
+  const { mutate: updateVariant, isPending: isUpdating } = useUpdateVariant({ silentError: true });
   const isPending = isAdding || isUpdating;
   const skuLocked = !!variant?.sku_locked;
 

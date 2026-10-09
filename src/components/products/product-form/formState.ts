@@ -1,4 +1,5 @@
 import { MEASURES, type MeasureKey, num, numText, toText } from "@/utils/productFormat";
+import { MAX_TAGS, TAG_MAX, TAG_MIN } from "@/utils/productRules";
 import type { Product, UpdateProductRequest, WritableProductStatus } from "@/services/product.service";
 
 // ---------------------------------------------------------------------------
@@ -6,6 +7,8 @@ import type { Product, UpdateProductRequest, WritableProductStatus } from "@/ser
 // ---------------------------------------------------------------------------
 
 export type TabKey = "basics" | "pricing" | "identity" | "content" | "specs" | "limits";
+/** Tab order, used to point at the first tab with an error. */
+export const TAB_ORDER: TabKey[] = ["basics", "pricing", "identity", "content", "specs", "limits"];
 
 export interface SpecRow {
   group_name: string;
@@ -48,6 +51,8 @@ export type FormState = {
   hsn_code: string;
   unit_of_measure: string;
   tags: string[];
+  /** A tag typed but not yet committed with Enter / comma / blur; committed on Save. */
+  tag_draft: string;
   // Content
   short_description: string;
   description: string;
@@ -102,6 +107,7 @@ export const toFormState = (product?: Product): FormState => {
     hsn_code: product?.hsn_code ?? "",
     unit_of_measure: product?.unit_of_measure ?? "piece",
     tags: product?.tags ?? [],
+    tag_draft: "",
     short_description: product?.short_description ?? "",
     description: product?.description ?? "",
     highlights: product?.highlights ?? [],
@@ -129,6 +135,48 @@ export const toFormState = (product?: Product): FormState => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// Tags
+// ---------------------------------------------------------------------------
+
+export const normaliseTag = (raw: string) => raw.trim().toLowerCase().replace(/\s+/g, " ");
+
+/** Why `tag` (already normalised) can't be added to `tags`, or null when it can. */
+export const tagProblem = (tags: string[], tag: string): string | null => {
+  if (tag.length < TAG_MIN || tag.length > TAG_MAX) return `Each tag must be ${TAG_MIN}-${TAG_MAX} characters`;
+  if (!tags.includes(tag) && tags.length >= MAX_TAGS) return `At most ${MAX_TAGS} tags`;
+  return null;
+};
+
+/** The tags with a valid typed draft included (an invalid one is caught by validate). */
+export const tagsWithDraft = (state: FormState): string[] => {
+  const tag = normaliseTag(state.tag_draft);
+  if (!tag || state.tags.includes(tag) || tagProblem(state.tags, tag)) return state.tags;
+  return [...state.tags, tag];
+};
+
+// ---------------------------------------------------------------------------
+// Pricing fields (the default variant)
+// ---------------------------------------------------------------------------
+
+/** Fields that live on the default variant; reset when the product gains or loses options. */
+export const PRICING_KEYS = [
+  "price",
+  "original_price",
+  "stock_quantity",
+  "barcode",
+  "gtin",
+  "pack_size",
+  ...MEASURES.map((m) => m.key),
+] as const satisfies readonly (keyof FormState)[];
+
+/** `state` with its pricing fields taken from `fresh`. */
+export const withPricingFrom = (state: FormState, fresh: FormState): FormState => {
+  const next = { ...state };
+  for (const key of PRICING_KEYS) next[key] = fresh[key];
+  return next;
+};
+
 const list = (items: string[]): string[] => items.map((i) => i.trim()).filter(Boolean);
 
 /**
@@ -151,7 +199,7 @@ export const toPayload = (state: FormState, pricing: boolean): UpdateProductRequ
     country_of_origin: toText(state.country_of_origin),
     hsn_code: toText(state.hsn_code),
     unit_of_measure: state.unit_of_measure,
-    tags: state.tags,
+    tags: tagsWithDraft(state),
     short_description: state.short_description.trim(),
     description: state.description.trim(),
     highlights: list(state.highlights),

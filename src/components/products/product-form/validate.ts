@@ -10,7 +10,7 @@ import {
   isValidGtin,
 } from "@/utils/productRules";
 import { MEASURES, num } from "@/utils/productFormat";
-import type { FormState, TabKey } from "./formState";
+import { type FormState, type TabKey, normaliseTag, tagProblem } from "./formState";
 
 // ---------------------------------------------------------------------------
 // Client checks (the server re-checks everything)
@@ -70,6 +70,10 @@ export const validate = (
   if (state.hsn_code.trim() && !HSN_PATTERN.test(state.hsn_code.trim())) {
     add("hsn_code", "identity", "4, 6 or 8 digits");
   }
+  // A tag still being typed is saved with the form, so it must pass the tag rules.
+  const draftTag = normaliseTag(state.tag_draft);
+  const draftProblem = draftTag ? tagProblem(state.tags, draftTag) : null;
+  if (draftProblem) add("tags", "identity", draftProblem);
   const country = state.country_of_origin.trim();
   if (country && (country.length < COUNTRY_MIN || country.length > COUNTRY_MAX)) {
     add("country_of_origin", "identity", `${COUNTRY_MIN}-${COUNTRY_MAX} characters`);

@@ -87,14 +87,16 @@ const move = <T,>(items: T[], index: number, delta: number): T[] => {
 interface OptionsEditorProps {
   /** Mount with a key derived from product.options so a save resets the draft. */
   product: Product;
+  /** Archived product: the options are listed, nothing can be changed */
+  readOnly?: boolean;
 }
 
-export default function OptionsEditor({ product }: OptionsEditorProps) {
+export default function OptionsEditor({ product, readOnly = false }: OptionsEditorProps) {
   const [options, setOptions] = useState<DraftOption[]>(() => toDraft(product));
   const [dirty, setDirty] = useState(false);
   const [showProblem, setShowProblem] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const { mutate: saveOptions, isPending } = useSaveOptions();
+  const { mutate: saveOptions, isPending } = useSaveOptions({ silentError: true });
 
   const isSimple = !!product.default_variant_id;
   const problem = useMemo(() => checkDraft(options), [options]);
@@ -162,6 +164,31 @@ export default function OptionsEditor({ product }: OptionsEditorProps) {
     setShowProblem(false);
     setServerError(null);
   };
+
+  if (readOnly) {
+    const saved = product.options ?? [];
+    return saved.length === 0 ? (
+      <p className="text-sm text-gray-500 dark:text-gray-400">This product has no options.</p>
+    ) : (
+      <dl className="space-y-3">
+        {saved.map((option) => (
+          <div key={option.id}>
+            <dt className="text-sm font-medium text-gray-800 dark:text-white/90">{option.name}</dt>
+            <dd className="mt-1 flex flex-wrap gap-2">
+              {option.values.map((v) => (
+                <span
+                  key={v.id}
+                  className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  {v.value}
+                </span>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
 
   return (
     <div>

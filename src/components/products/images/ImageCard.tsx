@@ -26,7 +26,11 @@ interface ImageCardProps {
   altDraft: string | undefined;
   onAltChange: (value: string) => void;
   onAltSave: (image: ProductImage) => void;
+  /** Archived product: show the image and its details, no controls */
+  readOnly?: boolean;
 }
+
+const typeLabel = (type: string) => type.charAt(0).toUpperCase() + type.slice(1);
 
 export default function ImageCard({
   image,
@@ -45,7 +49,50 @@ export default function ImageCard({
   altDraft,
   onAltChange,
   onAltSave,
+  readOnly = false,
 }: ImageCardProps) {
+  if (readOnly) {
+    const variantLabel = variantChoices.find((v) => v.id === image.variant_id)?.label;
+    return (
+      <li className="rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={image.thumb_url || image.image_url}
+            alt={image.alt_text || `Image ${index + 1}`}
+            className="h-full w-full object-cover"
+          />
+          <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 text-xs text-white">{index + 1}</span>
+          {image.is_primary && (
+            <span
+              title="Primary image"
+              aria-label="Primary image"
+              className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-lg leading-none text-warning-500 shadow dark:bg-gray-900/90"
+            >
+              ★
+            </span>
+          )}
+        </div>
+        <dl className="mt-2 space-y-1 text-xs text-gray-500">
+          <div>
+            <dt className="inline">Type: </dt>
+            <dd className="inline text-gray-700 dark:text-gray-300">{image.image_type ? typeLabel(image.image_type) : "Not set"}</dd>
+          </div>
+          {hasOptions && (
+            <div>
+              <dt className="inline">Variant: </dt>
+              <dd className="inline text-gray-700 dark:text-gray-300">{variantLabel ?? "All variants"}</dd>
+            </div>
+          )}
+          <div>
+            <dt className="inline">Alt text: </dt>
+            <dd className="inline text-gray-700 dark:text-gray-300">{image.alt_text || "-"}</dd>
+          </div>
+        </dl>
+      </li>
+    );
+  }
+
   return (
     <li
       onDragOver={(e) => {
@@ -130,13 +177,17 @@ export default function ImageCard({
         <label className="block text-xs text-gray-500">
           Type
           <select
-            value={image.image_type || "main"}
+            value={image.image_type || ""}
             onChange={(e) => update(image, { image_type: e.target.value })}
             className={`${selectClass} mt-1`}
           >
+            {/* Images added after the first have no type until one is picked */}
+            <option value="" disabled>
+              Not set
+            </option>
             {IMAGE_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+                {typeLabel(t)}
               </option>
             ))}
           </select>

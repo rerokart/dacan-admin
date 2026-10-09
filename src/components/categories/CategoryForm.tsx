@@ -15,13 +15,13 @@ import {
 } from "@/hooks/useCategories";
 import { useToast } from "@/components/ui/toast";
 import { parentCategoryOptions, subtreeHeight } from "@/utils/categoryOptions";
+import { imageFileProblem } from "@/utils/imageCheck";
 import type {
   Category,
   CreateCategoryRequest,
   WritableCategoryStatus,
 } from "@/services/category.service";
 
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const CODE_PATTERN = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 
 const generateSlug = (name: string): string =>
@@ -176,10 +176,11 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
     [autoSlug]
   );
 
-  const handleFile = (key: ImageKind, file?: File) => {
+  const handleFile = async (key: ImageKind, file?: File) => {
     if (!file) return;
-    if (file.size > MAX_IMAGE_BYTES) {
-      toast.error("Image must be 2 MB or smaller");
+    const problem = await imageFileProblem(file);
+    if (problem) {
+      toast.error(problem);
       return;
     }
     setFiles((prev) => ({ ...prev, [key]: file }));
@@ -452,7 +453,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
                     />
                   </label>
                 )}
-                <p className="mt-1 text-xs text-gray-500">{slot.hint} Max 2 MB.</p>
+                <p className="mt-1 text-xs text-gray-500">{slot.hint} Max 2 MB, at least 300 × 300 px.</p>
               </div>
             );
           })}
