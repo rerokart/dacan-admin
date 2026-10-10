@@ -79,6 +79,7 @@ export const API_ROUTES = {
     OPTIONS: (id: string | number) => `products/${id}/options`,
     GENERATE_VARIANTS: (id: string | number) => `products/${id}/variants/generate`,
     IMAGES_REORDER: (id: string | number) => `products/${id}/images/reorder`,
+    PRICE_HISTORY: (id: string | number) => `products/${id}/price-history`,
   },
 
   // Brands
@@ -164,6 +165,7 @@ export const API_ROUTES = {
     CUSTOMERS: "pos/customers",
     CREATE_CUSTOMER: "pos/customers",
     CREATE_ORDER: "pos/orders/offline",
+    QUOTE: "pos/quote",
   },
 
   // Banners
@@ -174,6 +176,15 @@ export const API_ROUTES = {
     UPDATE: (id: string | number) => `banners/${id}`,
     DELETE: (id: string | number) => `banners/${id}`,
     REORDER: "banners/reorder",
+  },
+
+  // Tax settings (GST, rates, HSN)
+  SETTINGS: {
+    TAX: "settings/tax",
+    GST_RATES: "settings/gst-rates",
+    GST_RATE: (id: string | number) => `settings/gst-rates/${id}`,
+    HSN_CODES: "settings/hsn-codes",
+    HSN_CODE: (code: string) => `settings/hsn-codes/${encodeURIComponent(code)}`,
   },
 
   // Wishlists

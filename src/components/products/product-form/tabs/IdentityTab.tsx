@@ -8,7 +8,15 @@ import type { TabProps } from "./types";
 
 const UNIT_OPTIONS = UNITS_OF_MEASURE.map((u) => ({ value: u, label: u.replace("_", " ") }));
 
-export default function IdentityTab({ form, set, errors }: TabProps) {
+export default function IdentityTab({
+  form,
+  set,
+  errors,
+  rateHint,
+}: TabProps & {
+  /** "Rate filled from HSN 7214" after the GST rate followed a new HSN code */
+  rateHint?: string | null;
+}) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div>
@@ -47,6 +55,7 @@ export default function IdentityTab({ form, set, errors }: TabProps) {
           placeholder="4, 6 or 8 digits"
         />
         <FieldError error={errors.hsn_code} />
+        {rateHint && !errors.hsn_code && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{rateHint}</p>}
       </div>
       <div>
         <Label htmlFor="unit_of_measure">Unit of Measure</Label>

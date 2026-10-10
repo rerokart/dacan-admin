@@ -34,6 +34,8 @@ function POSPageContent() {
     cart,
     selectedCustomer,
     setSelectedCustomer,
+    couponCode,
+    setCouponCode,
     addToCart,
     updateQuantity,
     removeFromCart,
@@ -88,7 +90,7 @@ function POSPageContent() {
   }, [newCustomer, createCustomer, setSelectedCustomer]);
 
   const handleCompleteSale = useCallback(() => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || !totals.canCharge) return;
 
     createOrder(
       {
@@ -97,7 +99,11 @@ function POSPageContent() {
           variant_id: item.variant_id,
           quantity: item.quantity,
         })),
-        customer_id: selectedCustomer?.id,
+        customer_id: selectedCustomer?.id || undefined,
+        // Send the coupon the server just priced
+        ...(totals.quote?.summary.coupon_code
+          ? { coupon_code: totals.quote.summary.coupon_code }
+          : {}),
         payment_method: paymentMethod,
         // Card/UPI: omit amount_paid so the server defaults it to its own total.
         ...(paymentMethod === "cash" ? { amount_paid: amountPaid } : {}),
@@ -109,7 +115,7 @@ function POSPageContent() {
         },
       }
     );
-  }, [cart, selectedCustomer, paymentMethod, amountPaid, createOrder]);
+  }, [cart, selectedCustomer, paymentMethod, amountPaid, createOrder, totals.canCharge, totals.quote]);
 
   const handleNewSale = useCallback(() => {
     clearCart();
@@ -120,9 +126,15 @@ function POSPageContent() {
     searchInputRef.current?.focus();
   }, [clearCart]);
 
-  const changeAmount = paymentMethod === "cash" && amountPaid > totals.total
-    ? amountPaid - totals.total
-    : 0;
+  // Change due and the cash check use only the server quote's total.
+  const quotedTotal = totals.canCharge ? totals.total : null;
+  const changeAmount =
+    paymentMethod === "cash" && quotedTotal !== null && amountPaid > quotedTotal
+      ? amountPaid - quotedTotal
+      : 0;
+  const cashShort =
+    paymentMethod === "cash" && quotedTotal !== null && amountPaid < quotedTotal;
+  const summary = totals.quote?.summary;
 
   return (
     <div className="flex h-[calc(100vh-80px)] gap-6">
@@ -353,6 +365,7 @@ function POSPageContent() {
                 <CartItem
                   key={`${item.product_id}-${item.variant_id || ""}`}
                   item={item}
+                  error={totals.quote?.lines[cart.indexOf(item)]?.error ?? null}
                   onUpdateQuantity={(qty) => updateQuantity(item.product_id, item.variant_id, qty)}
                   onRemove={() => removeFromCart(item.product_id, item.variant_id)}
                 />
@@ -401,20 +414,88 @@ function POSPageContent() {
             </div>
           )}
 
-          {/* Totals */}
+          {/* Coupon */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Coupon
+            </label>
+            <input
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              placeholder="Enter coupon code"
+              disabled={cart.length === 0}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            />
+            {totals.couponError && (
+              <p className="mt-1 text-xs text-red-600">{totals.couponError}</p>
+            )}
+            {summary && !totals.couponError && summary.coupon_code && (
+              <p className="mt-1 text-xs text-green-600">
+                {summary.coupon_code} applied: you save {formatCurrency(summary.discount_amount)}
+              </p>
+            )}
+            {summary?.coupon_note && !totals.couponError && (
+              <p className="mt-1 text-xs text-gray-500">{summary.coupon_note}</p>
+            )}
+          </div>
+
+          {/* Totals (server quote) */}
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600 dark:text-gray-400">
-              <span>Subtotal ({totals.itemCount} items)</span>
-              <span>{formatCurrency(totals.subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-gray-600 dark:text-gray-400">
-              <span>Tax (18% GST)</span>
-              <span>{formatCurrency(totals.tax)}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
-              <span>Total</span>
-              <span>{formatCurrency(totals.total)}</span>
-            </div>
+            {cart.length > 0 && totals.quoteError ? (
+              <p className="text-red-600">Could not price this sale. Change the cart or try again.</p>
+            ) : cart.length > 0 && !summary ? (
+              <p className="text-gray-500">Calculating totals...</p>
+            ) : summary ? (
+              <>
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Subtotal ({totals.itemCount} items)</span>
+                  <span>{formatCurrency(summary.subtotal)}</span>
+                </div>
+                {summary.discount_amount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon discount</span>
+                    <span>-{formatCurrency(summary.discount_amount)}</span>
+                  </div>
+                )}
+                {summary.delivery_charge > 0 && (
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                    <span>Delivery</span>
+                    <span>{formatCurrency(summary.delivery_charge)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Taxable value</span>
+                  <span>{formatCurrency(summary.taxable_amount)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>CGST</span>
+                  <span>{formatCurrency(summary.cgst_amount)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>SGST</span>
+                  <span>{formatCurrency(summary.sgst_amount)}</span>
+                </div>
+                {summary.round_off !== 0 && (
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                    <span>Round off</span>
+                    <span>{formatCurrency(summary.round_off)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
+                  <span>Total</span>
+                  <span>{formatCurrency(summary.total_amount)}</span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {summary.prices_include_gst ? "Prices include GST" : "GST added on top"}
+                </p>
+              </>
+            ) : (
+              <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
+                <span>Total</span>
+                <span>{formatCurrency(0)}</span>
+              </div>
+            )}
             {paymentMethod === "cash" && changeAmount > 0 && (
               <div className="flex justify-between text-green-600 font-medium">
                 <span>Change</span>
@@ -430,11 +511,17 @@ function POSPageContent() {
               disabled={
                 cart.length === 0 ||
                 creatingOrder ||
-                (paymentMethod === "cash" && amountPaid < totals.total)
+                totals.isQuoting ||
+                !totals.canCharge ||
+                cashShort
               }
               className="mt-4 w-full rounded-xl bg-green-600 py-3 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {creatingOrder ? "Processing..." : `Complete Sale - ${formatCurrency(totals.total)}`}
+              {creatingOrder
+                ? "Processing..."
+                : quotedTotal !== null
+                  ? `Complete Sale - ${formatCurrency(quotedTotal)}`
+                  : "Complete Sale"}
             </button>
           </Can>
         </div>
@@ -506,6 +593,9 @@ function POSPageContent() {
                 Rerokart
               </h3>
               <p className="text-sm text-gray-500 mt-1">Tax Invoice</p>
+              {completedOrder.store_gstin && (
+                <p className="text-sm text-gray-500">GSTIN: {completedOrder.store_gstin}</p>
+              )}
               <p className="text-sm text-gray-500">{formatReceiptDate(new Date(completedOrder.created_at))}</p>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">
                 Order #{completedOrder.order_number}
@@ -521,6 +611,18 @@ function POSPageContent() {
                       <span className="text-gray-500"> ({item.variant_name})</span>
                     )}
                     <span className="text-gray-500"> x{item.quantity}</span>
+                    {(item.hsn_code || item.gst_rate != null) && (
+                      <p className="text-xs text-gray-500">
+                        {item.hsn_code ? `HSN ${item.hsn_code}` : ""}
+                        {item.hsn_code && item.gst_rate != null ? " · " : ""}
+                        {item.gst_rate != null ? `GST ${item.gst_rate}%` : ""}
+                      </p>
+                    )}
+                    {item.taxable_value != null && (
+                      <p className="text-xs text-gray-500">
+                        Taxable {formatCurrency(item.taxable_value)} · Tax {formatCurrency(item.tax_amount ?? 0)}
+                      </p>
+                    )}
                   </div>
                   <span className="text-gray-900 dark:text-white">{formatCurrency(item.subtotal)}</span>
                 </div>
@@ -532,14 +634,53 @@ function POSPageContent() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(completedOrder.subtotal)}</span>
               </div>
-              <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Tax (GST)</span>
-                <span>{formatCurrency(completedOrder.tax_amount)}</span>
-              </div>
+              {(completedOrder.discount_amount ?? 0) > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>
+                    Coupon discount
+                    {completedOrder.coupon_code ? ` (${completedOrder.coupon_code})` : ""}
+                  </span>
+                  <span>-{formatCurrency(completedOrder.discount_amount ?? 0)}</span>
+                </div>
+              )}
+              {completedOrder.taxable_amount != null && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Taxable value</span>
+                  <span>{formatCurrency(completedOrder.taxable_amount)}</span>
+                </div>
+              )}
+              {completedOrder.cgst_amount != null && completedOrder.sgst_amount != null ? (
+                <>
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                    <span>CGST</span>
+                    <span>{formatCurrency(completedOrder.cgst_amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                    <span>SGST</span>
+                    <span>{formatCurrency(completedOrder.sgst_amount)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>GST</span>
+                  <span>{formatCurrency(completedOrder.tax_amount)}</span>
+                </div>
+              )}
+              {(completedOrder.round_off ?? 0) !== 0 && (
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>Round off</span>
+                  <span>{formatCurrency(completedOrder.round_off ?? 0)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
                 <span>Total</span>
                 <span>{formatCurrency(completedOrder.total_amount)}</span>
               </div>
+              {completedOrder.prices_include_gst != null && (
+                <p className="text-xs text-gray-500">
+                  {completedOrder.prices_include_gst ? "Prices include GST" : "GST added on top"}
+                </p>
+              )}
               <div className="flex justify-between text-gray-600 dark:text-gray-400 pt-2">
                 <span>Payment ({completedOrder.payment_method})</span>
                 <span>{formatCurrency(completedOrder.amount_paid)}</span>
@@ -588,11 +729,12 @@ export default function POSPage() {
 // Cart Item Component
 interface CartItemProps {
   item: POSCartItem;
+  error?: string | null;
   onUpdateQuantity: (quantity: number) => void;
   onRemove: () => void;
 }
 
-function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
+function CartItem({ item, error, onUpdateQuantity, onRemove }: CartItemProps) {
   return (
     <div className="flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
       {item.image ? (
@@ -612,6 +754,7 @@ function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
           <p className="text-xs text-gray-500">{item.variant_name}</p>
         )}
         <p className="text-sm text-brand-600 font-medium">{formatCurrency(item.price)}</p>
+        {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
       <div className="flex flex-col items-end gap-1">
         <button

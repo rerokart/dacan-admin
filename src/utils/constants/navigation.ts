@@ -130,11 +130,15 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     icon: "LockIcon",
     name: "Settings",
-    // Task 21 builds the Admin Access screen; the link is only visible to
-    // an admin who could actually use it.
-    permission: ["admin_access.view", "audit_log.view"],
+    // Each link is only visible to an admin who could actually use it.
+    permission: ["admin_access.view", "audit_log.view", "settings.view"],
     subItems: [
-      { name: "Admin Access", path: ROUTES.SETTINGS_ADMIN_ACCESS },
+      {
+        name: "Admin Access",
+        path: ROUTES.SETTINGS_ADMIN_ACCESS,
+        permission: ["admin_access.view", "audit_log.view"],
+      },
+      { name: "Tax", path: ROUTES.SETTINGS_TAX, permission: "settings.view" },
     ],
   },
 ];

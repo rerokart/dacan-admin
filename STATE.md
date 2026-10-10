@@ -1,6 +1,6 @@
 # dacan-admin — State
 
-_Last updated: 2026-10-09_
+_Last updated: 2026-10-10_
 
 ## Done
 - Next.js 16 + React 19 initialized from admin-dashboard template
@@ -17,6 +17,13 @@ _Last updated: 2026-10-09_
 - **Stage A bug sprint (merged into `main` 2026-10-04 @ `c690661`)**: POS posts to `pos/orders/offline` with cash/card/upi, receipt shows variant, amount paid and change, totals rounded to paise (B02); Inventory page and Dashboard low-stock widget wired to the real inventory list/overview and stock `adjustment` (B04, B05, B26); product delete shows the 409 "has orders" message (B08); banner move up/down reorder + link-format hint (B11); Cancel order sends a status update, "Refunded" removed, Cash/Card/UPI payment filters (B13, B16, B15); dashboard demo data replaced by `analytics/dashboard` + `analytics/sales` (B57); `pnpm build` now passes (B29, reviews rating filter typing). Needs backend `fix/stage-a`. Detail: `docs/BUGS.md`, `docs/SEQUENCE.md`.
 
 ## In Progress
+- **C3 Pricing and Tax (Phase 1), built, reviewed and QA'd in a browser 2026-10-10 on `feature/pricing-c3` @ `4a47992` (off `main` fd0fca1). NOT merged, NOT pushed; needs the backend `feature/pricing-c3` and Phase 12 (applied on dev); awaiting user QA** (checklist `.claude/qa-report/2026-10-09-multi-pricing-c3-user-checklist.md`; QA report `.claude/qa-report/2026-10-09-multi-pricing-c3-qa.md`). Fixes B48 (admin side) and B52.
+  - **Settings → Tax** (`src/app/(admin)/settings/tax/page.tsx`, `src/components/settings/tax/`): General (GSTIN, state, "Prices include GST" with a warning when turned off, default and delivery GST rate, round to rupee), GST rates, HSN codes. "Tax" in the sidebar for `settings.view`; edits need `settings.edit`.
+  - **Product form:** Selling price, MRP, Minimum selling price, GST rate (filled from the HSN list, 300 ms debounce), cost before GST with live "Margin ₹X (Y%) · Markup Z%" (only with `products.view_cost`; the key is never sent without it), "Customer pays" helper line; `PriceReasonModal` on price changes; Price history tab. Same fields in the variant modal and grid. Data layer: `src/services/taxSettings.service.ts`, `src/hooks/useTaxSettings.ts`, `src/utils/margin.ts`.
+  - **Orders and POS:** the order page shows HSN, GST %, taxable value and tax per line, then taxable value, CGST, SGST, round off (older orders: one "GST" row; label "Coupon discount"). POS totals come from `POST /pos/quote` (Complete Sale disabled while a quote is stale or failed), with a coupon field; the receipt has GSTIN, HSN, rate, CGST/SGST, coupon and round off. The 18% constant is gone.
+  - **Money format (QA-C3-01):** `formatCurrency` shows ₹500 for whole rupees and two decimals otherwise (₹839.99), never rounded to rupees.
+  - **Checks:** tsc 0; lint **7 errors / 12 warnings**; `pnpm build` OK.
+  - **Deferred Low QA findings:** POS totals squeeze the item list at 1280×720 (QA-C3-04), "None" for an empty old value in Price history (QA-C3-05), "View Cost" row label in Roles & Permissions (QA-C3-06), `PermissionGuard` hydration warning (QA-C3-09, older), `?tab=gst-rates` URL (QA-C3-12).
 - **C2.5 follow-up sweep, built 2026-10-09 on `fix/c2-5` @ `159139e` (off `main` 85827e9). NOT merged, NOT pushed; needs the backend `fix/c2-5` and its Phase 11 migration, then QA in a browser** (decisions `docs/decision/2026-10-09-c2-5-sweep.md`). Fixes B60, B61, B62, B74, B75, B76 (admin side), B93 (admin side), B94 to B98.
   - **Categories:** the parent list offers only parents the server accepts; new categories under a non-Active parent default to Draft; clearing the code in edit mode is blocked; archived categories show channel and featured fields read-only; Delete follows the category detail's direct product count and all children, with the delete dialog in its own file.
   - **Brands:** the brand picker and the product-list brand filter search on the server (no 100-brand stop); for roles without `brands.view` the list filter is hidden and the product-form picker shows a read-only box; Delete follows `product_count_all`; deleting a brand clears its detail cache.
@@ -40,6 +47,7 @@ _Last updated: 2026-10-09_
 - Stage A is merged and awaiting user QA (checklist: `.claude/qa-report/2026-10-04-multi-stage-a-user-checklist.md`)
 
 ## Next Up
+- **C3:** user QA with the checklist (Tax settings, product pricing and history, order page, POS with a coupon), then merge `feature/pricing-c3` into `main` after the backend. Then C4.
 - **C2.5:** QA of `fix/c2-5` in a browser with the backend `fix/c2-5` (Phase 11 applied first), then merge into `main` and deploy after the backend. Then C3.
 - **C2:** merged; user QA still to do (see the C2 checklist).
 - Apply the backend migration `create_phase7_stage_a.sql` first (see `docs/MIGRATION.md`, "Phase 7"), then deploy backend, then this build, together with `feature/admin-rbac` work; existing admin sessions will be logged out once (expected — no `admin_sessions` row for pre-release tokens).

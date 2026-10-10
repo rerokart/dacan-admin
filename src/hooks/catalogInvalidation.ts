@@ -4,6 +4,7 @@ import {
   categoryKeys,
   dashboardKeys,
   inventoryKeys,
+  priceHistoryKeys,
   productKeys,
 } from "./queryKeys";
 
@@ -13,6 +14,7 @@ import {
 // products, so a product change refreshes them too.
 export const invalidateCatalog = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({ queryKey: productKeys.all });
+  queryClient.invalidateQueries({ queryKey: priceHistoryKeys.all });
   queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
   queryClient.invalidateQueries({ queryKey: dashboardKeys.lowStock() });
   queryClient.invalidateQueries({ queryKey: brandKeys.lists() });

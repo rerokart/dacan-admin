@@ -8,6 +8,7 @@ import {
   WARRANTY_MONTHS_MIN,
   checkQuantityRules,
   isValidGtin,
+  priceProblems,
 } from "@/utils/productRules";
 import { MEASURES, num } from "@/utils/productFormat";
 import { type FormState, type TabKey, normaliseTag, tagProblem } from "./formState";
@@ -18,6 +19,9 @@ import { type FormState, type TabKey, normaliseTag, tagProblem } from "./formSta
 
 export type FieldErrors = Partial<Record<string, { tab: TabKey; message: string }>>;
 
+/** The saved selling price, MRP and minimum price (as form text) an edit is compared with. */
+export type SavedPrices = Pick<FormState, "price" | "original_price" | "min_selling_price">;
+
 const isWholeNumber = (value: string, min: number) =>
   value.trim() === "" || (Number.isInteger(Number(value)) && Number(value) >= min);
 
@@ -25,7 +29,8 @@ export const validate = (
   state: FormState,
   pricing: boolean,
   isCreate: boolean,
-  baselineSku = ""
+  baselineSku = "",
+  savedPrices?: SavedPrices
 ): FieldErrors => {
   const errors: FieldErrors = {};
   const add = (field: string, tab: TabKey, message: string) => {
@@ -45,10 +50,24 @@ export const validate = (
   }
 
   if (pricing) {
-    for (const key of ["price", "original_price"] as const) {
+    const priceKeys = ["price", "original_price", "min_selling_price", "cost_price"] as const;
+    let pricesValid = true;
+    for (const key of priceKeys) {
       const v = state[key];
       if (v.trim() !== "" && (Number.isNaN(Number(v)) || Number(v) < 0)) {
         add(key, "pricing", "Enter a price of 0 or more");
+        pricesValid = false;
+      }
+    }
+    // Like the server, the price rules only run when one of the three changed,
+    // so an older product that breaks them can still get other edits.
+    const pricesChanged =
+      isCreate ||
+      !savedPrices ||
+      (["price", "original_price", "min_selling_price"] as const).some((k) => num(state[k]) !== num(savedPrices[k]));
+    if (pricesValid && pricesChanged) {
+      for (const p of priceProblems(num(state.price), num(state.original_price), num(state.min_selling_price))) {
+        add(p.field, "pricing", p.message);
       }
     }
     if (state.barcode.trim() && !BARCODE_PATTERN.test(state.barcode.trim())) {

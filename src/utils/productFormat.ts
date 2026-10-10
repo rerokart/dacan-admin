@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/helpers/helperfn";
 // Small helpers shared by the product form and the variant modal.
 
 export const MEASURES = [
@@ -18,3 +19,10 @@ export const num = (value: string): number | null => (value.trim() === "" ? null
 
 /** Trimmed text, or null when empty. */
 export const toText = (value: string): string | null => value.trim() || null;
+
+/** "₹1,23,456.50", "₹500"; a negative amount reads "-₹12.50". */
+export const rupees = (value: number): string =>
+  `${value < 0 ? "-" : ""}${formatCurrency(Math.abs(value))}`;
+
+/** "18%", "0.25%" */
+export const percent = (value: number): string => `${Number(value)}%`;

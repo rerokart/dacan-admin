@@ -3,9 +3,12 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import Can from "@/components/auth/Can";
+import { usePermissions } from "@/context/AuthContext";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useDeleteVariant, useGenerateVariants, useUpdateVariant } from "@/hooks/useProducts";
 import { MAX_VARIANTS } from "@/utils/productRules";
+import { percent, rupees } from "@/utils/productFormat";
+import { formatCurrency } from "@/utils/helpers/helperfn";
 import type { Product, ProductVariant } from "@/services/product.service";
 import { VariantModal, combinationKey } from "./VariantModal";
 
@@ -17,7 +20,7 @@ interface VariantGridProps {
 }
 
 const money = (n?: number | null) =>
-  n === null || n === undefined ? "-" : `₹${Number(n).toLocaleString("en-IN")}`;
+  n === null || n === undefined ? "-" : formatCurrency(Number(n));
 
 const th = "px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400";
 const td = "px-3 py-3 text-sm text-gray-700 dark:text-gray-300";
@@ -32,6 +35,8 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
   const { mutate: generate, isPending: isGenerating } = useGenerateVariants();
   const { mutate: updateVariant, isPending: isToggling, variables: toggling } = useUpdateVariant();
   const { mutate: deleteVariant } = useDeleteVariant();
+  const { can } = usePermissions();
+  const canViewCost = can("products.view_cost");
 
   const options = useMemo(() => product.options ?? [], [product.options]);
   // The default variant (a product without options) never shows here.
@@ -119,7 +124,7 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem]">
+          <table className={`w-full ${canViewCost ? "min-w-[68rem]" : "min-w-[62rem]"}`}>
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 {options.map((o) => (
@@ -131,7 +136,9 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                 <th className={th}>Barcode</th>
                 <th className={th}>GTIN</th>
                 <th className={`${th} text-right`}>Price</th>
-                <th className={`${th} text-right`}>Original</th>
+                <th className={`${th} text-right`}>MRP</th>
+                <th className={`${th} text-right`}>Min</th>
+                {canViewCost && <th className={`${th} text-right`}>Cost / Margin</th>}
                 <th className={`${th} text-right`}>Stock</th>
                 <th className={`${th} text-center`}>Active</th>
                 {!readOnly && <th className={`${th} text-right`}>Actions</th>}
@@ -174,6 +181,21 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                     <td className={`${td} font-mono text-xs`}>{variant.gtin || "-"}</td>
                     <td className={`${td} text-right`}>{money(variant.price)}</td>
                     <td className={`${td} text-right text-gray-500`}>{money(variant.original_price)}</td>
+                    <td className={`${td} text-right text-gray-500`}>{money(variant.min_selling_price)}</td>
+                    {canViewCost && (
+                      <td className={`${td} text-right tabular-nums`}>
+                        {money(variant.cost_price)}
+                        {variant.margin_amount !== null && variant.margin_amount !== undefined && (
+                          <span
+                            className={`block text-xs ${variant.margin_amount < 0 ? "text-error-500" : "text-gray-500 dark:text-gray-400"}`}
+                          >
+                            {rupees(variant.margin_amount)}
+                            {variant.margin_percent !== null && variant.margin_percent !== undefined &&
+                              ` (${percent(variant.margin_percent)})`}
+                          </span>
+                        )}
+                      </td>
+                    )}
                     <td className={`${td} text-right`}>
                       <Link
                         href="/inventory"
@@ -257,6 +279,7 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
           options={options}
           takenCombinations={taken}
           variant={modal.variant}
+          gstRate={product.gst_rate ?? null}
         />
       )}
     </div>
