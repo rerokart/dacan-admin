@@ -63,6 +63,7 @@ export const ROUTES = {
   // Settings (Admin Access screen ships in a later task)
   SETTINGS_ADMIN_ACCESS: "/settings/admin-access",
   SETTINGS_TAX: "/settings/tax",
+  SETTINGS_INVENTORY: "/settings/inventory",
 
   // Authentication
   SIGN_IN: "/signin",

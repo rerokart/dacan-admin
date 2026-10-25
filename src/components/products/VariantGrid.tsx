@@ -124,7 +124,7 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className={`w-full ${canViewCost ? "min-w-[68rem]" : "min-w-[62rem]"}`}>
+          <table className={`w-full ${canViewCost ? "min-w-[74rem]" : "min-w-[68rem]"}`}>
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 {options.map((o) => (

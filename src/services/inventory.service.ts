@@ -187,11 +187,6 @@ export interface ReportDef {
   filters: ReportFilterDef[];
 }
 
-export interface InventorySettings {
-  expiry_warning_days: number;
-  low_stock_alert_emails: string[];
-}
-
 export interface StockFilters {
   search?: string;
   /** One status, or a comma-separated list (e.g. "low_stock,out_of_stock"). */
@@ -308,23 +303,6 @@ export const inventoryService = {
       { responseType: "blob" }
     );
     return res as unknown as Blob;
-  },
-
-  getSettings: async (): Promise<InventorySettings> => {
-    const res: { settings: InventorySettings } = await defaultAxios.get(
-      API_ROUTES.INVENTORY.SETTINGS_INVENTORY
-    );
-    return res.settings;
-  },
-
-  updateSettings: async (
-    data: Partial<InventorySettings>
-  ): Promise<InventorySettings> => {
-    const res: { settings: InventorySettings } = await defaultAxios.put(
-      API_ROUTES.INVENTORY.SETTINGS_INVENTORY,
-      data
-    );
-    return res.settings;
   },
 };
 

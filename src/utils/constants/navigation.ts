@@ -139,6 +139,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
         permission: ["admin_access.view", "audit_log.view"],
       },
       { name: "Tax", path: ROUTES.SETTINGS_TAX, permission: "settings.view" },
+      { name: "Inventory", path: ROUTES.SETTINGS_INVENTORY, permission: "settings.view" },
     ],
   },
 ];
