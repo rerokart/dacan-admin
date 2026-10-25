@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface Option {
   value: string;
@@ -28,6 +29,27 @@ const Select: React.FC<SelectProps> = ({
   const [internalValue, setInternalValue] = useState<string>(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  // The list is drawn in a portal with fixed position, so a modal or a scroll box can't clip it.
+  const [menuPos, setMenuPos] = useState<{ left: number; width: number; top?: number; bottom?: number } | null>(null);
+
+  const toggleOpen = () => {
+    if (isOpen) {
+      setIsOpen(false);
+      return;
+    }
+    const rect = selectRef.current?.getBoundingClientRect();
+    if (rect) {
+      const listHeight = Math.min(options.length * 42 + 8, 248);
+      const below = window.innerHeight - rect.bottom;
+      setMenuPos(
+        below < listHeight + 8 && rect.top > below
+          ? { left: rect.left, width: rect.width, bottom: window.innerHeight - rect.top + 4 }
+          : { left: rect.left, width: rect.width, top: rect.bottom + 4 }
+      );
+    }
+    setIsOpen(true);
+  };
 
   // Uncontrolled callers that pass a changing defaultValue (e.g. data that
   // loads later) still follow it; adjusted during render, not in an effect.
@@ -41,13 +63,23 @@ const Select: React.FC<SelectProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (selectRef.current && !selectRef.current.contains(target) && !menuRef.current?.contains(target)) {
         setIsOpen(false);
       }
     };
 
+    const close = (event: Event) => {
+      if (!menuRef.current?.contains(event.target as Node)) setIsOpen(false);
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
   }, []);
 
   useEffect(() => {
@@ -76,7 +108,7 @@ const Select: React.FC<SelectProps> = ({
       <button
         type="button"
         id={id}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleOpen}
         className={`h-11 w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-theme-xs focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 ${
           selectedValue
             ? "text-gray-800 dark:text-white/90"
@@ -103,8 +135,11 @@ const Select: React.FC<SelectProps> = ({
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute z-[9999999] mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+      {isOpen && menuPos && typeof document !== "undefined" && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", left: menuPos.left, width: menuPos.width, top: menuPos.top, bottom: menuPos.bottom }}
+          className="z-[9999999] rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <div className="max-h-60 overflow-auto">
             {options.map((option) => (
               <button
@@ -138,7 +173,8 @@ const Select: React.FC<SelectProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
