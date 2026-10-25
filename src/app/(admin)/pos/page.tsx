@@ -37,11 +37,13 @@ function POSPageContent() {
   // Prices shown with GST (what the customer pays per unit). Totals still come from the server quote.
   const { can } = usePermissions();
   const { data: taxSettings } = useTaxSettings({ enabled: can(TAX_READ_PERMISSIONS) });
-  const priceText = (price: number, rate?: number | null) => {
-    if (taxSettings?.prices_include_gst) return formatCurrency(price);
-    const useRate = rate ?? taxSettings?.default_gst_rate ?? null;
-    // No rate known (no access to the tax settings and none sent): show the typed price and say GST is extra.
-    if (useRate === null) return `${formatCurrency(price)} + GST`;
+  const priceText = (price: number, rate?: number | null, cartRow = false) => {
+    // Setting unknown (loading, or no access): never compute a total.
+    if (!taxSettings) return formatCurrency(price);
+    if (taxSettings.prices_include_gst) return formatCurrency(price);
+    // The store default rate is only a last resort for a cart row whose quote line has no rate.
+    const useRate = rate ?? (cartRow ? taxSettings.default_gst_rate : null);
+    if (useRate === null || useRate === undefined) return `${formatCurrency(price)} + GST`;
     return formatCurrency(priceWithGst(price, useRate, false) ?? price);
   };
 
@@ -380,7 +382,7 @@ function POSPageContent() {
                 <CartItem
                   key={`${item.product_id}-${item.variant_id || ""}`}
                   item={item}
-                  priceLabel={priceText(item.price, totals.quote?.lines[cart.indexOf(item)]?.gst_rate ?? item.gst_rate)}
+                  priceLabel={priceText(item.price, totals.quote?.lines[cart.indexOf(item)]?.gst_rate ?? item.gst_rate, true)}
                   error={totals.quote?.lines[cart.indexOf(item)]?.error ?? null}
                   onUpdateQuantity={(qty) => updateQuantity(item.product_id, item.variant_id, qty)}
                   onRemove={() => removeFromCart(item.product_id, item.variant_id)}
