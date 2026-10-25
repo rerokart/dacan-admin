@@ -138,6 +138,7 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                 <th className={`${th} text-right`}>Price</th>
                 <th className={`${th} text-right`}>MRP</th>
                 <th className={`${th} text-right`}>Min</th>
+                <th className={`${th} text-right`}>B2B</th>
                 {canViewCost && <th className={`${th} text-right`}>Cost / Margin</th>}
                 <th className={`${th} text-right`}>Stock</th>
                 <th className={`${th} text-center`}>Active</th>
@@ -182,9 +183,15 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                     <td className={`${td} text-right`}>{money(variant.price)}</td>
                     <td className={`${td} text-right text-gray-500`}>{money(variant.original_price)}</td>
                     <td className={`${td} text-right text-gray-500`}>{money(variant.min_selling_price)}</td>
+                    <td className={`${td} text-right text-gray-500`}>{money(variant.b2b_price)}</td>
                     {canViewCost && (
                       <td className={`${td} text-right tabular-nums`}>
                         {money(variant.cost_price)}
+                        {variant.cost_with_gst !== null && variant.cost_with_gst !== undefined && (
+                          <span className="block text-xs text-gray-500 dark:text-gray-400">
+                            With GST {rupees(variant.cost_with_gst)}
+                          </span>
+                        )}
                         {variant.margin_amount !== null && variant.margin_amount !== undefined && (
                           <span
                             className={`block text-xs ${variant.margin_amount < 0 ? "text-error-500" : "text-gray-500 dark:text-gray-400"}`}

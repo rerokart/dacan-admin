@@ -9,7 +9,9 @@ const FIELD_LABELS: Record<PriceHistoryField, string> = {
   price: "Selling price",
   mrp: "MRP",
   min_selling_price: "Minimum price",
+  b2b_price: "B2B price",
   cost_price: "Cost price",
+  cost_gst_rate: "Purchase GST rate",
   gst_rate: "GST rate",
 };
 
@@ -20,7 +22,7 @@ const pageButton =
 
 const valueText = (field: PriceHistoryField, value: number | null) => {
   if (value === null || value === undefined) return "None";
-  return field === "gst_rate" ? percent(Number(value)) : rupees(Number(value));
+  return field === "gst_rate" || field === "cost_gst_rate" ? percent(Number(value)) : rupees(Number(value));
 };
 
 const when = (iso: string) => {

@@ -11,6 +11,10 @@ import {
 import type { POSProduct, POSCartItem, OfflineOrderResponse, POSCustomer } from "@/services/pos.service";
 import { formatReceiptDate } from "@/services/pos.service";
 import { formatCurrency } from "@/utils/helpers/helperfn";
+import { priceWithGst } from "@/utils/margin";
+import { useTaxSettings } from "@/hooks/useTaxSettings";
+import { usePermissions } from "@/context/AuthContext";
+import { TAX_READ_PERMISSIONS } from "@/components/products/product-form/tabs/PricingTab";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import Can from "@/components/auth/Can";
 
@@ -29,6 +33,17 @@ function POSPageContent() {
   const [variantProduct, setVariantProduct] = useState<POSProduct | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Prices shown with GST (what the customer pays per unit). Totals still come from the server quote.
+  const { can } = usePermissions();
+  const { data: taxSettings } = useTaxSettings({ enabled: can(TAX_READ_PERMISSIONS) });
+  const priceText = (price: number, rate?: number | null) => {
+    if (taxSettings?.prices_include_gst) return formatCurrency(price);
+    const useRate = rate ?? taxSettings?.default_gst_rate ?? null;
+    // No rate known (no access to the tax settings and none sent): show the typed price and say GST is extra.
+    if (useRate === null) return `${formatCurrency(price)} + GST`;
+    return formatCurrency(priceWithGst(price, useRate, false) ?? price);
+  };
 
   const {
     cart,
@@ -206,7 +221,7 @@ function POSPageContent() {
                   </p>
                   <p className="text-xs text-gray-500 mt-1">{product.sku}</p>
                   <div className="mt-2 flex items-center justify-between">
-                    <span className="font-bold text-brand-600">{formatCurrency(product.price)}</span>
+                    <span className="font-bold text-brand-600">{priceText(product.price, product.gst_rate)}</span>
                     <span className={`text-xs ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
                       {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
                     </span>
@@ -365,6 +380,7 @@ function POSPageContent() {
                 <CartItem
                   key={`${item.product_id}-${item.variant_id || ""}`}
                   item={item}
+                  priceLabel={priceText(item.price, totals.quote?.lines[cart.indexOf(item)]?.gst_rate ?? item.gst_rate)}
                   error={totals.quote?.lines[cart.indexOf(item)]?.error ?? null}
                   onUpdateQuantity={(qty) => updateQuantity(item.product_id, item.variant_id, qty)}
                   onRemove={() => removeFromCart(item.product_id, item.variant_id)}
@@ -554,7 +570,7 @@ function POSPageContent() {
                     <p className="text-sm text-gray-500">{variant.sku}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-brand-600">{formatCurrency(variant.price)}</p>
+                    <p className="font-bold text-brand-600">{priceText(variant.price, variantProduct.gst_rate)}</p>
                     <p className={`text-xs ${variant.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
                       {variant.stock_quantity > 0 ? `${variant.stock_quantity} in stock` : "Out of stock"}
                     </p>
@@ -729,12 +745,14 @@ export default function POSPage() {
 // Cart Item Component
 interface CartItemProps {
   item: POSCartItem;
+  /** Unit price with GST, ready to show */
+  priceLabel: string;
   error?: string | null;
   onUpdateQuantity: (quantity: number) => void;
   onRemove: () => void;
 }
 
-function CartItem({ item, error, onUpdateQuantity, onRemove }: CartItemProps) {
+function CartItem({ item, priceLabel, error, onUpdateQuantity, onRemove }: CartItemProps) {
   return (
     <div className="flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
       {item.image ? (
@@ -753,7 +771,7 @@ function CartItem({ item, error, onUpdateQuantity, onRemove }: CartItemProps) {
         {item.variant_name && (
           <p className="text-xs text-gray-500">{item.variant_name}</p>
         )}
-        <p className="text-sm text-brand-600 font-medium">{formatCurrency(item.price)}</p>
+        <p className="text-sm text-brand-600 font-medium">{priceLabel}</p>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
       <div className="flex flex-col items-end gap-1">

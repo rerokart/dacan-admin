@@ -103,7 +103,15 @@ export const PRICE_REASON_MIN = 3;
 export const PRICE_REASON_MAX = 500;
 
 /** Fields whose change on an existing product or variant needs a price_change_reason. */
-export const PRICE_CHANGE_FIELDS = ["price", "original_price", "min_selling_price", "cost_price", "gst_rate"] as const;
+export const PRICE_CHANGE_FIELDS = [
+  "price",
+  "original_price",
+  "min_selling_price",
+  "b2b_price",
+  "cost_price",
+  "cost_gst_rate",
+  "gst_rate",
+] as const;
 
 /** "₹1,234.50", the way the server writes amounts in its messages. */
 const serverRupees = (value: number) =>
@@ -135,4 +143,15 @@ export const priceProblems = (
     problems.push({ field: "price", message: `Selling price can't be below the minimum price (${serverRupees(min)})` });
   }
   return problems;
+};
+
+/**
+ * B2B price rules, as on the server: more than 0, and not more than the MRP.
+ * A blank B2B price (null) is fine; a missing MRP skips the MRP rule.
+ */
+export const b2bPriceProblem = (b2b: number | null, mrp: number | null): string | null => {
+  if (b2b === null) return null;
+  if (b2b <= 0) return "B2B price must be more than 0";
+  if (mrp !== null && b2b > mrp) return "B2B price can't be more than the MRP";
+  return null;
 };

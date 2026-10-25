@@ -7,6 +7,7 @@ import {
   WARRANTY_MONTHS_MAX,
   WARRANTY_MONTHS_MIN,
   checkQuantityRules,
+  b2bPriceProblem,
   isValidGtin,
   priceProblems,
 } from "@/utils/productRules";
@@ -20,7 +21,7 @@ import { type FormState, type TabKey, normaliseTag, tagProblem } from "./formSta
 export type FieldErrors = Partial<Record<string, { tab: TabKey; message: string }>>;
 
 /** The saved selling price, MRP and minimum price (as form text) an edit is compared with. */
-export type SavedPrices = Pick<FormState, "price" | "original_price" | "min_selling_price">;
+export type SavedPrices = Pick<FormState, "price" | "original_price" | "min_selling_price" | "b2b_price">;
 
 const isWholeNumber = (value: string, min: number) =>
   value.trim() === "" || (Number.isInteger(Number(value)) && Number(value) >= min);
@@ -50,7 +51,7 @@ export const validate = (
   }
 
   if (pricing) {
-    const priceKeys = ["price", "original_price", "min_selling_price", "cost_price"] as const;
+    const priceKeys = ["price", "original_price", "min_selling_price", "b2b_price", "cost_price"] as const;
     let pricesValid = true;
     for (const key of priceKeys) {
       const v = state[key];
@@ -69,6 +70,14 @@ export const validate = (
       for (const p of priceProblems(num(state.price), num(state.original_price), num(state.min_selling_price))) {
         add(p.field, "pricing", p.message);
       }
+    }
+    if (!isCreate && pricesValid) {
+      const b2b = num(state.b2b_price);
+      const mrp = num(state.original_price);
+      // Like the server, checked only when the B2B price or the MRP changed.
+      const b2bChanged = !savedPrices || b2b !== num(savedPrices.b2b_price) || mrp !== num(savedPrices.original_price);
+      const problem = b2bChanged ? b2bPriceProblem(b2b, mrp) : null;
+      if (problem) add("b2b_price", "pricing", problem);
     }
     if (state.barcode.trim() && !BARCODE_PATTERN.test(state.barcode.trim())) {
       add("barcode", "pricing", "4-48 characters: A-Z, 0-9 and hyphens");

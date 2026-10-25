@@ -123,16 +123,15 @@ function GeneralForm({ settings }: { settings: TaxSettings }) {
   const dirty = Object.keys(changes).length > 0;
 
   const togglePricesIncludeGst = async (next: boolean) => {
-    if (!next) {
-      const ok = await confirm({
-        title: "Turn off \"Prices include GST\"?",
-        message:
-          "Prices you typed will now have GST added at checkout. Customers will pay more for the same items.",
-        variant: "danger",
-        confirmText: "Turn off",
-      });
-      if (!ok) return;
-    }
+    const ok = await confirm({
+      title: next ? "Turn on \"Prices are typed including GST\"?" : "Turn off \"Prices are typed including GST\"?",
+      message: next
+        ? "Prices already saved will be read as including GST, so customers will pay less for the same items."
+        : "Prices already saved will be read as without GST, so customers will pay more for the same items.",
+      variant: "danger",
+      confirmText: next ? "Turn on" : "Turn off",
+    });
+    if (!ok) return;
     setPricesIncludeGst(next);
   };
 
@@ -179,8 +178,8 @@ function GeneralForm({ settings }: { settings: TaxSettings }) {
 
       <SettingRow
         htmlFor="tax-include"
-        title="Prices include GST"
-        hint="On: the prices you enter already contain GST. Off: GST is added on top at checkout."
+        title="Prices are typed including GST"
+        hint="Off: the admin types prices without GST and customers see price + GST."
       >
         <Toggle id="tax-include" checked={pricesIncludeGst} onChange={togglePricesIncludeGst} />
       </SettingRow>

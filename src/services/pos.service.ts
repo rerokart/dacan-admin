@@ -8,6 +8,8 @@ export interface POSProduct {
   sku: string;
   price: number;
   original_price?: number;
+  /** The product's GST rate in percent, when the search sends it */
+  gst_rate?: number | null;
   stock_quantity: number;
   image?: string | null;
   has_variants: boolean;
@@ -36,6 +38,8 @@ export interface POSCartItem {
   variant_name?: string;
   sku: string;
   price: number;
+  /** The product's GST rate in percent, when known */
+  gst_rate?: number | null;
   quantity: number;
   stock_quantity: number;
   image?: string | null;

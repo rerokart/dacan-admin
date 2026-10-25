@@ -131,3 +131,15 @@ export function priceWithGst(
   const r = hundredths(gstRate) ?? BigInt(0);
   return toUnits(p + divRound(p * r, BigInt(10000)));
 }
+
+/**
+ * Cost plus the purchase GST on it, rounded half-up to paise (mirrors the
+ * backend product_rules.cost_with_gst). A missing rate counts as 0. null when
+ * the cost is missing. Display only.
+ */
+export function costWithGst(cost: Num, rate: Num): number | null {
+  const c = hundredths(cost);
+  if (c === null) return null;
+  const r = hundredths(rate) ?? BigInt(0);
+  return toUnits(c + divRound(c * r, BigInt(10000)));
+}

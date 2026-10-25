@@ -54,6 +54,12 @@ export interface ProductVariant {
   min_selling_price?: number | null;
   /** Only with products.view_cost */
   cost_price?: number | null;
+  /** Only with products.view_cost; null = the product's GST rate */
+  cost_gst_rate?: number | null;
+  /** Only with products.view_cost; cost plus purchase GST, null without a cost */
+  cost_with_gst?: number | null;
+  /** Every admin; null = no B2B price */
+  b2b_price?: number | null;
   /** Only with products.view_cost; null when cost is not set */
   margin_amount?: number | null;
   margin_percent?: number | null;
@@ -211,7 +217,11 @@ export interface VariantDetailFields {
 export interface PriceFields {
   /** Needs products.view_cost to read it back */
   cost_price?: number | null;
+  /** Purchase GST rate; needs products.view_cost, null = the product's rate */
+  cost_gst_rate?: number | null;
   min_selling_price?: number | null;
+  /** Edit only (not product create); null clears it */
+  b2b_price?: number | null;
   /** 3-500 characters; required when a price, MRP, minimum, cost or GST rate changes on an existing product or variant */
   price_change_reason?: string;
 }
@@ -305,7 +315,9 @@ export type PriceHistoryField =
   | "price"
   | "mrp"
   | "min_selling_price"
+  | "b2b_price"
   | "cost_price"
+  | "cost_gst_rate"
   | "gst_rate";
 
 export interface PriceHistoryEntry {

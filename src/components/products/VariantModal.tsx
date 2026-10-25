@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import Select from "@/components/form/Select";
 import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Can from "@/components/auth/Can";
 import { usePermissions } from "@/context/AuthContext";
 import { useAddVariant, useUpdateVariant } from "@/hooks/useProducts";
-import { useTaxSettings } from "@/hooks/useTaxSettings";
-import { MEASURES, numText } from "@/utils/productFormat";
+import { useGstRates, useTaxSettings } from "@/hooks/useTaxSettings";
+import { MEASURES, numText, percent } from "@/utils/productFormat";
+import { priceLabels } from "@/utils/priceLabels";
 import { PRICE_CHANGE_FIELDS } from "@/utils/productRules";
 import type {
   CreateVariantRequest,
@@ -64,7 +66,24 @@ export const VariantModal: React.FC<VariantModalProps> = ({
 
   const { can } = usePermissions();
   const canViewCost = can("products.view_cost");
-  const { data: settings } = useTaxSettings({ enabled: canViewCost && can(TAX_READ_PERMISSIONS) });
+  const canReadTax = can(TAX_READ_PERMISSIONS);
+  const { data: settings } = useTaxSettings({ enabled: canReadTax });
+  const { data: rates } = useGstRates({ enabled: canViewCost && canReadTax });
+  const labels = priceLabels(settings?.prices_include_gst ?? false);
+
+  // "Same as product" plus the active rates (and a saved inactive one).
+  const costRateOptions = useMemo(() => {
+    const options = [{ value: "", label: "Same as product" }].concat(
+      (rates ?? [])
+        .filter((r) => r.is_active)
+        .sort((a, b) => Number(a.rate) - Number(b.rate))
+        .map((r) => ({ value: String(Number(r.rate)), label: r.label || percent(r.rate) }))
+    );
+    if (form.cost_gst_rate && !options.some((o) => o.value === form.cost_gst_rate)) {
+      options.push({ value: form.cost_gst_rate, label: percent(Number(form.cost_gst_rate)) });
+    }
+    return options;
+  }, [rates, form.cost_gst_rate]);
 
   const { mutate: addVariant, isPending: isAdding } = useAddVariant({ silentError: true });
   const { mutate: updateVariant, isPending: isUpdating } = useUpdateVariant({ silentError: true });
@@ -204,7 +223,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <Label htmlFor="variant-price">Selling price (₹) *</Label>
+                <Label htmlFor="variant-price">{labels.price} *</Label>
                 <Input
                   type="number"
                   id="variant-price"
@@ -216,7 +235,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
                 <FieldError message={shown.price} />
               </div>
               <div>
-                <Label htmlFor="variant-original-price">MRP (₹)</Label>
+                <Label htmlFor="variant-original-price">{labels.mrp}</Label>
                 <Input
                   type="number"
                   id="variant-original-price"
@@ -228,7 +247,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
                 <FieldError message={shown.original_price} />
               </div>
               <div>
-                <Label htmlFor="variant-min-price">Minimum selling price (₹)</Label>
+                <Label htmlFor="variant-min-price">{labels.min}</Label>
                 <Input
                   type="number"
                   id="variant-min-price"
@@ -239,9 +258,21 @@ export const VariantModal: React.FC<VariantModalProps> = ({
                 />
                 <FieldError message={shown.min_selling_price} />
               </div>
+              <div>
+                <Label htmlFor="variant-b2b-price">{labels.b2b}</Label>
+                <Input
+                  type="number"
+                  id="variant-b2b-price"
+                  value={form.b2b_price}
+                  error={!!shown.b2b_price}
+                  onChange={(e) => set("b2b_price", e.target.value)}
+                  placeholder="Optional"
+                />
+                <FieldError message={shown.b2b_price} />
+              </div>
               <Can permission="products.view_cost">
                 <div>
-                  <Label htmlFor="variant-cost-price">Cost price before GST (₹)</Label>
+                  <Label htmlFor="variant-cost-price">{labels.cost}</Label>
                   <Input
                     type="number"
                     id="variant-cost-price"
@@ -256,9 +287,20 @@ export const VariantModal: React.FC<VariantModalProps> = ({
                       price={form.price}
                       cost={form.cost_price}
                       gstRate={gstRate ?? settings.default_gst_rate}
+                      costGstRate={form.cost_gst_rate}
                       pricesIncludeGst={settings.prices_include_gst}
                     />
                   )}
+                </div>
+                <div>
+                  <Label htmlFor="variant-cost-gst-rate">Purchase GST rate</Label>
+                  <Select
+                    id="variant-cost-gst-rate"
+                    options={costRateOptions}
+                    value={form.cost_gst_rate}
+                    onChange={(val) => set("cost_gst_rate", val)}
+                    placeholder="Same as product"
+                  />
                 </div>
               </Can>
               <div>

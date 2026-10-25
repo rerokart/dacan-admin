@@ -190,14 +190,12 @@ export enum ShippingMethod {
   STANDARD = "standard",
   EXPRESS = "express",
   OVERNIGHT = "overnight",
-  PICKUP = "pickup",
 }
 
 export const ShippingMethodLabels: Record<ShippingMethod, string> = {
   [ShippingMethod.STANDARD]: "Standard Shipping",
   [ShippingMethod.EXPRESS]: "Express Shipping",
   [ShippingMethod.OVERNIGHT]: "Overnight Shipping",
-  [ShippingMethod.PICKUP]: "Store Pickup",
 };
 
 

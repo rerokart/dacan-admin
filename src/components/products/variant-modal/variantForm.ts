@@ -1,4 +1,4 @@
-import { BARCODE_PATTERN, SKU_PATTERN, isValidGtin, priceProblems } from "@/utils/productRules";
+import { BARCODE_PATTERN, SKU_PATTERN, b2bPriceProblem, isValidGtin, priceProblems } from "@/utils/productRules";
 import { MEASURES, type MeasureKey, num, numText } from "@/utils/productFormat";
 import type { CreateVariantRequest, ProductOption, ProductVariant } from "@/services/product.service";
 
@@ -15,6 +15,9 @@ export interface FormState {
   min_selling_price: string;
   /** Only sent for admins with products.view_cost */
   cost_price: string;
+  /** Purchase GST rate; "" = same as the product. Only sent for admins with products.view_cost */
+  cost_gst_rate: string;
+  b2b_price: string;
   pack_size: string;
   stock_quantity: string;
   is_active: boolean;
@@ -37,6 +40,8 @@ export const toFormState = (variant: ProductVariant | null): FormState => ({
   original_price: numText(variant?.original_price),
   min_selling_price: numText(variant?.min_selling_price),
   cost_price: numText(variant?.cost_price),
+  cost_gst_rate: variant?.cost_gst_rate == null ? "" : String(Number(variant.cost_gst_rate)),
+  b2b_price: numText(variant?.b2b_price),
   pack_size: numText(variant?.pack_size ?? 1),
   stock_quantity: "",
   is_active: variant?.is_active ?? true,
@@ -74,7 +79,7 @@ export const validate = (
   if (state.price.trim() === "" || Number.isNaN(Number(state.price)) || Number(state.price) < 0) {
     errors.price = "Enter a price of 0 or more";
   }
-  for (const key of ["original_price", "min_selling_price", "cost_price"] as const) {
+  for (const key of ["original_price", "min_selling_price", "b2b_price", "cost_price"] as const) {
     if (state[key].trim() !== "" && (Number.isNaN(Number(state[key])) || Number(state[key]) < 0)) {
       errors[key] = "Enter a price of 0 or more";
     }
@@ -90,6 +95,14 @@ export const validate = (
       if (!errors[p.field]) errors[p.field] = p.message;
     }
   }
+  // B2B rules, like the server: only when the B2B price or the MRP changed.
+  if (!errors.b2b_price && !errors.original_price) {
+    const b2b = num(state.b2b_price);
+    const mrp = num(state.original_price);
+    const b2bChanged = !isEdit || !saved || b2b !== num(saved.b2b_price) || mrp !== num(saved.original_price);
+    const problem = b2bChanged ? b2bPriceProblem(b2b, mrp) : null;
+    if (problem) errors.b2b_price = problem;
+  }
   if (!isWhole(state.pack_size, 1)) errors.pack_size = "Whole number, 1 or more";
   if (!isEdit && !isWhole(state.stock_quantity, 0)) errors.stock_quantity = "Whole number, 0 or more";
   for (const m of MEASURES) {
@@ -103,7 +116,7 @@ export const toRequest = (
   options: ProductOption[],
   isEdit: boolean,
   baselineSku = "",
-  /** Without products.view_cost the cost_price key must never be sent (403). */
+  /** Without products.view_cost the cost_price and cost_gst_rate keys must never be sent (403). */
   withCost = false
 ): CreateVariantRequest => {
   const data: CreateVariantRequest = {
@@ -115,7 +128,12 @@ export const toRequest = (
     pack_size: num(state.pack_size) ?? 1,
     is_active: state.is_active,
   };
-  if (withCost) data.cost_price = num(state.cost_price);
+  if (withCost) {
+    data.cost_price = num(state.cost_price);
+    data.cost_gst_rate = num(state.cost_gst_rate);
+  }
+  // On add a blank B2B price is simply left out; on edit a blank one clears it.
+  if (isEdit || num(state.b2b_price) !== null) data.b2b_price = num(state.b2b_price);
   for (const m of MEASURES) data[m.key] = num(state.measures[m.key]);
   const sku = state.sku.trim().toUpperCase();
   if (sku && !(isEdit && sku === (baselineSku ?? "").trim().toUpperCase())) data.sku = sku;

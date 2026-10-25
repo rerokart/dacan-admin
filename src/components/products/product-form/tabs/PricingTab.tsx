@@ -7,6 +7,7 @@ import Can from "@/components/auth/Can";
 import { usePermissions } from "@/context/AuthContext";
 import { useGstRates, useTaxSettings } from "@/hooks/useTaxSettings";
 import { gstOnPrice, priceWithGst } from "@/utils/margin";
+import { priceLabels } from "@/utils/priceLabels";
 import { MEASURES, numText, percent, rupees } from "@/utils/productFormat";
 import type { Product, ProductVariant } from "@/services/product.service";
 import FieldError from "../fields/FieldError";
@@ -55,7 +56,22 @@ export default function PricingTab({
 
   // Blank on create: the server will use the HSN rate or the default; show the default meanwhile.
   const effectiveRate = form.gst_rate || (settings ? String(settings.default_gst_rate) : "");
-  const includeGst = settings?.prices_include_gst ?? true;
+  const includeGst = settings?.prices_include_gst ?? false;
+  const labels = priceLabels(includeGst);
+
+  // Purchase GST rate: "Same as product" plus the active rates (and a saved inactive one).
+  const costRateOptions = useMemo(() => {
+    const options = [{ value: "", label: "Same as product" }].concat(
+      (rates ?? [])
+        .filter((r) => r.is_active)
+        .sort((a, b) => Number(a.rate) - Number(b.rate))
+        .map((r) => ({ value: String(Number(r.rate)), label: r.label || percent(r.rate) }))
+    );
+    if (form.cost_gst_rate && !options.some((o) => o.value === form.cost_gst_rate)) {
+      options.push({ value: form.cost_gst_rate, label: percent(Number(form.cost_gst_rate)) });
+    }
+    return options;
+  }, [rates, form.cost_gst_rate]);
   const gst = settings && form.price.trim() !== "" && !errors.price ? gstOnPrice(form.price, effectiveRate, includeGst) : null;
 
   return (
@@ -70,7 +86,7 @@ export default function PricingTab({
         {hasPricing && (
           <>
             <div>
-              <Label htmlFor="price">Selling price (₹)</Label>
+              <Label htmlFor="price">{labels.price}</Label>
               <Input
                 id="price"
                 type="number"
@@ -93,7 +109,7 @@ export default function PricingTab({
               )}
             </div>
             <div>
-              <Label htmlFor="original_price">MRP (₹)</Label>
+              <Label htmlFor="original_price">{labels.mrp}</Label>
               <Input
                 id="original_price"
                 type="number"
@@ -107,7 +123,7 @@ export default function PricingTab({
               <FieldError error={errors.original_price} />
             </div>
             <div>
-              <Label htmlFor="min_selling_price">Minimum selling price (₹)</Label>
+              <Label htmlFor="min_selling_price">{labels.min}</Label>
               <Input
                 id="min_selling_price"
                 type="number"
@@ -120,6 +136,22 @@ export default function PricingTab({
               />
               <FieldError error={errors.min_selling_price} />
             </div>
+            {!isCreate && (
+              <div>
+                <Label htmlFor="b2b_price">{labels.b2b}</Label>
+                <Input
+                  id="b2b_price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.b2b_price}
+                  error={!!errors.b2b_price}
+                  onChange={(e) => set("b2b_price", e.target.value)}
+                  placeholder="Optional"
+                />
+                <FieldError error={errors.b2b_price} />
+              </div>
+            )}
             <div>
               <Label htmlFor="stock_quantity">{isCreate ? "Initial Stock" : "Current Stock"}</Label>
               {isCreate ? (
@@ -163,7 +195,7 @@ export default function PricingTab({
         {hasPricing && (
           <Can permission="products.view_cost">
             <div>
-              <Label htmlFor="cost_price">Cost price before GST (₹)</Label>
+              <Label htmlFor="cost_price">{labels.cost}</Label>
               <Input
                 id="cost_price"
                 type="number"
@@ -180,9 +212,20 @@ export default function PricingTab({
                   price={form.price}
                   cost={form.cost_price}
                   gstRate={effectiveRate}
+                  costGstRate={form.cost_gst_rate}
                   pricesIncludeGst={includeGst}
                 />
               )}
+            </div>
+            <div>
+              <Label htmlFor="cost_gst_rate">Purchase GST rate</Label>
+              <Select
+                id="cost_gst_rate"
+                options={costRateOptions}
+                value={form.cost_gst_rate}
+                onChange={(val) => set("cost_gst_rate", val)}
+                placeholder="Same as product"
+              />
             </div>
           </Can>
         )}

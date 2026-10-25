@@ -177,7 +177,7 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
       return;
     }
 
-    const payload = toPayload(form, hasPricing, canViewCost);
+    const payload = toPayload(form, hasPricing, canViewCost, !isCreate);
 
     if (isCreate) {
       const data: CreateProductRequest = { ...payload, name: payload.name ?? "", category_id: form.category_id };
@@ -196,7 +196,7 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
 
     // Edit: send only what changed (an untouched field is never re-validated,
     // and stock is never sent: it changes from Inventory).
-    const before = toPayload(savedForm, hasPricing, canViewCost);
+    const before = toPayload(savedForm, hasPricing, canViewCost, true);
     const changed = Object.fromEntries(
       Object.entries(payload).filter(
         ([key, value]) => !sameValue(value, before[key as keyof UpdateProductRequest])

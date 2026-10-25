@@ -42,6 +42,10 @@ export type FormState = {
   min_selling_price: string;
   /** Only sent for admins with products.view_cost */
   cost_price: string;
+  /** Purchase GST rate; "" = same as the product. Only sent for admins with products.view_cost */
+  cost_gst_rate: string;
+  /** B2B price; edit only */
+  b2b_price: string;
   /** Product level; "" on create = the server picks the HSN rate or the store default */
   gst_rate: string;
   stock_quantity: string;
@@ -98,6 +102,8 @@ export const toFormState = (product?: Product): FormState => {
     original_price: numText(variant?.original_price),
     min_selling_price: numText(variant?.min_selling_price),
     cost_price: numText(variant?.cost_price),
+    cost_gst_rate: variant?.cost_gst_rate == null ? "" : String(Number(variant.cost_gst_rate)),
+    b2b_price: numText(variant?.b2b_price),
     // String(Number()) so "18.00" and 18 match the rate list's values.
     gst_rate: product?.gst_rate == null ? "" : String(Number(product.gst_rate)),
     stock_quantity: numText(variant?.stock_quantity ?? product?.stock_quantity),
@@ -175,6 +181,8 @@ export const PRICING_KEYS = [
   "original_price",
   "min_selling_price",
   "cost_price",
+  "cost_gst_rate",
+  "b2b_price",
   "stock_quantity",
   "barcode",
   "gtin",
@@ -203,9 +211,15 @@ const list = (items: string[]): string[] => items.map((i) => i.trim()).filter(Bo
  * Full payload for the form. `pricing` adds the default-variant fields
  * (simple products only). Stock is never part of it: it is added on create only.
  * `withCost`: only admins with products.view_cost may send cost_price at all
- * (the key alone, even null, is refused with 403 otherwise).
+ * (the key alone, even null, is refused with 403 otherwise); the same goes for cost_gst_rate.
  */
-export const toPayload = (state: FormState, pricing: boolean, withCost: boolean): UpdateProductRequest => {
+export const toPayload = (
+  state: FormState,
+  pricing: boolean,
+  withCost: boolean,
+  /** B2B price is edit only (not sent on product create) */
+  withB2b = false
+): UpdateProductRequest => {
   const warrantyOn = state.warranty_available;
   const payload: UpdateProductRequest = {
     name: state.name.trim(),
@@ -260,7 +274,11 @@ export const toPayload = (state: FormState, pricing: boolean, withCost: boolean)
     payload.price = num(state.price) as number;
     payload.original_price = num(state.original_price);
     payload.min_selling_price = num(state.min_selling_price);
-    if (withCost) payload.cost_price = num(state.cost_price);
+    if (withCost) {
+      payload.cost_price = num(state.cost_price);
+      payload.cost_gst_rate = num(state.cost_gst_rate);
+    }
+    if (withB2b) payload.b2b_price = num(state.b2b_price);
     payload.barcode = toText(state.barcode);
     payload.gtin = toText(state.gtin);
     // pack_size may never be null

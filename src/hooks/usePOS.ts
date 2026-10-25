@@ -131,6 +131,7 @@ export const usePOSCart = () => {
           variant_name: variant?.variant_name,
           sku: variant?.sku || product.sku,
           price: variant?.price || product.price,
+          gst_rate: product.gst_rate ?? null,
           quantity: 1,
           stock_quantity: variant?.stock_quantity || product.stock_quantity,
           image: product.image,
