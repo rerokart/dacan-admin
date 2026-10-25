@@ -134,7 +134,10 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
   // Price / stock / identifiers live on the default variant: only simple products have one.
   const hasPricing = isCreate || !!baseline?.default_variant_id;
   const skuLocked = !isCreate && !!defaultVariantOf(baseline)?.sku_locked;
-  const categoryOptions = useMemo(() => flattenCategoryOptions(categories), [categories]);
+  const categoryOptions = useMemo(
+    () => flattenCategoryOptions(categories, { onlySubcategories: true }),
+    [categories]
+  );
 
   const savedForm = useMemo(() => toFormState(baseline), [baseline]);
   const errors = useMemo(

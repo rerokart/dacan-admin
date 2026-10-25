@@ -93,6 +93,11 @@ export default function BasicsTab({ form, set, errors, isCreate, isArchived, sku
             onChange={(val) => set("category_id", val)}
           />
         )}
+        {!loadingCategories && categoryOptions.length === 0 && (
+          <p className="mt-1 text-xs text-gray-500">
+            Add a subcategory first: products go on subcategories.
+          </p>
+        )}
         <FieldError error={errors.category_id} />
       </div>
 

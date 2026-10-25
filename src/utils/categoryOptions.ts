@@ -33,10 +33,17 @@ export const subtreeIds = (tree: Category[], id: string): Set<string> => {
  * Flatten the API tree into dropdown options labelled with the full path
  * ("Hardware › Door Hardware › Door Handle"), in tree order. Non-active
  * categories get a status suffix; archived ones are left out by default.
+ * `onlySubcategories` lists only second-level categories (where products go);
+ * `onlyMainCategories` lists only top-level ones (parent choices).
  */
 export const flattenCategoryOptions = (
   tree: Category[] | undefined,
-  { excludeArchived = true, excludeIds = [] as Iterable<string> } = {}
+  {
+    excludeArchived = true,
+    excludeIds = [] as Iterable<string>,
+    onlySubcategories = false,
+    onlyMainCategories = false,
+  } = {}
 ): CategoryOption[] => {
   const excluded = new Set(excludeIds);
   const options: CategoryOption[] = [];
@@ -46,10 +53,13 @@ export const flattenCategoryOptions = (
       if (excluded.has(node.id)) return;
       if (excludeArchived && node.status === "archived") return;
       const path = [...prefix, node.name];
-      options.push({
-        value: node.id,
-        label: path.join(" › ") + (STATUS_SUFFIX[node.status] ?? ""),
-      });
+      const isMain = prefix.length === 0;
+      if (!(onlySubcategories && isMain) && !(onlyMainCategories && !isMain)) {
+        options.push({
+          value: node.id,
+          label: path.join(" › ") + (STATUS_SUFFIX[node.status] ?? ""),
+        });
+      }
       if (node.children?.length) walk(node.children, path);
     });
   };
@@ -79,31 +89,17 @@ export const subtreeHeight = (tree: Category[] | undefined, id: string): number 
 };
 
 /**
- * Parent choices for the category form. The tree is at most 3 levels deep, so
- * a parent at depth d is allowed only when d + the edited category's subtree
- * height <= 3 (a new category has height 1). Never the category itself or its
- * own subcategories, never archived.
+ * Parent choices for the category form. Categories are two levels deep, so a
+ * parent must be a main category. Never the category itself, never archived.
+ * (A category that has children can't take a parent: the form hides the field.)
  */
 export const parentCategoryOptions = (
   tree: Category[] | undefined,
-  selfId?: string,
-  selfHeight = 1
-): CategoryOption[] => {
-  const excluded = selfId ? subtreeIds(tree ?? [], selfId) : new Set<string>();
-  const maxParentDepth = 3 - selfHeight;
-  const depthOf = new Map<string, number>();
-  const walk = (nodes: Category[], depth: number) => {
-    nodes.forEach((node) => {
-      depthOf.set(node.id, depth);
-      if (node.children?.length) walk(node.children, depth + 1);
-    });
-  };
-  walk((tree ?? []).filter((cat) => !cat.parent_id), 1);
-
-  return [
-    { value: "", label: "None (main category)" },
-    ...flattenCategoryOptions(tree, { excludeIds: excluded }).filter(
-      (option) => (depthOf.get(option.value) ?? 1) <= maxParentDepth
-    ),
-  ];
-};
+  selfId?: string
+): CategoryOption[] => [
+  { value: "", label: "None (main category)" },
+  ...flattenCategoryOptions(tree, {
+    excludeIds: selfId ? [selfId] : [],
+    onlyMainCategories: true,
+  }),
+];

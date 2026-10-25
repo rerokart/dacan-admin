@@ -71,7 +71,10 @@ function ArchiveDialog({
   const productCount = detail?.direct_product_count ?? 0;
   const liveChildren = (detail?.children ?? []).filter((c) => c.status !== "archived").length;
   const targetOptions = useMemo(
-    () => flattenCategoryOptions(tree, { excludeIds: subtreeIds(tree, category.id) }),
+    () => flattenCategoryOptions(tree, {
+        excludeIds: subtreeIds(tree, category.id),
+        onlySubcategories: true,
+      }),
     [tree, category.id]
   );
 

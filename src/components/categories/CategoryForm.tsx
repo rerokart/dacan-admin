@@ -117,7 +117,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
 
   const { data: categories } = useCategories();
   // Edit mode only: the server counts archived descendants when it checks the
-  // 3-level limit, so the height has to come from the tree that includes them.
+  // 2-level limit, so the height has to come from the tree that includes them.
   const { data: fullTree } = useCategories(
     mode === "edit" ? { include_archived: true } : undefined
   );
@@ -131,9 +131,11 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
     () => (mode === "edit" && initial ? subtreeHeight(fullTree, initial.id) : 1),
     [mode, initial, fullTree]
   );
+  // A category with subcategories can't take a parent: it would become level 3.
+  const hasChildren = selfHeight > 1;
   const parentOptions = useMemo(
-    () => parentCategoryOptions(categories, initial?.id, selfHeight),
-    [categories, initial?.id, selfHeight]
+    () => parentCategoryOptions(categories, initial?.id),
+    [categories, initial?.id]
   );
   const [statusNote, setStatusNote] = useState<string | null>(null);
 
@@ -337,6 +339,8 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
             <Label htmlFor="parent">Parent Category</Label>
             {isArchived ? (
               <Input type="text" id="parent" value={initial?.path?.slice(0, -1).map((p) => p.name).join(" › ") || "None (main category)"} disabled />
+            ) : hasChildren ? (
+              <Input type="text" id="parent" value="None (main category)" disabled />
             ) : (
               <Select
                 id="parent"
@@ -346,7 +350,9 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
               />
             )}
             <p className="mt-1 text-xs text-gray-500">
-              Up to 3 levels: Category › Subcategory › Product type
+              {hasChildren && !isArchived
+                ? "This category has subcategories, so it stays a main category."
+                : "Two levels: Category › Subcategory. Products go on subcategories."}
             </p>
           </div>
 
