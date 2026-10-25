@@ -1,4 +1,4 @@
-import { BARCODE_PATTERN, SKU_PATTERN, b2bPriceProblem, isValidGtin, priceProblems } from "@/utils/productRules";
+import { B2B_PRICE_MESSAGE, BARCODE_PATTERN, SKU_PATTERN, b2bPriceProblem, isValidGtin, priceProblems } from "@/utils/productRules";
 import { MEASURES, type MeasureKey, num, numText } from "@/utils/productFormat";
 import type { CreateVariantRequest, ProductOption, ProductVariant } from "@/services/product.service";
 
@@ -80,8 +80,9 @@ export const validate = (
     errors.price = "Enter a price of 0 or more";
   }
   for (const key of ["original_price", "min_selling_price", "b2b_price", "cost_price"] as const) {
-    if (state[key].trim() !== "" && (Number.isNaN(Number(state[key])) || Number(state[key]) < 0)) {
-      errors[key] = "Enter a price of 0 or more";
+    const bad = Number.isNaN(Number(state[key])) || Number(state[key]) < 0 || (key === "b2b_price" && Number(state[key]) === 0);
+    if (state[key].trim() !== "" && bad) {
+      errors[key] = key === "b2b_price" ? B2B_PRICE_MESSAGE : "Enter a price of 0 or more";
     }
   }
   // Price rules (as on the server): on edit only when one of the three changed,

@@ -26,3 +26,20 @@ export const rupees = (value: number): string =>
 
 /** "18%", "0.25%" */
 export const percent = (value: number): string => `${Number(value)}%`;
+
+/** "Same as product" plus the active GST rates, and a saved rate that is no longer in the list. */
+export const buildCostRateOptions = (
+  rates: { rate: number | string; label?: string | null; is_active: boolean }[] | undefined,
+  saved: string
+): { value: string; label: string }[] => {
+  const options = [{ value: "", label: "Same as product" }].concat(
+    (rates ?? [])
+      .filter((r) => r.is_active)
+      .sort((a, b) => Number(a.rate) - Number(b.rate))
+      .map((r) => ({ value: String(Number(r.rate)), label: r.label || percent(Number(r.rate)) }))
+  );
+  if (saved && !options.some((o) => o.value === saved)) {
+    options.push({ value: saved, label: percent(Number(saved)) });
+  }
+  return options;
+};

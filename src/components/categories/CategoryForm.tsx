@@ -133,10 +133,27 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
   );
   // A category with subcategories can't take a parent: it would become level 3.
   const hasChildren = selfHeight > 1;
-  const parentOptions = useMemo(
-    () => parentCategoryOptions(categories, initial?.id),
-    [categories, initial?.id]
-  );
+  const parentOptions = useMemo(() => {
+    const options = parentCategoryOptions(categories, initial?.id);
+    // The saved parent may not be a valid choice any more (archived, or a subcategory on an
+    // older level-3 category). Show it, disabled, so the field tells the truth.
+    const current = form.parent_id;
+    if (current && !options.some((o) => o.value === current)) {
+      const find = (nodes: Category[]): Category | undefined => {
+        for (const node of nodes) {
+          if (node.id === current) return node;
+          const hit = node.children?.length ? find(node.children) : undefined;
+          if (hit) return hit;
+        }
+        return undefined;
+      };
+      const parent = find(fullTree ?? categories ?? []);
+      const name = parent?.name ?? initial?.path?.slice(-2, -1)[0]?.name ?? "Current parent";
+      const note = parent?.status === "archived" ? "archived" : "not a main category";
+      options.push({ value: current, label: `${name} (${note})`, disabled: true });
+    }
+    return options;
+  }, [categories, fullTree, initial, form.parent_id]);
   const [statusNote, setStatusNote] = useState<string | null>(null);
 
   const parentStatusOf = (parentId: string): Category["status"] | undefined => {

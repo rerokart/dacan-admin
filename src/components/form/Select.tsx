@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 interface Option {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps {
@@ -145,8 +146,9 @@ const Select: React.FC<SelectProps> = ({
               <button
                 key={option.value}
                 type="button"
+                disabled={option.disabled}
                 onClick={() => handleSelect(option.value)}
-                className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                className={`w-full disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
                   option.value === selectedValue
                     ? "bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400"
                     : "text-gray-700 dark:text-gray-300"

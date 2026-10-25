@@ -9,7 +9,7 @@ import Can from "@/components/auth/Can";
 import { usePermissions } from "@/context/AuthContext";
 import { useAddVariant, useUpdateVariant } from "@/hooks/useProducts";
 import { useGstRates, useTaxSettings } from "@/hooks/useTaxSettings";
-import { MEASURES, numText, percent } from "@/utils/productFormat";
+import { MEASURES, buildCostRateOptions, numText, percent } from "@/utils/productFormat";
 import { priceLabels } from "@/utils/priceLabels";
 import { PRICE_CHANGE_FIELDS } from "@/utils/productRules";
 import type {
@@ -72,18 +72,7 @@ export const VariantModal: React.FC<VariantModalProps> = ({
   const labels = priceLabels(settings?.prices_include_gst ?? false);
 
   // "Same as product" plus the active rates (and a saved inactive one).
-  const costRateOptions = useMemo(() => {
-    const options = [{ value: "", label: "Same as product" }].concat(
-      (rates ?? [])
-        .filter((r) => r.is_active)
-        .sort((a, b) => Number(a.rate) - Number(b.rate))
-        .map((r) => ({ value: String(Number(r.rate)), label: r.label || percent(r.rate) }))
-    );
-    if (form.cost_gst_rate && !options.some((o) => o.value === form.cost_gst_rate)) {
-      options.push({ value: form.cost_gst_rate, label: percent(Number(form.cost_gst_rate)) });
-    }
-    return options;
-  }, [rates, form.cost_gst_rate]);
+  const costRateOptions = useMemo(() => buildCostRateOptions(rates, form.cost_gst_rate), [rates, form.cost_gst_rate]);
 
   const { mutate: addVariant, isPending: isAdding } = useAddVariant({ silentError: true });
   const { mutate: updateVariant, isPending: isUpdating } = useUpdateVariant({ silentError: true });

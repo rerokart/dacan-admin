@@ -8,7 +8,7 @@ import { usePermissions } from "@/context/AuthContext";
 import { useGstRates, useTaxSettings } from "@/hooks/useTaxSettings";
 import { gstOnPrice, priceWithGst } from "@/utils/margin";
 import { priceLabels } from "@/utils/priceLabels";
-import { MEASURES, numText, percent, rupees } from "@/utils/productFormat";
+import { MEASURES, buildCostRateOptions, numText, percent, rupees } from "@/utils/productFormat";
 import type { Product, ProductVariant } from "@/services/product.service";
 import FieldError from "../fields/FieldError";
 import MarginReadout from "../fields/MarginReadout";
@@ -60,18 +60,7 @@ export default function PricingTab({
   const labels = priceLabels(includeGst);
 
   // Purchase GST rate: "Same as product" plus the active rates (and a saved inactive one).
-  const costRateOptions = useMemo(() => {
-    const options = [{ value: "", label: "Same as product" }].concat(
-      (rates ?? [])
-        .filter((r) => r.is_active)
-        .sort((a, b) => Number(a.rate) - Number(b.rate))
-        .map((r) => ({ value: String(Number(r.rate)), label: r.label || percent(r.rate) }))
-    );
-    if (form.cost_gst_rate && !options.some((o) => o.value === form.cost_gst_rate)) {
-      options.push({ value: form.cost_gst_rate, label: percent(Number(form.cost_gst_rate)) });
-    }
-    return options;
-  }, [rates, form.cost_gst_rate]);
+  const costRateOptions = useMemo(() => buildCostRateOptions(rates, form.cost_gst_rate), [rates, form.cost_gst_rate]);
   const gst = settings && form.price.trim() !== "" && !errors.price ? gstOnPrice(form.price, effectiveRate, includeGst) : null;
 
   return (

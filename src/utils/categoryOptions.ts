@@ -3,6 +3,7 @@ import type { Category } from "@/services/category.service";
 export interface CategoryOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 const STATUS_SUFFIX: Partial<Record<Category["status"], string>> = {

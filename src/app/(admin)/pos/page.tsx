@@ -52,17 +52,16 @@ function POSPageContent() {
 
   const { data: searchData, isLoading: loadingProducts } = usePOSProductSearch(productSearch);
   const products = searchData?.products;
-  const priceText = (price: number, rate?: number | null, cartRow = false) => {
+  const priceText = (price: number, rate?: number | null) => {
     // The store setting comes from the tax settings, the product search or the quote.
     // Until one of them has answered, show a placeholder, never a bare number.
     const includeGst =
       taxSettings?.prices_include_gst ?? searchData?.prices_include_gst ?? totals.quote?.summary.prices_include_gst;
     if (includeGst === undefined || includeGst === null) return "…";
     if (includeGst) return formatCurrency(price);
-    // The store default rate is only a last resort for a cart row whose quote line has no rate.
-    const useRate = rate ?? (cartRow ? taxSettings?.default_gst_rate : null);
-    if (useRate === null || useRate === undefined) return `${formatCurrency(price)} + GST`;
-    return formatCurrency(priceWithGst(price, useRate, false) ?? price);
+    // With no known rate we never guess an exact figure: show the price with "+ GST".
+    if (rate === null || rate === undefined) return `${formatCurrency(price)} + GST`;
+    return formatCurrency(priceWithGst(price, rate, false) ?? price);
   };
 
   const { data: customers, isLoading: loadingCustomers } = usePOSCustomerSearch(customerSearch);
@@ -386,7 +385,7 @@ function POSPageContent() {
                 <CartItem
                   key={`${item.product_id}-${item.variant_id || ""}`}
                   item={item}
-                  priceLabel={priceText(item.price, totals.quote?.lines[cart.indexOf(item)]?.gst_rate ?? item.gst_rate, true)}
+                  priceLabel={priceText(item.price, totals.quote?.lines[cart.indexOf(item)]?.gst_rate ?? item.gst_rate)}
                   error={totals.quote?.lines[cart.indexOf(item)]?.error ?? null}
                   onUpdateQuantity={(qty) => updateQuantity(item.product_id, item.variant_id, qty)}
                   onRemove={() => removeFromCart(item.product_id, item.variant_id)}

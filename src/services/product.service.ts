@@ -317,7 +317,6 @@ export type PriceHistoryField =
   | "min_selling_price"
   | "b2b_price"
   | "cost_price"
-  | "cost_gst_rate"
   | "gst_rate";
 
 export interface PriceHistoryEntry {

@@ -15,14 +15,11 @@ export interface MarginResult {
   margin_amount: number | null;
   /** Margin / selling price before GST x 100, 2 decimals */
   margin_percent: number | null;
-  /** Margin / cost x 100, 2 decimals */
-  markup_percent: number | null;
 }
 
 const NO_MARGIN: MarginResult = {
   margin_amount: null,
   margin_percent: null,
-  markup_percent: null,
 };
 
 type Num = number | string | null | undefined;
@@ -85,13 +82,10 @@ export function marginFields(
   const marginAmount = toUnits(divRound(n, d));
   // margin / selling x 100 = n / (p * scale) x 100: in hundredths of a percent, n / p.
   const marginPercent = p === BigInt(0) ? null : toUnits(divRound(n, p));
-  // margin / cost x 100 = n / (d * c) x 100: in hundredths, n * 10000 / (d * c).
-  const markupPercent = c === BigInt(0) ? null : toUnits(divRound(n * scale, d * c));
 
   return {
     margin_amount: marginAmount,
     margin_percent: marginPercent,
-    markup_percent: markupPercent,
   };
 }
 

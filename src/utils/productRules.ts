@@ -149,9 +149,11 @@ export const priceProblems = (
  * B2B price rules, as on the server: more than 0, and not more than the MRP.
  * A blank B2B price (null) is fine; a missing MRP skips the MRP rule.
  */
+export const B2B_PRICE_MESSAGE = "B2B price must be more than 0";
+
 export const b2bPriceProblem = (b2b: number | null, mrp: number | null): string | null => {
   if (b2b === null) return null;
-  if (b2b <= 0) return "B2B price must be more than 0";
+  if (b2b <= 0) return B2B_PRICE_MESSAGE;
   if (mrp !== null && b2b > mrp) return "B2B price can't be more than the MRP";
   return null;
 };

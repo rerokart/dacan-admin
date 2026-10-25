@@ -7,6 +7,7 @@ import {
   WARRANTY_MONTHS_MAX,
   WARRANTY_MONTHS_MIN,
   checkQuantityRules,
+  B2B_PRICE_MESSAGE,
   b2bPriceProblem,
   isValidGtin,
   priceProblems,
@@ -55,8 +56,9 @@ export const validate = (
     let pricesValid = true;
     for (const key of priceKeys) {
       const v = state[key];
-      if (v.trim() !== "" && (Number.isNaN(Number(v)) || Number(v) < 0)) {
-        add(key, "pricing", "Enter a price of 0 or more");
+      const bad = Number.isNaN(Number(v)) || Number(v) < 0 || (key === "b2b_price" && Number(v) === 0);
+      if (v.trim() !== "" && bad) {
+        add(key, "pricing", key === "b2b_price" ? B2B_PRICE_MESSAGE : "Enter a price of 0 or more");
         pricesValid = false;
       }
     }
