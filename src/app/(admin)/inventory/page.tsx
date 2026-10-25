@@ -6,6 +6,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import { usePermissions } from "@/context/AuthContext";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/tabs";
+import HistoryTab from "@/components/inventory/HistoryTab";
 import StockTab from "@/components/inventory/StockTab";
 import { INVENTORY_TABS, type InventoryTabKey } from "@/components/inventory/inventoryTabs";
 
@@ -42,6 +43,9 @@ function InventoryPageContent() {
           <div className="pt-4">
             <StockTab canViewHistory={can("inventory.view")} />
           </div>
+        </TabPanel>
+        <TabPanel value="history">
+          <HistoryTab />
         </TabPanel>
       </Tabs>
     </div>
