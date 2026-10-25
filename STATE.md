@@ -1,6 +1,6 @@
 # dacan-admin — State
 
-_Last updated: 2026-10-10_
+_Last updated: 2026-10-25_
 
 ## Done
 - Next.js 16 + React 19 initialized from admin-dashboard template
@@ -17,6 +17,9 @@ _Last updated: 2026-10-10_
 - **Stage A bug sprint (merged into `main` 2026-10-04 @ `c690661`)**: POS posts to `pos/orders/offline` with cash/card/upi, receipt shows variant, amount paid and change, totals rounded to paise (B02); Inventory page and Dashboard low-stock widget wired to the real inventory list/overview and stock `adjustment` (B04, B05, B26); product delete shows the 409 "has orders" message (B08); banner move up/down reorder + link-format hint (B11); Cancel order sends a status update, "Refunded" removed, Cash/Card/UPI payment filters (B13, B16, B15); dashboard demo data replaced by `analytics/dashboard` + `analytics/sales` (B57); `pnpm build` now passes (B29, reviews rating filter typing). Needs backend `fix/stage-a`. Detail: `docs/BUGS.md`, `docs/SEQUENCE.md`.
 
 ## In Progress
+- **Stage R rework built 2026-10-25 on `feature/stage-r` (off `main`, head `5a681c2`). NOT merged, NOT pushed. Needs the backend `feature/stage-r` and Phase 13, then QA in a browser.** (decisions D-601 to D-720, D-721 to D-731)
+  - **What changed, in plain words:** price fields are labelled "(without GST)" (Selling price, MRP, Minimum selling price, B2B price, Cost price). New B2B price and Purchase GST rate fields, and the readout `Cost with GST ₹X · Profit ₹Y · Margin Z%` (only with `products.view_cost`). The tax switch reads "Prices are typed including GST" (off by default). POS tiles show the price with GST and never show a guessed price as exact. Store pickup is gone from the order types. Category pickers show two levels with a hint when nothing can be chosen (also in the archive dialog and for a product still on a main category).
+  - **Checks:** tsc 0; lint **7 errors / 12 warnings**; `pnpm build` OK. Not run in a browser yet.
 - **C3 Pricing and Tax (Phase 1), built, reviewed and QA'd in a browser 2026-10-10 merged into `main` 2026-10-10 @ `cac8520` (branch head `4b93246`, off `main` fd0fca1). NOT pushed; needs the backend `feature/pricing-c3` and Phase 12 (applied on dev); awaiting user QA** (checklist `.claude/qa-report/2026-10-09-multi-pricing-c3-user-checklist.md`; QA report `.claude/qa-report/2026-10-09-multi-pricing-c3-qa.md`). Fixes B48 (admin side) and B52.
   - **Settings → Tax** (`src/app/(admin)/settings/tax/page.tsx`, `src/components/settings/tax/`): General (GSTIN, state, "Prices include GST" with a warning when turned off, default and delivery GST rate, round to rupee), GST rates, HSN codes. "Tax" in the sidebar for `settings.view`; edits need `settings.edit`.
   - **Product form:** Selling price, MRP, Minimum selling price, GST rate (filled from the HSN list, 300 ms debounce), cost before GST with live "Margin ₹X (Y%) · Markup Z%" (only with `products.view_cost`; the key is never sent without it), "Customer pays" helper line; `PriceReasonModal` on price changes; Price history tab. Same fields in the variant modal and grid. Data layer: `src/services/taxSettings.service.ts`, `src/hooks/useTaxSettings.ts`, `src/utils/margin.ts`.
@@ -47,6 +50,7 @@ _Last updated: 2026-10-10_
 - Stage A is merged and awaiting user QA (checklist: `.claude/qa-report/2026-10-04-multi-stage-a-user-checklist.md`)
 
 ## Next Up
+- **Stage R:** QA in a browser with the backend `feature/stage-r` (Phase 13 applied first), then merge `feature/stage-r` into `main` after the backend.
 - **C3:** user QA with the checklist (Tax settings, product pricing and history, order page, POS with a coupon), then merge `feature/pricing-c3` into `main` after the backend. Then C4.
 - **C2.5:** QA of `fix/c2-5` in a browser with the backend `fix/c2-5` (Phase 11 applied first), then merge into `main` and deploy after the backend. Then C3.
 - **C2:** merged; user QA still to do (see the C2 checklist).
