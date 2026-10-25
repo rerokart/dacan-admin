@@ -9,6 +9,7 @@ import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/tabs";
 import ArrivalsTab from "@/components/inventory/ArrivalsTab";
 import ExpiringTab from "@/components/inventory/ExpiringTab";
 import HistoryTab from "@/components/inventory/HistoryTab";
+import ReportsTab from "@/components/inventory/ReportsTab";
 import StockTab from "@/components/inventory/StockTab";
 import { INVENTORY_TABS, type InventoryTabKey } from "@/components/inventory/inventoryTabs";
 
@@ -54,6 +55,9 @@ function InventoryPageContent() {
         </TabPanel>
         <TabPanel value="expiring">
           <ExpiringTab />
+        </TabPanel>
+        <TabPanel value="reports">
+          <ReportsTab />
         </TabPanel>
       </Tabs>
     </div>
