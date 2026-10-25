@@ -19,6 +19,8 @@ export interface FormState {
   cost_gst_rate: string;
   b2b_price: string;
   pack_size: string;
+  /** Blank = use the product's level */
+  reorder_level: string;
   stock_quantity: string;
   is_active: boolean;
   measures: Record<MeasureKey, string>;
@@ -43,6 +45,7 @@ export const toFormState = (variant: ProductVariant | null): FormState => ({
   cost_gst_rate: variant?.cost_gst_rate == null ? "" : String(Number(variant.cost_gst_rate)),
   b2b_price: numText(variant?.b2b_price),
   pack_size: numText(variant?.pack_size ?? 1),
+  reorder_level: numText(variant?.reorder_level),
   stock_quantity: "",
   is_active: variant?.is_active ?? true,
   measures: Object.fromEntries(MEASURES.map((m) => [m.key, numText(variant?.[m.key])])) as Record<MeasureKey, string>,
@@ -105,6 +108,7 @@ export const validate = (
     if (problem) errors.b2b_price = problem;
   }
   if (!isWhole(state.pack_size, 1)) errors.pack_size = "Whole number, 1 or more";
+  if (!isWhole(state.reorder_level, 0)) errors.reorder_level = "Reorder level must be a whole number, 0 or more";
   if (!isEdit && !isWhole(state.stock_quantity, 0)) errors.stock_quantity = "Whole number, 0 or more";
   for (const m of MEASURES) {
     if (!isWhole(state.measures[m.key], 0)) errors[m.key] = "Whole number, 0 or more";
@@ -133,6 +137,8 @@ export const toRequest = (
     data.cost_price = num(state.cost_price);
     data.cost_gst_rate = num(state.cost_gst_rate);
   }
+  // On add a blank reorder level is left out; on edit a blank one goes back to the product's level.
+  if (isEdit || num(state.reorder_level) !== null) data.reorder_level = num(state.reorder_level);
   // On add a blank B2B price is simply left out; on edit a blank one clears it.
   if (isEdit || num(state.b2b_price) !== null) data.b2b_price = num(state.b2b_price);
   for (const m of MEASURES) data[m.key] = num(state.measures[m.key]);

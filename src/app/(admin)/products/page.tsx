@@ -39,9 +39,11 @@ const getStatusBadge = (stockQty: number, threshold: number) => {
   }
   if (stockQty <= threshold) {
     return (
-      <Badge variant="light" color="warning">
-        Low Stock
-      </Badge>
+      <span title="At or below the reorder level">
+        <Badge variant="light" color="warning">
+          Low Stock
+        </Badge>
+      </span>
     );
   }
   return (

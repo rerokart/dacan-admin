@@ -219,7 +219,7 @@ export default function PricingTab({
           </Can>
         )}
         <div>
-          <Label htmlFor="low_stock_threshold">Low Stock Threshold</Label>
+          <Label htmlFor="low_stock_threshold">Low stock level (reorder level)</Label>
           <Input
             id="low_stock_threshold"
             type="number"
@@ -230,6 +230,9 @@ export default function PricingTab({
             placeholder="10"
           />
           <FieldError error={errors.low_stock_threshold} />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Customers see &quot;Only N left&quot; when stock is at or below this number.
+          </p>
         </div>
         {hasPricing && (
           <>

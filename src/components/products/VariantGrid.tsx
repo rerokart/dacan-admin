@@ -141,6 +141,7 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                 <th className={`${th} text-right`}>B2B</th>
                 {canViewCost && <th className={`${th} text-right`}>Cost / Margin</th>}
                 <th className={`${th} text-right`}>Stock</th>
+                <th className={`${th} text-right`}>Reorder level</th>
                 <th className={`${th} text-center`}>Active</th>
                 {!readOnly && <th className={`${th} text-right`}>Actions</th>}
               </tr>
@@ -211,6 +212,12 @@ export default function VariantGrid({ product, readOnly = false }: VariantGridPr
                       >
                         {variant.stock_quantity}
                       </Link>
+                    </td>
+                    <td className={`${td} text-right text-gray-500`}>
+                      {variant.reorder_level ?? variant.effective_reorder_level ?? "-"}
+                      {variant.reorder_level == null && variant.effective_reorder_level != null && (
+                        <span className="block text-xs">product&apos;s</span>
+                      )}
                     </td>
                     <td className={`${td} text-center`}>
                       {readOnly ? (

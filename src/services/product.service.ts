@@ -71,6 +71,10 @@ export interface ProductVariant {
   barcode?: string | null;
   gtin?: string | null;
   pack_size?: number;
+  /** Variant's own reorder level; null = the product's level is used */
+  reorder_level?: number | null;
+  /** The level in force: the variant's, else the product's, else 10 */
+  effective_reorder_level?: number;
   weight_g?: number | null;
   package_length_mm?: number | null;
   package_width_mm?: number | null;
@@ -206,6 +210,8 @@ export interface VariantDetailFields {
   barcode?: string | null;
   gtin?: string | null;
   pack_size?: number;
+  /** Variant's own reorder level; null = use the product's Low stock level */
+  reorder_level?: number | null;
   weight_g?: number | null;
   package_length_mm?: number | null;
   package_width_mm?: number | null;

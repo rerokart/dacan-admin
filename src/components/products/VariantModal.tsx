@@ -327,6 +327,22 @@ export const VariantModal: React.FC<VariantModalProps> = ({
                 />
                 <FieldError message={shown.pack_size} />
               </div>
+              <div>
+                <Label htmlFor="variant-reorder-level">Reorder level (blank uses the product&apos;s)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  id="variant-reorder-level"
+                  value={form.reorder_level}
+                  error={!!shown.reorder_level}
+                  onChange={(e) => set("reorder_level", e.target.value)}
+                  placeholder="Product's level"
+                />
+                <FieldError message={shown.reorder_level} />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Customers see &quot;Only N left&quot; when stock is at or below this number.
+                </p>
+              </div>
               {MEASURES.map((m) => (
                 <div key={m.key}>
                   <Label htmlFor={`variant-${m.key}`}>{m.label}</Label>

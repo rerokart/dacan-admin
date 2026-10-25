@@ -94,7 +94,7 @@ export const validate = (
     }
   }
   if (!isWholeNumber(state.low_stock_threshold, 0)) {
-    add("low_stock_threshold", "pricing", "Whole number, 0 or more");
+    add("low_stock_threshold", "pricing", "Reorder level must be a whole number, 0 or more");
   }
 
   if (state.hsn_code.trim() && !HSN_PATTERN.test(state.hsn_code.trim())) {
