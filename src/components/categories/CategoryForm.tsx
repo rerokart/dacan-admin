@@ -118,7 +118,7 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
   const { data: categories } = useCategories();
   // Edit mode only: the server counts archived descendants when it checks the
   // 2-level limit, so the height has to come from the tree that includes them.
-  const { data: fullTree } = useCategories(
+  const { data: fullTree, isLoading: loadingFullTree } = useCategories(
     mode === "edit" ? { include_archived: true } : undefined
   );
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
@@ -339,6 +339,8 @@ export default function CategoryForm({ mode, initial, onDone }: CategoryFormProp
             <Label htmlFor="parent">Parent Category</Label>
             {isArchived ? (
               <Input type="text" id="parent" value={initial?.path?.slice(0, -1).map((p) => p.name).join(" › ") || "None (main category)"} disabled />
+            ) : mode === "edit" && loadingFullTree ? (
+              <Input type="text" id="parent" value="Loading..." disabled />
             ) : hasChildren ? (
               <Input type="text" id="parent" value="None (main category)" disabled />
             ) : (

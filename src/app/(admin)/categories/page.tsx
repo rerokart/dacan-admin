@@ -102,10 +102,15 @@ function ArchiveDialog({
             <Select
               id="move-target"
               options={targetOptions}
-              placeholder="Select a category"
+              placeholder="Select a subcategory"
               value={target}
               onChange={setTarget}
             />
+            {targetOptions.length === 0 && (
+              <p className="mt-1 text-xs text-gray-500">
+                No other subcategory to move them to. Create one first.
+              </p>
+            )}
           </div>
         )
       )}

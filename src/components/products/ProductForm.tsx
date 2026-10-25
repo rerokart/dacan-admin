@@ -140,10 +140,23 @@ export default function ProductForm({ mode, initial, onDone, readOnly = false }:
   );
 
   const savedForm = useMemo(() => toFormState(baseline), [baseline]);
-  const errors = useMemo(
-    () => validate(form, hasPricing, isCreate, baseline?.sku ?? "", savedForm),
-    [form, hasPricing, isCreate, baseline?.sku, savedForm]
-  );
+  const errors = useMemo(() => {
+    const found = validate(form, hasPricing, isCreate, baseline?.sku ?? "", savedForm);
+    // A legacy product can sit on a main category; make the admin pick a subcategory.
+    if (
+      !found.category_id &&
+      !isArchived &&
+      !loadingCategories &&
+      form.category_id &&
+      !categoryOptions.some((option) => option.value === form.category_id)
+    ) {
+      found.category_id = {
+        tab: "basics",
+        message: "This product is on a main category. Choose a subcategory.",
+      };
+    }
+    return found;
+  }, [form, hasPricing, isCreate, baseline?.sku, savedForm, isArchived, loadingCategories, categoryOptions]);
   const shownErrors: FieldErrors = showErrors ? errors : {};
   const errorsByTab = useMemo(() => {
     const tabs = new Set<TabKey>();
