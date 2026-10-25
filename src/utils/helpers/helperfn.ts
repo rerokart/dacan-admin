@@ -5,6 +5,8 @@ type DateFormatType = "short" | "long" | "medium" | "time" | "datetime";
 export const formatDate = (date: DateInput, format: DateFormatType = "medium"): string => {
   if (!date) return "";
 
+  // A date-only value (YYYY-MM-DD) is a calendar day, not a UTC instant: format it in UTC so it never shifts.
+  const dateOnly = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date);
   const dateObj = new Date(date);
   if (isNaN(dateObj.getTime())) return "";
 
@@ -22,7 +24,10 @@ export const formatDate = (date: DateInput, format: DateFormatType = "medium"): 
     },
   };
 
-  return dateObj.toLocaleDateString("en-US", options[format] || options.medium);
+  return dateObj.toLocaleDateString("en-US", {
+    ...(options[format] || options.medium),
+    ...(dateOnly ? { timeZone: "UTC" } : {}),
+  });
 };
 
 // Get relative time from a date

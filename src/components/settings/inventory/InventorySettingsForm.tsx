@@ -59,14 +59,19 @@ function Form({ settings }: { settings: InventorySettings }) {
     setDraft("");
   };
 
+  // An address typed but not yet added is added on Save.
+  const pendingEmail = draftTrim && !draftError ? draftTrim : null;
+  const finalEmails = pendingEmail ? [...emails, pendingEmail] : emails;
+
   const changes: Partial<InventorySettings> = {};
   if (!daysError && daysNum !== settings.expiry_warning_days) changes.expiry_warning_days = daysNum;
-  if (emails.join(",") !== settings.low_stock_alert_emails.join(",")) changes.low_stock_alert_emails = emails;
+  if (finalEmails.join(",") !== settings.low_stock_alert_emails.join(",")) changes.low_stock_alert_emails = finalEmails;
   const dirty = Object.keys(changes).length > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!dirty || daysError || draftError) return;
+    setDraft("");
     save(changes);
   };
 

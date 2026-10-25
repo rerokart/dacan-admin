@@ -47,7 +47,9 @@ function ReportCard({ report }: { report: ReportDef }) {
   const { mutate, isPending, variables } = useDownloadReport();
   const busy = isPending && variables?.key === report.key;
 
-  const missing = report.filters.some((f) => f.required && !(values[f.name] ?? "").trim());
+  const missing =
+    report.filters.some((f) => f.required && !(values[f.name] ?? "").trim()) ||
+    report.filters.some((f) => f.type === "number" && (values[f.name] ?? "").trim() !== "" && !(Number(values[f.name]) >= 1));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,7 +146,7 @@ function FilterInput({
     <Input
       id={id}
       type={def.type === "date" ? "date" : def.type === "number" ? "number" : "text"}
-      min={def.type === "number" ? "0" : undefined}
+      min={def.type === "number" ? "1" : undefined}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={def.type === "uuid" ? "ID (optional)" : undefined}

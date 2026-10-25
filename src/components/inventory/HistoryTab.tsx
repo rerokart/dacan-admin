@@ -22,7 +22,7 @@ export default function HistoryTab() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { can } = usePermissions();
-  const [page, setPage] = useState(1);
+  const [pageState, setPageState] = useState({ key: "", page: 1 });
   const [pickedLabel, setPickedLabel] = useState("");
 
   // Filters live in the URL so a link from the Stock tab (or a shared link) restores them.
@@ -34,12 +34,17 @@ export default function HistoryTab() {
     admin_id: searchParams.get("admin_id") ?? "",
   };
 
+  const filterKey = FILTER_KEYS.map((k) => searchParams.get(k) ?? "").join("|");
+  // The page belongs to one set of filters; any change (including back or a shared link) starts at page 1.
+  const page = pageState.key === filterKey ? pageState.page : 1;
+  const setPage = (p: number | ((x: number) => number)) =>
+    setPageState({ key: filterKey, page: typeof p === "function" ? p(page) : p });
+
   const setFilter = (key: FilterKey, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", "history");
     if (value) params.set(key, value);
     else params.delete(key);
-    setPage(1);
     router.replace(`/inventory?${params.toString()}`);
   };
 
@@ -49,8 +54,9 @@ export default function HistoryTab() {
   const { data, isLoading, error } = useMovements({
     variant_id: filters.variant_id || undefined,
     reason_type: filters.reason_type || undefined,
-    date_from: filters.date_from || undefined,
-    date_to: filters.date_to || undefined,
+    // Store time (IST) day bounds; the server reads full timestamps.
+    date_from: filters.date_from ? `${filters.date_from}T00:00:00+05:30` : undefined,
+    date_to: filters.date_to ? `${filters.date_to}T23:59:59.999+05:30` : undefined,
     admin_id: filters.admin_id || undefined,
     page,
     limit: 20,
