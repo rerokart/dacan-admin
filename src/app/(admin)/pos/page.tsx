@@ -37,16 +37,6 @@ function POSPageContent() {
   // Prices shown with GST (what the customer pays per unit). Totals still come from the server quote.
   const { can } = usePermissions();
   const { data: taxSettings } = useTaxSettings({ enabled: can(TAX_READ_PERMISSIONS) });
-  const priceText = (price: number, rate?: number | null, cartRow = false) => {
-    // Setting unknown (loading, or no access): never compute a total.
-    if (!taxSettings) return formatCurrency(price);
-    if (taxSettings.prices_include_gst) return formatCurrency(price);
-    // The store default rate is only a last resort for a cart row whose quote line has no rate.
-    const useRate = rate ?? (cartRow ? taxSettings.default_gst_rate : null);
-    if (useRate === null || useRate === undefined) return `${formatCurrency(price)} + GST`;
-    return formatCurrency(priceWithGst(price, useRate, false) ?? price);
-  };
-
   const {
     cart,
     selectedCustomer,
@@ -60,7 +50,21 @@ function POSPageContent() {
     totals,
   } = usePOSCart();
 
-  const { data: products, isLoading: loadingProducts } = usePOSProductSearch(productSearch);
+  const { data: searchData, isLoading: loadingProducts } = usePOSProductSearch(productSearch);
+  const products = searchData?.products;
+  const priceText = (price: number, rate?: number | null, cartRow = false) => {
+    // The store setting comes from the tax settings, the product search or the quote.
+    // Until one of them has answered, show a placeholder, never a bare number.
+    const includeGst =
+      taxSettings?.prices_include_gst ?? searchData?.prices_include_gst ?? totals.quote?.summary.prices_include_gst;
+    if (includeGst === undefined || includeGst === null) return "…";
+    if (includeGst) return formatCurrency(price);
+    // The store default rate is only a last resort for a cart row whose quote line has no rate.
+    const useRate = rate ?? (cartRow ? taxSettings?.default_gst_rate : null);
+    if (useRate === null || useRate === undefined) return `${formatCurrency(price)} + GST`;
+    return formatCurrency(priceWithGst(price, useRate, false) ?? price);
+  };
+
   const { data: customers, isLoading: loadingCustomers } = usePOSCustomerSearch(customerSearch);
   const { mutate: createCustomer, isPending: creatingCustomer } = useCreatePOSCustomer();
   const { mutate: createOrder, isPending: creatingOrder } = useCreatePOSOrder();

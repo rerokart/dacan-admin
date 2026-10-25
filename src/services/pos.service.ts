@@ -157,6 +157,14 @@ export interface OfflineOrderResponse {
 interface ProductsApiResponse {
   status: number;
   products: POSProduct[];
+  /** The store setting, sent once for the whole response */
+  prices_include_gst?: boolean;
+}
+
+export interface POSProductSearchResult {
+  products: POSProduct[];
+  /** True or false from the server; undefined only for an older backend */
+  prices_include_gst?: boolean;
 }
 
 interface CustomersApiResponse {
@@ -178,12 +186,12 @@ interface OrderApiResponse {
 
 // Service
 export const posService = {
-  searchProducts: async (query: string, limit?: number): Promise<POSProduct[]> => {
+  searchProducts: async (query: string, limit?: number): Promise<POSProductSearchResult> => {
     const params = new URLSearchParams();
     params.append("q", query);
     if (limit) params.append("limit", String(limit));
     const response: ProductsApiResponse = await defaultAxios.get(`${API_ROUTES.POS.PRODUCTS}?${params.toString()}`);
-    return response.products || [];
+    return { products: response.products || [], prices_include_gst: response.prices_include_gst };
   },
 
   searchCustomers: async (phone: string): Promise<POSCustomer[]> => {
