@@ -46,7 +46,7 @@ function LowStockAlertsContent() {
             Low Stock Alerts
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Products that need restocking
+            Items at or below their reorder level
           </p>
         </div>
 
@@ -97,7 +97,7 @@ function LowStockAlertsContent() {
                   isHeader
                   className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Threshold
+                  Reorder level
                 </TableCell>
                 <TableCell
                   isHeader

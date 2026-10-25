@@ -55,8 +55,18 @@ defaultAxios.interceptors.response.use(
     if (response.data?.status === 1) return response.data;
     return Promise.reject(response.data);
   },
-  (error) => {
+  async (error) => {
     const { response } = error;
+
+    // A failed blob request (e.g. an Excel report) carries its JSON error body as a
+    // Blob; read it back so the messages below see { error } like any other call.
+    if (response?.data instanceof Blob) {
+      try {
+        response.data = JSON.parse(await response.data.text());
+      } catch {
+        response.data = {};
+      }
+    }
 
     // Handle 401 Unauthorized on an authenticated call - token expired,
     // revoked or invalid. A 401 from a public auth endpoint (or from a call

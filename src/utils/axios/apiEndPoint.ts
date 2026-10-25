@@ -137,8 +137,13 @@ export const API_ROUTES = {
   INVENTORY: {
     OVERVIEW: "inventory/overview",
     STOCK_LEVELS: "inventory",
-    UPDATE_STOCK: "inventory/update",
-    HISTORY: "inventory/history",
+    CORRECTIONS: "inventory/corrections",
+    MOVEMENTS: "inventory/movements",
+    ARRIVALS: "inventory/arrivals",
+    EXPIRING: "inventory/expiring",
+    REPORTS: "inventory/reports",
+    REPORT_FILE: (key: string) => `inventory/reports/${key}.xlsx`,
+    SETTINGS_INVENTORY: "settings/inventory",
   },
 
   // Reviews

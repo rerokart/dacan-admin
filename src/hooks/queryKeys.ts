@@ -1,5 +1,9 @@
 import type { ProductFilters } from "@/services/product.service";
-import type { StockFilters } from "@/services/inventory.service";
+import type {
+  StockFilters,
+  MovementFilters,
+  ArrivalFilters,
+} from "@/services/inventory.service";
 import type { BrandFilters } from "@/services/brand.service";
 import type { HsnFilters } from "@/services/taxSettings.service";
 import type { CategoryFilters } from "@/services/category.service";
@@ -40,9 +44,16 @@ export const inventoryKeys = {
   stockLevels: () => [...inventoryKeys.all, "stock"] as const,
   stockLevel: (filters?: StockFilters) =>
     [...inventoryKeys.stockLevels(), filters] as const,
-  history: () => [...inventoryKeys.all, "history"] as const,
-  productHistory: (productId?: string, variantId?: string) =>
-    [...inventoryKeys.history(), productId, variantId] as const,
+  movements: () => [...inventoryKeys.all, "movements"] as const,
+  movementList: (filters?: MovementFilters) =>
+    [...inventoryKeys.movements(), filters] as const,
+  arrivals: () => [...inventoryKeys.all, "arrivals"] as const,
+  arrivalList: (filters?: ArrivalFilters) =>
+    [...inventoryKeys.arrivals(), filters] as const,
+  expiring: (days?: number, page?: number) =>
+    [...inventoryKeys.all, "expiring", days, page] as const,
+  reports: () => [...inventoryKeys.all, "reports"] as const,
+  settings: () => [...inventoryKeys.all, "settings"] as const,
 };
 
 export const dashboardKeys = {

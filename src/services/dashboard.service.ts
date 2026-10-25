@@ -151,7 +151,7 @@ export const dashboardService = {
       productName: item.variant_info ? `${item.name} - ${item.variant_info}` : item.name,
       sku: item.sku,
       currentStock: item.stock_quantity,
-      threshold: item.low_stock_threshold,
+      threshold: item.reorder_level ?? item.low_stock_threshold ?? 0,
       status: item.stock_status === "out_of_stock" ? "out_of_stock" : "low_stock",
     }));
   },
