@@ -1,0 +1,9 @@
+# Never upload local secrets or the project-local Vercel login.
+# Production env vars live in the Vercel dashboard.
+.env
+.env.*
+!.env.example
+.vercel-cli
+node_modules
+.next
+graphify-out

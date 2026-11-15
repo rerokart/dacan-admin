@@ -114,3 +114,6 @@ storybook-static/
 
 # graphify generated output (regenerated via graphify update / post-commit hook)
 graphify-out/
+
+# Vercel CLI login for this project only (see package.json "vc" scripts)
+.vercel-cli
