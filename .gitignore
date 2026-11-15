@@ -117,3 +117,4 @@ graphify-out/
 
 # Vercel CLI login for this project only (see package.json "vc" scripts)
 .vercel-cli
+.env*

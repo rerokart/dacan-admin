@@ -11,8 +11,8 @@
     "vc:login": "pnpm run vc login",
     "vc:whoami": "pnpm run vc whoami",
     "vc:link": "pnpm run vc link",
-    "deploy:preview": "pnpm run vc deploy",
-    "deploy:prod": "pnpm run vc deploy --prod"
+    "deploy:preview": "bash scripts/vercel-deploy.sh preview",
+    "deploy:prod": "bash scripts/vercel-deploy.sh prod"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
