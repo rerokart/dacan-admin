@@ -100,11 +100,8 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     icon: "BoxIconLine",
     name: "Inventory",
+    path: ROUTES.INVENTORY,
     permission: "inventory.view",
-    subItems: [
-      { name: "Overview", path: ROUTES.INVENTORY },
-      { name: "Stock Management", path: ROUTES.INVENTORY_STOCK },
-    ],
   },
   {
     icon: "PieChartIcon",
@@ -221,12 +218,7 @@ export const BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
   ],
   [ROUTES.INVENTORY]: [
     { label: "Dashboard", path: ROUTES.DASHBOARD },
-    { label: "Inventory Overview" },
-  ],
-  [ROUTES.INVENTORY_STOCK]: [
-    { label: "Dashboard", path: ROUTES.DASHBOARD },
-    { label: "Inventory", path: ROUTES.INVENTORY },
-    { label: "Stock Management" },
+    { label: "Inventory" },
   ],
   [ROUTES.REPORTS]: [
     { label: "Dashboard", path: ROUTES.DASHBOARD },
@@ -271,8 +263,7 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.REVIEWS]: "Reviews",
   [ROUTES.COUPONS]: "All Coupons",
   [ROUTES.COUPONS_ADD]: "Add Coupon",
-  [ROUTES.INVENTORY]: "Inventory Overview",
-  [ROUTES.INVENTORY_STOCK]: "Stock Management",
+  [ROUTES.INVENTORY]: "Inventory",
   [ROUTES.REPORTS]: "Reports",
   [ROUTES.POS]: "Point of Sale",
   [ROUTES.BANNERS]: "All Banners",

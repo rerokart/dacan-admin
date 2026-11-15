@@ -41,7 +41,6 @@ export const ROUTES = {
 
   // Inventory
   INVENTORY: "/inventory",
-  INVENTORY_STOCK: "/inventory/stock",
 
   // Reports
   REPORTS: "/reports",
@@ -115,7 +114,6 @@ export const AUTHENTICATED_ROUTES: string[] = [
   ROUTES.COUPONS,
   ROUTES.COUPONS_ADD,
   ROUTES.INVENTORY,
-  ROUTES.INVENTORY_STOCK,
   ROUTES.REPORTS,
   ROUTES.POS,
   ROUTES.BANNERS,

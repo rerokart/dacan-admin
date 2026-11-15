@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "vc": "pnpm dlx vercel@65.16.0 --global-config ./.vercel-cli",
+    "vc:login": "pnpm run vc login",
+    "vc:whoami": "pnpm run vc whoami",
+    "vc:link": "pnpm run vc link",
+    "deploy:preview": "pnpm run vc deploy",
+    "deploy:prod": "pnpm run vc deploy --prod"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
